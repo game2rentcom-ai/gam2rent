@@ -1,0 +1,415 @@
+@import "tailwindcss";
+
+/* Self-hosted display font — headings only, body stays on system font stack. */
+@import "@fontsource/unbounded/700.css";
+@import "@fontsource/unbounded/800.css";
+@import "@fontsource/unbounded/900.css";
+
+@theme {
+  /* Base surfaces — dark gaming palette */
+  --color-bg-base: #0b0c10;
+  --color-bg-surface: #15171f;
+  --color-bg-surface-raised: #1c1f2b;
+  --color-border-subtle: #282c3a;
+
+  --color-text-primary: #f4f5fa;
+  --color-text-muted: #9aa1b5;
+
+  /* Brand — electric violet signature */
+  --color-brand-50: #f2e9ff;
+  --color-brand-100: #e2ccff;
+  --color-brand-500: #8b2fff;
+  --color-brand-600: #7413e6;
+  --color-brand-700: #5d0ebd;
+
+  /* Accent — rare highlight */
+  --color-accent-400: #22d3ee;
+
+  /* Trust — functional semantic (ETA, guarantees, verified) */
+  --color-trust-50: #06251c;
+  --color-trust-100: rgba(0, 230, 160, 0.12);
+  --color-trust-300: rgba(0, 230, 160, 0.35);
+  --color-trust-600: #00e6a0;
+  --color-trust-700: #00c98c;
+
+  --color-rating-gold: #ffc53d;
+  --color-state-muted: #3a3d4a;
+
+  --font-sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Unbounded", system-ui, sans-serif;
+
+  /* Glow shadows — auto-tint with color-mix() */
+  --shadow-glow-brand: 0 0 24px 4px color-mix(in srgb, var(--color-brand-500) 45%, transparent);
+  --shadow-glow-brand-lg:
+    0 0 32px 6px color-mix(in srgb, var(--color-brand-500) 55%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-brand-500) 60%, transparent);
+  --shadow-glow-trust: 0 0 20px -6px color-mix(in srgb, var(--color-trust-600) 40%, transparent);
+  --shadow-glow-trust-sm: 0 0 12px 0 color-mix(in srgb, var(--color-trust-600) 25%, transparent);
+}
+
+/* =========================================================================
+   Component layer — reusable structural patterns
+   ========================================================================= */
+@layer components {
+  .card {
+    @apply rounded-2xl border border-border-subtle bg-bg-surface p-4;
+  }
+  .trust-pill {
+    @apply inline-flex items-center gap-1 rounded-full border border-trust-300 bg-trust-100 px-2.5 py-1 text-xs font-semibold text-trust-600;
+  }
+  .brand-solid {
+    @apply bg-brand-500;
+  }
+
+  /* Glassmorphism card — frosted glass effect */
+  .glass {
+    @apply rounded-2xl border border-white/10 p-4;
+    background: rgba(21, 23, 31, 0.6);
+    backdrop-filter: blur(16px) saturate(1.5);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  }
+  .glass-sm {
+    @apply rounded-xl border border-white/10 p-3;
+    background: rgba(21, 23, 31, 0.5);
+    backdrop-filter: blur(12px) saturate(1.3);
+    -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  }
+
+  /* Gradient text utility */
+  .text-gradient {
+    background: linear-gradient(135deg, var(--color-brand-500), var(--color-accent-400));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .text-gradient-brand {
+    background: linear-gradient(135deg, var(--color-brand-100), var(--color-brand-500));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* =========================================================================
+   Base styles
+   ========================================================================= */
+html {
+  scroll-behavior: auto; /* Lenis handles smooth scroll */
+}
+
+/* Lenis smooth scroll integration */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Branded selection color */
+::selection {
+  background: color-mix(in srgb, var(--color-brand-500) 40%, transparent);
+  color: var(--color-text-primary);
+}
+
+/* Custom scrollbar — thin, branded */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-subtle);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-500);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-subtle) var(--color-bg-base);
+}
+
+/* =========================================================================
+   Hide scrollbar for horizontal rails
+   ========================================================================= */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* =========================================================================
+   Background textures
+   ========================================================================= */
+.bg-grid-pattern {
+  background-image:
+    linear-gradient(to right, rgba(244, 245, 250, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(244, 245, 250, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.bg-halftone {
+  background-image: radial-gradient(rgba(244, 245, 250, 0.1) 1.2px, transparent 1.2px);
+  background-size: 16px 16px;
+}
+
+/* Animated gradient mesh — subtle ambient background */
+.bg-gradient-mesh {
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 30%, color-mix(in srgb, var(--color-brand-500) 8%, transparent), transparent),
+    radial-gradient(ellipse 50% 60% at 80% 70%, color-mix(in srgb, var(--color-accent-400) 6%, transparent), transparent),
+    radial-gradient(ellipse 70% 40% at 50% 50%, color-mix(in srgb, var(--color-brand-700) 5%, transparent), transparent);
+}
+
+/* Noise/grain overlay */
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* =========================================================================
+   Keyframe animations
+   ========================================================================= */
+
+/* Fade up entry */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fade-up 0.6s ease-out both;
+}
+
+/* Trust glow pulse */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: var(--shadow-glow-trust-sm); }
+  50% { box-shadow: var(--shadow-glow-trust); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Quest path draw */
+@keyframes draw-path {
+  to { stroke-dashoffset: 0; }
+}
+.animate-draw-path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: draw-path 1.2s ease-out 0.3s forwards;
+}
+
+/* Float upward — for particles */
+@keyframes float-up {
+  0% {
+    transform: translateY(100vh) translateX(0) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(90vh) translateX(0) scale(1);
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-20vh) translateX(var(--drift, 30px)) scale(0.5);
+    opacity: 0;
+  }
+}
+.animate-float-up {
+  animation: float-up var(--duration, 15s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* Shimmer sweep — holographic/loading effect */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* Glow border rotation */
+@keyframes glow-rotate {
+  0% { --glow-angle: 0deg; }
+  100% { --glow-angle: 360deg; }
+}
+
+/* Scale reveal */
+@keyframes scale-reveal {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-scale-reveal {
+  animation: scale-reveal 0.5s ease-out both;
+}
+
+/* Slide in from left */
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-in-left {
+  animation: slide-in-left 0.6s ease-out both;
+}
+
+/* Slide in from right */
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.6s ease-out both;
+}
+
+/* Blur in */
+@keyframes blur-in {
+  from { opacity: 0; filter: blur(8px); }
+  to { opacity: 1; filter: blur(0); }
+}
+.animate-blur-in {
+  animation: blur-in 0.6s ease-out both;
+}
+
+/* Ken Burns slow zoom */
+@keyframes ken-burns {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
+}
+.animate-ken-burns {
+  animation: ken-burns 10s ease-in-out infinite alternate;
+}
+
+/* Bounce scroll indicator */
+@keyframes bounce-scroll {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+.animate-bounce-scroll {
+  animation: bounce-scroll 2s ease-in-out infinite;
+}
+
+/* Glitch text effect */
+@keyframes glitch-1 {
+  0%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+  20% { clip-path: inset(20% 0 60% 0); transform: translate(-2px, 1px); }
+  40% { clip-path: inset(50% 0 20% 0); transform: translate(2px, -1px); }
+  60% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 2px); }
+  80% { clip-path: inset(60% 0 10% 0); transform: translate(1px, -2px); }
+}
+
+.glitch-hover:hover {
+  animation: glitch-1 0.4s ease-in-out;
+}
+
+/* Spin for glow borders */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+/* Brand glow pulse on buttons */
+@keyframes btn-glow {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: var(--shadow-glow-brand); }
+}
+.animate-btn-glow {
+  animation: btn-glow 2s ease-in-out infinite;
+}
+
+/* Marquee scroll for trust strip */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+/* Number slot roll */
+@keyframes slot-roll {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Image load fade */
+@keyframes img-load {
+  from { opacity: 0; filter: blur(8px) saturate(2); }
+  to { opacity: 1; filter: blur(0) saturate(1); }
+}
+.animate-img-load {
+  animation: img-load 0.6s ease-out both;
+}
+
+/* =========================================================================
+   Utility: Image with blur-up placeholder
+   ========================================================================= */
+.img-cover {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.img-blur-up {
+  transition: filter 0.4s ease-out, opacity 0.4s ease-out;
+}
+.img-blur-up[data-loaded="false"] {
+  filter: blur(20px);
+  opacity: 0.6;
+}
+.img-blur-up[data-loaded="true"] {
+  filter: blur(0);
+  opacity: 1;
+}
+
+/* =========================================================================
+   Reduced motion — respect user preferences
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-pulse-glow,
+  .animate-draw-path,
+  .animate-float-up,
+  .animate-shimmer,
+  .animate-scale-reveal,
+  .animate-slide-in-left,
+  .animate-slide-in-right,
+  .animate-blur-in,
+  .animate-ken-burns,
+  .animate-bounce-scroll,
+  .animate-spin-slow,
+  .animate-btn-glow,
+  .animate-marquee,
+  .animate-img-load {
+    animation: none !important;
+  }
+  .glitch-hover:hover {
+    animation: none !important;
+  }
+}

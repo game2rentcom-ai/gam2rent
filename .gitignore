@@ -1,0 +1,9 @@
+node_modules
+dist
+
+# Local secrets and config — never commit. The Supabase service_role key and any GitHub token
+# belong nowhere in this repo, in any file.
+.env
+.env.*
+!.env.example
+*.local
