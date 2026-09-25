@@ -3,15 +3,55 @@
   "installCommand": "npm --prefix apps/web install",
   "buildCommand": "npm --prefix apps/web run build",
   "outputDirectory": "apps/web/dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Frame-Options", "value": "DENY" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
       ]
     }
-  ]
+  ],
+  "images": {
+    "sizes": [
+      240,
+      360,
+      480,
+      640,
+      720,
+      960,
+      1280
+    ],
+    "minimumCacheTTL": 86400,
+    "formats": [
+      "image/avif",
+      "image/webp"
+    ],
+    "remotePatterns": [
+      {
+        "protocol": "https",
+        "hostname": "shared.akamai.steamstatic.com"
+      },
+      {
+        "protocol": "https",
+        "hostname": "cggdhfuifudpefursrzn.supabase.co"
+      }
+    ]
+  }
 }

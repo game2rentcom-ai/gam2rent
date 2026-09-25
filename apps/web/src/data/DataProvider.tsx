@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import type { Listing, ListedGame, Review } from "../types/listing";
+import { setContactNumber, whatsAppLink } from "../config";
+import type { Listing, ListedGame, RentalOffer, Review } from "../types/listing";
 import { catalog } from "./catalog";
-import { demoListings, demoReviews } from "./demo";
+import type { CatalogGame } from "./catalogTypes";
+import { demoListings, demoRentalPlans, demoReviews } from "./demo";
 import { fetchRemote, remoteConfigured } from "./remote";
 import { StoreContext, type DataSource, type Store } from "./store";
 
-// Decides where listings and reviews come from — and, just as important, where they DON'T:
+// Decides where the store's data comes from — and, just as important, where it DOESN'T:
 //   1. Database configured  -> always use it (even in local dev, so the real thing can be tested).
 //   2. Demo explicitly on   -> illustrative sample data (VITE_DEMO_DATA=true, or plain local dev).
 //   3. Otherwise            -> nothing. Every game stays browsable, none shows a price, no reviews.
@@ -21,14 +23,22 @@ const SOURCE = pickSource();
 
 interface Loaded {
   status: Store["status"];
+  games: CatalogGame[];
   listings: Listing[];
   reviews: Review[];
+  offers: Record<string, RentalOffer[]>;
+  settings: Record<string, string>;
 }
 
+const EMPTY = { listings: [], reviews: [], offers: {}, settings: {} };
+
 function initialState(): Loaded {
-  if (SOURCE === "remote") return { status: "loading", listings: [], reviews: [] };
-  if (SOURCE === "demo") return { status: "ready", listings: demoListings, reviews: demoReviews };
-  return { status: "ready", listings: [], reviews: [] };
+  if (SOURCE === "remote") return { status: "loading", games: catalog, ...EMPTY };
+  if (SOURCE === "demo") {
+    const offers = Object.fromEntries(catalog.map((g) => [g.id, demoRentalPlans]));
+    return { status: "ready", games: catalog, listings: demoListings, reviews: demoReviews, offers, settings: {} };
+  }
+  return { status: "ready", games: catalog, ...EMPTY };
 }
 
 export function DataProvider({ children }: { children: ReactNode }) {
@@ -43,8 +53,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       })
       .catch((error: unknown) => {
         // Degrade to the honest empty state (browsable, no prices) rather than break the site.
-        console.error("Could not load listings from the database", error);
-        if (!cancelled) setState({ status: "error", listings: [], reviews: [] });
+        console.error("Could not load the store's data", error);
+        if (!cancelled) setState({ status: "error", games: catalog, ...EMPTY });
       });
     return () => {
       cancelled = true;
@@ -52,19 +62,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const store = useMemo<Store>(() => {
+    setContactNumber(state.settings.contact_whatsapp);
+    const byId = new Map(state.games.map((g) => [g.id, g]));
     const listedGames: ListedGame[] = [];
     for (const listing of state.listings) {
-      const game = catalog.find((g) => g.id === listing.catalogId);
+      const game = byId.get(listing.catalogId);
       if (!game) continue;
       listedGames.push({ ...game, listing, reviews: state.reviews.filter((r) => r.gameId === game.id) });
     }
     return {
       status: state.status,
       source: SOURCE,
+      games: state.games,
+      findGame: (gameId) => byId.get(gameId),
       listedGames,
-      reviews: state.reviews,
       findListedGame: (gameId) => listedGames.find((g) => g.id === gameId),
+      reviews: state.reviews,
       reviewsFor: (gameId) => state.reviews.filter((r) => r.gameId === gameId),
+      rentalOffersFor: (gameId) => (byId.get(gameId)?.isRentable === false ? [] : state.offers[gameId] ?? []),
+      setting: (key) => state.settings[key],
+      contactLink: (message) => whatsAppLink(message),
     };
   }, [state]);
 

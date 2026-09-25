@@ -1,502 +1,299 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { m, useScroll, useTransform } from "motion/react";
-import { getGameImage, placeholderColor } from "../data/gameImages";
-import { whatsAppLink } from "../config";
-import { catalog } from "../data/catalog";
-import { PLATFORM_LABEL } from "../data/catalogTypes";
-import { useStore } from "../data/store";
-import { averageRating, credentialDisclosure, deliveryEtaLabel } from "../types/listing";
-import { TiltCard } from "../components/TiltCard";
-import { Button } from "../components/Button";
-import { GameRail } from "../components/GameRail";
-import { getGameMetadata, COMMON_FAQS } from "../data/gameMeta";
-import { FAQAccordion } from "../components/FAQAccordion";
+import { Link, useParams } from "react-router-dom";
+import { GAME_METADATA } from "../data/gameMeta";
+import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { getGameTrailer } from "../data/gameTrailers";
-import { TrailerModal } from "../components/TrailerModal";
-import { soundFx } from "../utils/soundEffects";
+import { useStore } from "../data/store";
+import { averageRating, credentialDisclosure } from "../types/listing";
+import { Badge, Chip } from "../ui/Chip";
+import { Button } from "../ui/Button";
+import { etaLabel, formatPrice } from "../ui/format";
+import { GameCard } from "../ui/GameCard";
+import { GameCover } from "../ui/GameCover";
+import { IconBack, IconClock, IconShield, IconStar } from "../ui/icons";
+import { Rail, Section } from "../ui/Section";
+import { TrailerPlayer } from "../ui/TrailerPlayer";
+import { NotFoundPage } from "./NotFoundPage";
+
+// The game page, phone first: a compact banner, then the price and the Buy / Rent choice straight
+// away, and a sticky bar that keeps the main action within thumb reach. Facts come from the database
+// (or the built-in list); a field that is empty is simply not shown — nothing is invented.
+
+type Option = "buy" | "rent";
+
+function relatedGames(game: CatalogGame, all: CatalogGame[]): CatalogGame[] {
+  const others = all.filter((g) => g.id !== game.id);
+  const family = others.filter((g) => g.franchise && g.franchise === game.franchise);
+  const genre = others.filter((g) => g.genre && g.genre === game.genre && !family.includes(g));
+  return [...family, ...genre].slice(0, 10);
+}
 
 export function GameDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const game = catalog.find((g) => g.id === id);
-  const { findListedGame, reviewsFor } = useStore();
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 500], [0, 150]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0.2]);
+  const { findGame, games, findListedGame, rentalOffersFor, reviewsFor, status, contactLink } = useStore();
+  const game = id ? findGame(id) : undefined;
 
-  const [selectedOption, setSelectedOption] = useState<"rent" | "buy">("rent");
-  const [trailerOpen, setTrailerOpen] = useState(false);
-  const trailer = game ? getGameTrailer(game.id) : null;
+  const listed = game ? findListedGame(game.id) : undefined;
+  const offers = game ? rentalOffersFor(game.id) : [];
+  const [chosenOption, setOption] = useState<Option | null>(null);
+  const [planId, setPlanId] = useState<string | null>(null);
+  const [rentPlatform, setRentPlatform] = useState<Platform | null>(null);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
-  if (!game) {
-    return (
-      <div className="py-24 text-center">
-        <h1 className="text-4xl text-white font-display font-black mb-4">Game Not Found</h1>
-        <p className="text-text-muted mb-6">The game you are looking for does not exist in our catalog.</p>
-        <Link to="/browse">
-          <Button variant="primary">Browse All Games</Button>
-        </Link>
-      </div>
-    );
-  }
+  const related = game ? relatedGames(game, games) : [];
 
-  const { hero, cover } = getGameImage(game.id);
-  const bgColor = placeholderColor(game.id);
-  const listed = findListedGame(game.id);
+  if (!game) return status === "loading" ? <div className="h-96 animate-pulse rounded-2xl bg-bg-surface" aria-busy="true" /> : <NotFoundPage />;
+
+  const option: Option = chosenOption ?? (listed ? "buy" : offers.length ? "rent" : "buy");
+  const plan = offers.find((o) => o.planId === planId) ?? offers.find((o) => o.isPopular) ?? offers[0];
+  const platform = rentPlatform ?? game.platforms[0];
   const reviews = reviewsFor(game.id);
   const rating = averageRating(reviews);
+  const trailer = getGameTrailer(game.id);
+  const meta = GAME_METADATA[game.id];
   const unavailable = listed !== undefined && !listed.listing.isAvailable;
-  const meta = getGameMetadata(game.id, game.genre);
 
-  // Only a real listing has a price. Rental prices will come from the database once the owner sets
-  // them in the admin panel; until then the rent option is "price on request" — nothing is invented.
-  const buyPrice = listed?.listing.price;
+  const buyMessage = listed
+    ? `Hi! I want to BUY "${game.title}" (${PLATFORM_LABEL[listed.listing.platform]}) for ${formatPrice(listed.listing.price)}.`
+    : `Hi! Is "${game.title}" available to buy?`;
+  const rentMessage = plan
+    ? `Hi! I want to RENT "${game.title}" on ${PLATFORM_LABEL[platform]} — ${plan.label} for ${formatPrice(plan.price)}.`
+    : `Hi! I'd like to rent "${game.title}" on ${PLATFORM_LABEL[platform]}. What's the price and delivery time?`;
+  const buyHref = contactLink(buyMessage);
+  const rentHref = contactLink(rentMessage);
 
-  const getWhatsappHref = () => {
-    if (selectedOption === "buy") {
-      return whatsAppLink(
-        buyPrice !== undefined
-          ? `Hi! I want to BUY "${game.title}" (₹${buyPrice}). Is delivery ready?`
-          : `Hi! Is "${game.title}" available to buy?`
-      );
-    }
-    return whatsAppLink(`Hi! I want to RENT "${game.title}". What's the price and delivery time?`);
-  };
+  const primary =
+    option === "rent"
+      ? { label: plan ? `Rent · ${plan.label}` : "Ask about renting", price: plan ? formatPrice(plan.price) : "Price on request", href: rentHref, disabled: false }
+      : listed && !unavailable
+        ? { label: "Buy now", price: formatPrice(listed.listing.price), href: buyHref, disabled: false }
+        : unavailable
+          ? { label: "Currently unavailable", price: "", href: undefined, disabled: true }
+          : { label: "Check availability", price: "", href: buyHref, disabled: false };
 
-  const activeHref = getWhatsappHref();
+  const facts: [string, string][] = ([
+    ["Genre", game.genre],
+    ["Developer", game.developer],
+    ["Publisher", game.publisher],
+    ["Release", game.releaseInfo],
+    ["Platforms", game.platforms.map((p) => PLATFORM_LABEL[p]).join(", ")],
+  ] as [string, string][]).filter(([, v]) => v && v.toLowerCase() !== "unverified");
 
   return (
-    <div className="pb-24 flex flex-col gap-10">
-      {/* Breadcrumb Navigation */}
-      <nav className="flex items-center gap-2 text-xs text-text-muted">
-        <Link to="/" className="hover:text-white transition-colors">
-          Home
+    <div className="flex flex-col gap-6 md:gap-8">
+      <div className="-mb-2">
+        <Link to="/browse" className="-ml-2 inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-text-muted hover:text-text-primary">
+          <IconBack className="h-5 w-5" />
+          Browse
         </Link>
-        <span>/</span>
-        <Link to="/browse" className="hover:text-white transition-colors">
-          Catalog
-        </Link>
-        <span>/</span>
-        <Link
-          to={`/browse?genre=${encodeURIComponent(game.genre)}`}
-          className="hover:text-white transition-colors"
-        >
-          {game.genre}
-        </Link>
-        <span>/</span>
-        <span className="text-white font-semibold truncate max-w-[200px]">
-          {game.title}
-        </span>
-      </nav>
-
-      {/* Hero Banner with Cinematic Parallax */}
-      <div className="relative h-[45vh] min-h-[360px] max-h-[500px] overflow-hidden rounded-3xl border border-white/10 shadow-2xl">
-        <m.div style={{ y, opacity, backgroundColor: bgColor }} className="absolute inset-0 z-0">
-          <img
-            src={hero}
-            alt={game.title}
-            className="w-full h-full object-cover object-top opacity-60"
-          />
-        </m.div>
-        <div className="absolute inset-0 bg-gradient-to-t from-bg-base via-bg-base/60 to-transparent z-10" />
-        <div className="absolute inset-0 bg-gradient-to-r from-bg-base via-bg-base/70 to-transparent z-10" />
-
-        <div className="absolute bottom-6 left-6 right-6 sm:bottom-10 sm:left-10 z-20">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="rounded-md border border-brand-500/50 bg-brand-500/20 px-3 py-1 text-xs font-bold text-brand-100 backdrop-blur-md">
-              {game.genre}
-            </span>
-            {meta.approxCampaignHours && (
-              <span className="rounded-md border border-white/15 bg-black/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">
-                ⏱ ~{meta.approxCampaignHours}h Campaign
-              </span>
-            )}
-            {game.platforms.map((p) => (
-              <span
-                key={p}
-                className="rounded-md border border-white/10 bg-black/60 px-2.5 py-1 text-xs font-semibold text-text-muted backdrop-blur-md uppercase"
-              >
-                {PLATFORM_LABEL[p]}
-              </span>
-            ))}
-            {trailer && (
-              <button
-                type="button"
-                onClick={() => {
-                  soundFx.playClick();
-                  setTrailerOpen(true);
-                }}
-                className="inline-flex items-center gap-1.5 rounded-md border border-red-500/40 bg-red-500/25 px-3 py-1 text-xs font-bold text-white backdrop-blur-md hover:bg-red-500/40 hover:scale-105 transition-all"
-              >
-                <span className="flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-white">
-                  <svg className="w-1.5 h-1.5 fill-current ml-0.5" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </span>
-                <span>Watch 4K Trailer</span>
-              </button>
-            )}
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl font-display font-black text-white tracking-tight drop-shadow-md">
-            {game.title}
-          </h1>
-        </div>
       </div>
 
-      {/* Main Content Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-        {/* Left Column: Cover Box Art & Quick Specs */}
-        <div className="lg:col-span-4">
-          <div className="sticky top-24 flex flex-col gap-6">
-            <TiltCard>
-              <div
-                className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative aspect-[3/4] bg-bg-surface-raised"
-                style={{ backgroundColor: bgColor }}
-              >
-                <img src={cover} alt={game.title} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-              </div>
-            </TiltCard>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-10">
+        <div className="flex min-w-0 flex-col gap-6">
+          <GameCover game={game} slot="hero" priority className="w-full rounded-2xl border border-white/10" />
 
-            {/* Feature Pills */}
-            <div className="glass p-5 rounded-2xl border border-white/10 flex flex-col gap-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-text-muted">
-                Highlights & Features
-              </h4>
-              <div className="flex flex-wrap gap-1.5">
-                {meta.features.map((feature, i) => (
-                  <span
-                    key={i}
-                    className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-text-primary"
+          <div>
+            <div className="flex flex-wrap gap-1.5">
+              {game.platforms.map((p) => <Badge key={p}>{PLATFORM_LABEL[p]}</Badge>)}
+              {game.genre && <Badge tone="brand">{game.genre}</Badge>}
+            </div>
+            <h1 className="mt-3 font-display text-3xl font-black leading-tight text-text-primary sm:text-4xl">{game.title}</h1>
+            {rating !== null && (
+              <p className="mt-2 flex items-center gap-1.5 text-sm text-text-muted">
+                <IconStar className="h-4 w-4 text-rating-gold" />
+                <span className="font-semibold text-text-primary">{rating.toFixed(1)}</span>
+                <span>({reviews.length} verified {reviews.length === 1 ? "review" : "reviews"})</span>
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Purchase panel: right after the title on a phone, sticky beside the content on desktop */}
+        <aside className="lg:sticky lg:top-24 lg:self-start" aria-label="Buy or rent">
+          <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-bg-surface p-4 sm:p-5">
+            {listed && offers.length > 0 && (
+              <div role="tablist" aria-label="Buy or rent" className="grid grid-cols-2 gap-1 rounded-xl bg-bg-base p-1">
+                {(["buy", "rent"] as const).map((o) => (
+                  <button
+                    key={o}
+                    type="button"
+                    role="tab"
+                    aria-selected={option === o}
+                    onClick={() => setOption(o)}
+                    className={`min-h-11 rounded-lg text-sm font-bold transition-colors ${option === o ? "bg-brand-500 text-white" : "text-text-muted hover:text-text-primary"}`}
                   >
-                    ✦ {feature}
-                  </span>
+                    {o === "buy" ? "Buy" : "Rent"}
+                  </button>
                 ))}
               </div>
-            </div>
+            )}
 
-            {/* Quick trust guarantee */}
-            <div className="glass p-5 rounded-2xl border border-trust-600/30 flex items-start gap-3.5">
-              <span className="text-2xl">⚡</span>
-              <div className="text-xs">
-                <strong className="block text-sm font-bold text-white mb-0.5">
-                  Verified Digital Delivery
-                </strong>
-                <p className="text-text-muted leading-relaxed">
-                  Login access sent directly to your WhatsApp in 15–30 minutes. Full step-by-step setup assistance.
-                </p>
+            {option === "buy" ? (
+              <div className="flex flex-col gap-3">
+                {listed ? (
+                  <>
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <span className="font-display text-4xl font-black text-text-primary">{formatPrice(listed.listing.price)}</span>
+                      {listed.listing.compareAtPrice && listed.listing.compareAtPrice > listed.listing.price && (
+                        <span className="text-base text-text-muted line-through">{formatPrice(listed.listing.compareAtPrice)}</span>
+                      )}
+                    </div>
+                    <p className="flex items-center gap-2 text-sm text-text-muted">
+                      <IconClock className="h-5 w-5 shrink-0 text-trust-600" />
+                      Delivered in {etaLabel(listed.listing.deliveryEtaMinutes)} · {PLATFORM_LABEL[listed.listing.platform]}
+                    </p>
+                    <p className="text-sm text-text-muted">{credentialDisclosure(listed.listing.credentialType)}</p>
+                  </>
+                ) : (
+                  <p className="text-sm text-text-muted">This game isn’t listed with a price yet. Message us and we’ll check whether we can get it for you, and how quickly.</p>
+                )}
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Pricing Selector, Details & Actions */}
-        <div className="lg:col-span-8 flex flex-col gap-8">
-          {/* Plan Selector Card (Rent vs Buy) */}
-          <div className="glass p-6 sm:p-8 rounded-3xl border border-white/10 flex flex-col gap-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-trust-600">
-                  Select Option
-                </span>
-                <h2 className="text-xl sm:text-2xl font-display font-bold text-white">
-                  Rent or Buy {game.title}
-                </h2>
-              </div>
-              {listed && (
-                <span className="rounded-full bg-trust-100 border border-trust-300 px-3 py-1 text-xs font-bold text-trust-600 w-fit">
-                  Delivered in {deliveryEtaLabel(listed.listing.deliveryEtaMinutes)}
-                </span>
-              )}
-            </div>
-
-            {/* Rent vs Buy Two-Card Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Option 1: Rent */}
-              <button
-                type="button"
-                onClick={() => {
-                  soundFx.playSuccess();
-                  setSelectedOption("rent");
-                }}
-                className={`relative flex flex-col justify-between p-5 rounded-2xl border text-left transition-all ${
-                  selectedOption === "rent"
-                    ? "border-trust-600 bg-trust-600/15 shadow-glow-trust scale-[1.01]"
-                    : "border-white/10 bg-bg-surface hover:border-white/30"
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-trust-600">
-                      Option 1
-                    </span>
-                    <span className="text-xs text-text-muted font-medium">Complete the Story</span>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {offers.length > 0 ? (
+                  <>
+                    <div role="radiogroup" aria-label="Rental length" className="grid grid-cols-2 gap-2">
+                      {offers.map((o) => (
+                        <button
+                          key={o.planId}
+                          type="button"
+                          role="radio"
+                          aria-checked={plan?.planId === o.planId}
+                          onClick={() => setPlanId(o.planId)}
+                          className={`relative flex min-h-16 flex-col items-start justify-center rounded-xl border px-3 py-2 text-left transition-colors ${plan?.planId === o.planId ? "border-trust-600 bg-trust-600/10" : "border-border-subtle hover:border-white/30"}`}
+                        >
+                          <span className="text-sm font-bold text-text-primary">{o.label}</span>
+                          <span className="font-display text-lg font-black text-trust-600">{formatPrice(o.price)}</span>
+                          {(o.isPopular || o.tag) && <span className="absolute right-2 top-2 rounded bg-trust-600 px-1.5 text-xs font-bold text-black">{o.tag ?? "Popular"}</span>}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-text-muted">Rental prices for this game aren’t set yet. Message us for the price and how quickly we can deliver.</p>
+                )}
+                {game.platforms.length > 1 && (
+                  <div>
+                    <p className="mb-1.5 text-sm font-semibold text-text-primary">Platform</p>
+                    <div className="flex flex-wrap gap-2">
+                      {game.platforms.map((p) => <Chip key={p} selected={platform === p} onClick={() => setRentPlatform(p)}>{PLATFORM_LABEL[p]}</Chip>)}
+                    </div>
                   </div>
-                  <h3 className="font-display text-lg font-bold text-white">Rent this Game</h3>
-                  <p className="text-xs text-text-muted mt-1 leading-relaxed">
-                    Full access to campaign, saves and DLCs. Flat price with zero hidden fees.
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-white/5 flex items-baseline justify-between">
-                  <span className="text-xs text-text-muted">Price</span>
-                  <span className="font-display text-base font-black text-trust-600">
-                    Price on request
-                  </span>
-                </div>
-              </button>
-
-              {/* Option 2: Buy */}
-              <button
-                type="button"
-                onClick={() => {
-                  soundFx.playSuccess();
-                  setSelectedOption("buy");
-                }}
-                className={`relative flex flex-col justify-between p-5 rounded-2xl border text-left transition-all ${
-                  selectedOption === "buy"
-                    ? "border-brand-500 bg-brand-500/20 shadow-glow-brand scale-[1.01]"
-                    : "border-white/10 bg-bg-surface hover:border-white/30"
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-brand-100">
-                      Option 2
-                    </span>
-                    <span className="text-xs text-text-muted font-medium">Permanent</span>
-                  </div>
-                  <h3 className="font-display text-lg font-bold text-white">Buy to Own</h3>
-                  <p className="text-xs text-text-muted mt-1 leading-relaxed">
-                    Permanent digital ownership to keep in your library forever.
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-white/5 flex items-baseline justify-between">
-                  <span className="text-xs text-text-muted">Total Price</span>
-                  <span className={`font-display font-black text-white ${buyPrice !== undefined ? "text-2xl" : "text-base"}`}>
-                    {buyPrice !== undefined ? `₹${buyPrice.toLocaleString("en-IN")}` : "Check availability"}
-                  </span>
-                </div>
-              </button>
-            </div>
-
-            {/* Action CTA */}
-            <div className="flex flex-col gap-2 pt-2">
-              <a href={activeHref} target="_blank" rel="noreferrer" className="w-full">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  glow
-                  className="w-full text-base py-4 font-display"
-                  disabled={!activeHref || unavailable}
-                >
-                  {unavailable
-                    ? "Currently Unavailable"
-                    : selectedOption === "rent"
-                    ? `Rent ${game.title} →`
-                    : buyPrice !== undefined
-                    ? `Buy ${game.title} for ₹${buyPrice.toLocaleString("en-IN")} →`
-                    : `Check availability →`}
-                </Button>
-              </a>
-              <p className="text-center text-xs text-text-muted">
-                ⚡ Direct WhatsApp checkout · Instant UPI payment & verified delivery.
-              </p>
-            </div>
-
-            {listed && (
-              <div className="text-center text-xs text-text-muted pt-2 border-t border-white/5">
-                {credentialDisclosure(listed.listing.credentialType)}
+                )}
               </div>
             )}
-          </div>
 
-          {/* Game Info Meta Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="glass p-4 rounded-2xl border border-white/5">
-              <p className="text-text-muted text-[11px] uppercase font-bold tracking-wider mb-1">Genre</p>
-              <p className="text-white text-sm font-semibold">{game.genre}</p>
+            <div className="hidden md:block">
+              <Button href={primary.href} disabled={primary.disabled} size="lg" full>
+                {primary.label}{primary.price ? ` · ${primary.price}` : ""}
+              </Button>
             </div>
-            <div className="glass p-4 rounded-2xl border border-white/5">
-              <p className="text-text-muted text-[11px] uppercase font-bold tracking-wider mb-1">Developer</p>
-              <p className="text-white text-sm font-semibold truncate">{game.developer}</p>
-            </div>
-            <div className="glass p-4 rounded-2xl border border-white/5">
-              <p className="text-text-muted text-[11px] uppercase font-bold tracking-wider mb-1">Release</p>
-              <p className="text-white text-sm font-semibold">{game.releaseInfo}</p>
-            </div>
-            <div className="glass p-4 rounded-2xl border border-white/5">
-              <p className="text-text-muted text-[11px] uppercase font-bold tracking-wider mb-1">Rating</p>
-              <p className="text-white text-sm font-semibold">
-                {rating === null ? "5.0 ★ (Verified)" : `${rating.toFixed(1)} ★ (${reviews.length})`}
-              </p>
+            {!primary.href && !primary.disabled && <p className="text-xs text-text-muted">Contact details aren’t set up yet.</p>}
+
+            <div className="flex items-start gap-3 rounded-xl bg-bg-base p-3 text-sm text-text-muted">
+              <IconShield className="mt-0.5 h-5 w-5 shrink-0 text-trust-600" />
+              <p><span className="font-semibold text-text-primary">Replacement guarantee.</span> Something off after delivery? We replace it, free.</p>
             </div>
           </div>
+        </aside>
+      </div>
 
-          {/* About this game */}
-          <div className="glass p-6 sm:p-8 rounded-3xl border border-white/5">
-            <h3 className="text-xl font-display font-bold text-white mb-3">About {game.title}</h3>
-            <p className="text-text-muted leading-relaxed text-sm sm:text-base">
-              {game.description}
-            </p>
-          </div>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-10">
+        <div className="flex min-w-0 flex-col gap-8">
+          {game.description && (
+            <Section title="About this game">
+              <p className="max-w-prose text-base leading-relaxed text-text-muted">{game.description}</p>
+            </Section>
+          )}
 
-          {/* Step-by-Step Delivery Flow (Visual 4-Step Timeline) */}
-          <div className="glass p-6 sm:p-8 rounded-3xl border border-white/10 flex flex-col gap-6">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-brand-500">
-                Transparent Fulfillment
-              </span>
-              <h3 className="text-xl font-display font-bold text-white mt-1">
-                How Digital Delivery Works
-              </h3>
-            </div>
+          {facts.length > 0 && (
+            <Section title="Details">
+              <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {facts.map(([k, v]) => (
+                  <div key={k} className="rounded-xl border border-white/5 bg-bg-surface p-3">
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-text-muted">{k}</dt>
+                    <dd className="mt-1 text-sm font-medium text-text-primary">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </Section>
+          )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="flex flex-col gap-2 rounded-2xl bg-white/5 p-4 border border-white/5">
-                <span className="text-xs font-black text-brand-500">01</span>
-                <h4 className="text-sm font-bold text-white">Select & Checkout</h4>
-                <p className="text-xs text-text-muted leading-relaxed">
-                  Choose Rent or Buy, then order via WhatsApp with quick UPI payment.
-                </p>
-              </div>
+          {meta && (
+            <Section title="Good to know">
+              <ul className="flex flex-wrap gap-2">
+                {meta.features.map((f) => <li key={f} className="rounded-full border border-white/10 bg-bg-surface px-3 py-1.5 text-sm text-text-muted">{f}</li>)}
+              </ul>
+              {meta.approxCampaignHours && <p className="text-sm text-text-muted">Main story takes roughly {meta.approxCampaignHours} hours.</p>}
+              {meta.specs && (
+                <details className="group rounded-xl border border-white/5 bg-bg-surface">
+                  <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 text-sm font-semibold text-text-primary">
+                    PC system requirements
+                    <span className="text-text-muted transition-transform group-open:rotate-180" aria-hidden="true">▾</span>
+                  </summary>
+                  <dl className="grid gap-2 px-4 pb-4 text-sm sm:grid-cols-2">
+                    {Object.entries(meta.specs).map(([k, v]) => (
+                      <div key={k}><dt className="text-xs uppercase tracking-wider text-text-muted">{k}</dt><dd className="text-text-primary">{v}</dd></div>
+                    ))}
+                  </dl>
+                </details>
+              )}
+            </Section>
+          )}
 
-              <div className="flex flex-col gap-2 rounded-2xl bg-white/5 p-4 border border-white/5">
-                <span className="text-xs font-black text-brand-500">02</span>
-                <h4 className="text-sm font-bold text-white">Verification</h4>
-                <p className="text-xs text-text-muted leading-relaxed">
-                  Our gaming specialists confirm your platform and prepare your account credentials.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2 rounded-2xl bg-white/5 p-4 border border-white/5">
-                <span className="text-xs font-black text-trust-600">03</span>
-                <h4 className="text-sm font-bold text-white">Delivery in 15–30m</h4>
-                <p className="text-xs text-text-muted leading-relaxed">
-                  Receive verified login details or instant scan-to-play QR on WhatsApp.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2 rounded-2xl bg-white/5 p-4 border border-white/5">
-                <span className="text-xs font-black text-trust-600">04</span>
-                <h4 className="text-sm font-bold text-white">Play on Your Profile</h4>
-                <p className="text-xs text-text-muted leading-relaxed">
-                  Download official files and play on your own personal account with cloud saves.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 4K Gameplay Trailer Showcase */}
           {trailer && (
-            <div className="glass p-6 sm:p-8 rounded-3xl border border-white/10 flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-red-400">
-                    Cinematic Preview
-                  </span>
-                  <h3 className="text-xl font-display font-bold text-white mt-0.5">
-                    Official 4K Gameplay Trailer
-                  </h3>
-                </div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-red-500/10 text-red-300 border border-red-500/20 flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" /> 4K Ultra HD
-                </span>
-              </div>
-
-              <div className="relative w-full pt-[56.25%] rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
-                <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${trailer.youtubeId}?rel=0&modestbranding=1`}
-                  title={`${game.title} Trailer`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="absolute inset-0 w-full h-full border-0"
-                />
-              </div>
-            </div>
+            <Section title="Trailer">
+              <TrailerPlayer youtubeId={trailer.youtubeId} title={trailer.title} poster={<GameCover game={game} slot="hero" className="w-full" />} />
+            </Section>
           )}
 
-          {/* PC System Requirements (if available) */}
-          {meta.specs && (
-            <div className="glass p-6 sm:p-8 rounded-3xl border border-white/5 flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-brand-400">
-                    Technical Specifications
-                  </span>
-                  <h3 className="text-xl font-display font-bold text-white mt-0.5">
-                    PC System Requirements
-                  </h3>
-                </div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white/5 text-text-muted border border-white/10">
-                  DirectX 12 Compatible
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
-                  <span className="text-text-muted font-bold uppercase tracking-wider text-[10px]">
-                    Operating System
-                  </span>
-                  <span className="text-white font-semibold">{meta.specs.os}</span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
-                  <span className="text-text-muted font-bold uppercase tracking-wider text-[10px]">
-                    Processor (CPU)
-                  </span>
-                  <span className="text-white font-semibold">{meta.specs.processor}</span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
-                  <span className="text-text-muted font-bold uppercase tracking-wider text-[10px]">
-                    Memory (RAM)
-                  </span>
-                  <span className="text-white font-semibold">{meta.specs.memory}</span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
-                  <span className="text-text-muted font-bold uppercase tracking-wider text-[10px]">
-                    Graphics (GPU)
-                  </span>
-                  <span className="text-white font-semibold">{meta.specs.graphics}</span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1 sm:col-span-2">
-                  <span className="text-text-muted font-bold uppercase tracking-wider text-[10px]">
-                    Storage
-                  </span>
-                  <span className="text-white font-semibold">{meta.specs.storage}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Verified FAQ Accordion */}
-          <div className="pt-2">
-            <FAQAccordion
-              items={COMMON_FAQS}
-              subtitle="Frequently Asked Questions"
-              title="Everything You Need to Know"
-            />
-          </div>
+          <Section title="Reviews">
+            {reviews.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-border-subtle px-4 py-8 text-center text-sm text-text-muted">No reviews yet. Reviews here come only from customers who received this game.</p>
+            ) : (
+              <>
+                <ul className="flex flex-col gap-3">
+                  {(showAllReviews ? reviews : reviews.slice(0, 4)).map((r) => (
+                    <li key={r.id} className="rounded-xl border border-white/5 bg-bg-surface p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-semibold text-text-primary">{r.reviewerName ?? "Verified customer"}</span>
+                        <span className="flex text-rating-gold" aria-label={`${r.rating} out of 5`}>
+                          {Array.from({ length: r.rating }, (_, i) => <IconStar key={i} className="h-4 w-4" />)}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm text-text-muted">{r.comment}</p>
+                    </li>
+                  ))}
+                </ul>
+                {reviews.length > 4 && !showAllReviews && <Button variant="secondary" onClick={() => setShowAllReviews(true)}>Show all {reviews.length} reviews</Button>}
+              </>
+            )}
+          </Section>
         </div>
       </div>
 
-      {/* Similar Games Rail */}
-      <div className="mt-8">
-        <GameRail
-          title={`More ${game.genre} Games`}
-          ids={catalog
-            .filter((g) => g.genre === game.genre && g.id !== game.id)
-            .map((g) => g.id)
-            .slice(0, 8)}
-        />
-      </div>
+      {related.length > 0 && (
+        <Section title="More like this">
+          <Rail label="More like this">
+            {related.map((g) => (
+              <div key={g.id} className="w-36 shrink-0 snap-start sm:w-44"><GameCard game={g} /></div>
+            ))}
+          </Rail>
+        </Section>
+      )}
 
-      {/* Trailer Modal */}
-      <TrailerModal
-        isOpen={trailerOpen}
-        onClose={() => setTrailerOpen(false)}
-        youtubeId={trailer?.youtubeId || null}
-        title={game.title}
-      />
+      {/* Phone: the main action stays in reach. Desktop uses the button in the panel above. */}
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-bg-base/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl md:hidden">
+        <div className="mx-auto flex max-w-xl items-center gap-3">
+          {primary.price && !primary.disabled && (
+            <div className="min-w-0 shrink-0">
+              <p className="text-xs text-text-muted">{option === "rent" ? "Rent" : "Price"}</p>
+              <p className="font-display text-lg font-black leading-tight text-text-primary">{primary.price}</p>
+            </div>
+          )}
+          <Button href={primary.href} disabled={primary.disabled} size="lg" full>{primary.label}</Button>
+        </div>
+      </div>
     </div>
   );
 }

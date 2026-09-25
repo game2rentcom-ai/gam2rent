@@ -22,6 +22,12 @@ export interface CatalogGame {
    * ("various", a year range) where a single line item spans multiple releases. */
   releaseInfo: string;
   description: string;
+  /** Set by the owner in the admin panel; otherwise the built-in artwork lookup (data/gameImages.ts)
+   * or generated art is used. Must be https. */
+  coverUrl?: string;
+  heroUrl?: string;
+  /** false hides the rent option. Defaults to true. */
+  isRentable?: boolean;
 }
 
 export const PLATFORM_LABEL: Record<Platform, string> = {

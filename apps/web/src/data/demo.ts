@@ -1,4 +1,4 @@
-import type { Listing, Review } from "../types/listing";
+import type { Listing, RentalOffer, Review } from "../types/listing";
 
 // ILLUSTRATIVE DEMO DATA — not real inventory, prices, or customer reviews.
 //
@@ -20,6 +20,14 @@ export const demoListings: Listing[] = [
   { catalogId: "cyberpunk-2077", platform: "cloud", price: 349, credentialType: "qr_code", isAvailable: true, isFeatured: true, deliveryEtaMinutes: 20 },
   { catalogId: "ea-sports-fc", platform: "ps4", price: 649, credentialType: "id_password", isAvailable: false, isFeatured: false, deliveryEtaMinutes: 45 },
   { catalogId: "red-dead-redemption-2", platform: "pc", price: 999, credentialType: "id_password", isAvailable: true, isFeatured: false, deliveryEtaMinutes: 50 },
+];
+
+// Illustrative rental plans, shown for every game in demo mode only. Real rental prices are entered
+// by the owner in the admin panel; they exist nowhere else.
+export const demoRentalPlans: RentalOffer[] = [
+  { planId: "demo-1", label: "1 day", days: 1, isPopular: false, price: 79 },
+  { planId: "demo-3", label: "3 days", days: 3, isPopular: true, tag: "Weekend", price: 199 },
+  { planId: "demo-7", label: "7 days", days: 7, isPopular: false, price: 399 },
 ];
 
 export const demoReviews: Review[] = [

@@ -1,417 +1,215 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { DashboardHero } from "../components/DashboardHero";
-import { GameRail } from "../components/GameRail";
-import { HowItWorks } from "../components/HowItWorks";
-import { ListingCard } from "../components/ListingCard";
-import { CatalogCard } from "../components/CatalogCard";
-import { StatsStrip } from "../components/StatsStrip";
-import { Testimonials } from "../components/Testimonials";
-import { TrustStrip } from "../components/TrustStrip";
-import { Button } from "../components/Button";
-import { FAQAccordion } from "../components/FAQAccordion";
-import { catalog } from "../data/catalog";
-import { PLATFORM_LABEL } from "../data/catalogTypes";
+import { PlatformGlyph } from "../components/Badges";
+import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { useStore } from "../data/store";
-import { SITE_GAMING_ASSETS } from "../data/gameImages";
-import { whatsAppLink } from "../config";
-import { soundFx } from "../utils/soundEffects";
+import { averageRating } from "../types/listing";
+import { Button } from "../ui/Button";
+import { PLATFORM_SHORT, etaLabel, formatPrice, platformLine } from "../ui/format";
+import { GameCard } from "../ui/GameCard";
+import { GameCover } from "../ui/GameCover";
+import { IconChat, IconClock, IconShield, IconStar } from "../ui/icons";
+import { Rail, Section } from "../ui/Section";
+import { SearchPanel } from "../ui/SearchPanel";
 
-// Featured AAA Spotlight titles with 4K wallpapers
-const HERO_SLIDE_IDS = [
-  "gta-5",
-  "cyberpunk-2077",
-  "black-myth-wukong",
-  "elden-ring",
-  "spider-man-2",
-  "god-of-war",
+// Home: short and purposeful on a phone. Everything shown is real — counts and delivery times are
+// computed from the store's data, and a block with nothing to say (no listings, no reviews yet)
+// simply doesn't appear.
+
+// Editorial picks (not sales claims): shown only if the game exists in the store.
+const SPOTLIGHT_IDS = ["gta-5", "cyberpunk-2077", "black-myth-wukong", "elden-ring", "spider-man-2", "god-of-war"];
+const FAVOURITE_IDS = ["gta-5", "red-dead-redemption-2", "cyberpunk-2077", "elden-ring", "the-witcher-3", "god-of-war", "ghost-of-tsushima", "forza-horizon-5"];
+const NEW_IDS = ["silent-hill-2", "dragon-ball-sparking-zero", "marvel-rivals", "ea-sports-fc", "astro-bot", "tekken", "call-of-duty"];
+const PLATFORMS = Object.keys(PLATFORM_LABEL) as Platform[];
+
+const FAQS = [
+  { q: "How does it work?", a: "Pick a game and choose Buy or Rent, then confirm with us. We send you the login details for an account that has the game (or a scan-to-play code, depending on the game). You sign in on your console or PC, download the game from the official store, and play." },
+  { q: "Is this an account or a code?", a: "You get access to an account that has the game — or a QR code that signs you in — not a redeemable key. Each game page says exactly which, before you pay." },
+  { q: "What if something goes wrong?", a: "Accounts shared this way can occasionally be restricted or reclaimed by the platform. If anything goes wrong after delivery, we replace it, free. Keep the login details private." },
+  { q: "How long does delivery take?", a: "Each game page shows the delivery time for that game. We deliver on demand, so a game we don’t already hold can take a little longer — the page tells you before you commit." },
+  { q: "Renting or buying — what’s the difference?", a: "Renting gives you access for a set number of days, then it ends. Buying gives you access with no end date, covered by our replacement guarantee. The price for each is on the game’s page." },
+  { q: "Can I extend a rental?", a: "Message us before your rental ends and we’ll tell you the options." },
 ];
 
-const NEW_RELEASE_IDS = [
-  "silent-hill-2",
-  "dragon-ball-sparking-zero",
-  "marvel-rivals",
-  "ea-sports-fc",
-  "astro-bot",
-  "tekken",
-  "call-of-duty",
-];
+function median(numbers: number[]): number {
+  const s = [...numbers].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : Math.round((s[mid - 1] + s[mid]) / 2);
+}
 
-const POPULAR_IDS = [
-  "gta-5",
-  "red-dead-redemption-2",
-  "cyberpunk-2077",
-  "elden-ring",
-  "the-witcher-3",
-  "god-of-war",
-  "ghost-of-tsushima",
-  "forza-horizon-5",
-];
-
-type FilterTab = "all" | "rent" | "buy" | "ps5" | "pc";
-
-const HOME_FAQS = [
-  {
-    q: "How does digital game renting work on GameBuy?",
-    a: "Select the game you want to play. We deliver verified digital access credentials directly to your WhatsApp within 15–30 minutes. You log in on your PlayStation, Xbox, or PC, set the profile as primary, download the official game files directly from the platform store, and play on your own personal profile.",
-  },
-  {
-    q: "Do I get to keep my personal save files and trophies?",
-    a: "Yes, 100%! Because you add the account as a primary profile, you play directly from your own personal user profile. All achievements, trophies, cloud saves, and story progress remain permanently tied to your own gamer account.",
-  },
-  {
-    q: "Is there any risk of getting my console or account banned?",
-    a: "None. All licenses are 100% genuine and purchased directly through official platform channels (Sony PlayStation Store, Valve Steam, Microsoft Xbox). There is zero console modding, jailbreaking, or unauthorized software involved.",
-  },
-  {
-    q: "What is the difference between Renting and Buying to Own?",
-    a: "Renting gives you complete access to play and finish the campaign at an ultra-affordable flat price (e.g. ₹149) with zero recurring commitments or daily charges. Buying gives you permanent, lifetime ownership of the title to keep in your library forever.",
-  },
-  {
-    q: "Can I extend my rental if I need more time to finish?",
-    a: "Absolutely! If you're enjoying the game and need more time, simply reach out to us on WhatsApp before your access ends to extend your rental or upgrade to permanent ownership by simply paying the difference.",
-  },
-];
+function pick(ids: string[], find: (id: string) => CatalogGame | undefined): CatalogGame[] {
+  return ids.map(find).filter((g): g is CatalogGame => Boolean(g));
+}
 
 export function HomePage() {
-  const { listedGames, findListedGame } = useStore();
-  const [activeTab, setActiveTab] = useState<FilterTab>("all");
+  const { games, findGame, listedGames, reviews, status, contactLink } = useStore();
+  const [query, setQuery] = useState("");
+  const chatHref = contactLink("Hi! I have a question about renting or buying games.");
 
-  const heroSlides = HERO_SLIDE_IDS.map((id) => catalog.find((g) => g.id === id)).filter(
-    (g): g is NonNullable<typeof g> => Boolean(g)
-  );
+  const spotlight = useMemo(() => {
+    const featured = listedGames.filter((g) => g.listing.isFeatured && g.listing.isAvailable);
+    const rest = pick(SPOTLIGHT_IDS, findGame).filter((g) => !featured.some((f) => f.id === g.id));
+    return [...featured, ...rest].slice(0, 6);
+  }, [listedGames, findGame]);
 
-  // Filtered games for quick interactive tab showcase
-  const tabGames = catalog.filter((game) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "rent") return true; // all games support rent
-    if (activeTab === "buy") return listedGames.some((l) => l.id === game.id);
-    if (activeTab === "ps5") return game.platforms.includes("ps5") || game.platforms.includes("ps4");
-    if (activeTab === "pc") return game.platforms.includes("pc");
-    return true;
-  }).slice(0, 8);
+  const availableNow = listedGames.filter((g) => g.listing.isAvailable);
+  const favourites = pick(FAVOURITE_IDS, findGame);
+  const fresh = pick(NEW_IDS, findGame);
+  const platformCounts = PLATFORMS.map((p) => ({ p, n: games.filter((g) => g.platforms.includes(p)).length })).filter((x) => x.n > 0);
+
+  const rating = averageRating(reviews);
+  const typicalEta = availableNow.length ? median(availableNow.map((g) => g.listing.deliveryEtaMinutes)) : null;
 
   return (
-    <div className="relative flex flex-col gap-16 sm:gap-24 pb-20">
-      {/* 4K Subtle Ambient Background Backdrop */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <img
-          src={SITE_GAMING_ASSETS.cyberCity4K}
-          alt="Atmosphere"
-          className="h-full w-full object-cover opacity-[0.06] filter blur-xl"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-bg-base via-transparent to-bg-base" />
-      </div>
-
-      {/* Hero Header & AAA Spotlight Stage */}
-      <section className="flex flex-col gap-8 pt-2">
-        <div className="flex flex-col items-center text-center max-w-3xl mx-auto gap-3.5 px-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-brand-500/40 bg-brand-500/10 px-4 py-1.5 text-xs font-bold text-brand-100 backdrop-blur-md">
-            <span>🎮</span>
-            <span>NEXT-GEN GAMING STOREFRONT</span>
-          </div>
-
-          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
-            Rent or Buy Any Game. <span className="text-gradient">Play Today.</span>
-          </h1>
-
-          <p className="text-sm sm:text-base text-text-muted max-w-xl leading-relaxed">
-            Instant digital access on PC, PS5, PS4 & Xbox. Rent to finish the story or buy permanent ownership for your collection.
-          </p>
+    <div className="flex flex-col gap-12 sm:gap-16">
+      <section className="flex flex-col items-center gap-5 pt-2 text-center sm:pt-6">
+        <p className="rounded-full border border-brand-500/40 bg-brand-500/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-brand-100">Buy or rent digital games</p>
+        <h1 className="max-w-3xl font-display text-4xl font-black leading-[1.05] tracking-tight text-text-primary sm:text-5xl lg:text-6xl">
+          Find your next game. <span className="text-gradient">Play it today.</span>
+        </h1>
+        <p className="max-w-xl text-base text-text-muted sm:text-lg">PC, PlayStation, Xbox and cloud gaming — with a delivery time you can see up front, and a free replacement if anything goes wrong.</p>
+        <div className="w-full max-w-xl text-left">
+          <SearchPanel query={query} onQuery={setQuery} onDone={() => setQuery("")} dropdown placeholder={`Search ${games.length} games`} />
         </div>
-
-        {/* Dashboard Hero Carousel */}
-        <DashboardHero slides={heroSlides} />
-
-        {/* Trust Strip */}
-        <TrustStrip />
-      </section>
-
-      {/* Interactive Quick Filter Showcase */}
-      <section className="flex flex-col gap-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-500">
-              Browse Highlights
-            </span>
-            <h2 className="font-display text-2xl sm:text-3xl font-black text-white mt-0.5">
-              Trending for Rent & Buy
-            </h2>
-          </div>
-
-          {/* Filter Pills */}
-          <div className="flex flex-wrap gap-2">
-            {[
-              { id: "all", label: "🔥 All Games" },
-              { id: "rent", label: "⚡ Available for Rent" },
-              { id: "buy", label: "💎 Buy to Own" },
-              { id: "ps5", label: "🎮 PlayStation" },
-              { id: "pc", label: "💻 PC Steam" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onMouseEnter={() => soundFx.playHover()}
-                onClick={() => {
-                  soundFx.playSuccess();
-                  setActiveTab(tab.id as FilterTab);
-                }}
-                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all duration-200 ${
-                  activeTab === tab.id
-                    ? "bg-brand-500 text-white shadow-glow-brand scale-105"
-                    : "border border-white/10 bg-bg-surface text-text-muted hover:border-white/30 hover:text-white"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Game Cards Grid with generous spacing */}
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-3 lg:grid-cols-4">
-          {tabGames.map((game) => {
-            const listed = findListedGame(game.id);
-            return listed ? (
-              <ListingCard key={game.id} game={listed} />
-            ) : (
-              <CatalogCard key={game.id} game={game} />
-            );
-          })}
-        </div>
-
-        <div className="flex justify-center pt-4">
-          <Link to="/browse">
-            <Button variant="secondary" size="lg" className="px-10 py-4 text-sm font-display">
-              Explore All 110+ Games in Catalog →
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      {/* 4K Gamified Battle Station Showcase */}
-      <section className="relative overflow-hidden rounded-3xl border border-white/15 p-8 sm:p-14 shadow-2xl">
-        {/* 4K Real Gaming Rig Background */}
-        <img
-          src={SITE_GAMING_ASSETS.heroBg}
-          alt="4K Gaming Rig"
-          className="absolute inset-0 h-full w-full object-cover opacity-25 filter blur-[2px] transition-transform duration-1000 hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-bg-base via-bg-base/95 to-bg-base/80" />
-
-        <div className="relative z-10 flex flex-col gap-10">
-          <div className="max-w-xl">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-400">
-              The Smarter Way to Game
-            </span>
-            <h2 className="font-display text-2xl sm:text-4xl font-black text-white mt-1.5 leading-tight">
-              Play more games. Spend significantly less.
-            </h2>
-            <p className="text-sm sm:text-base text-text-muted mt-3 leading-relaxed">
-              Why pay full price for a 15-hour campaign? Rent it, enjoy the full experience, or buy permanent ownership if you love the game.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1 */}
-            <div className="glass p-6 sm:p-7 rounded-2xl border border-white/10 hover:border-brand-500/50 transition-all duration-300 hover:-translate-y-1">
-              <span className="text-3xl">🎮</span>
-              <h3 className="font-display text-lg font-bold text-white mt-3 mb-1.5">
-                Huge Curated Catalog
-              </h3>
-              <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
-                Over 110+ blockbuster titles across PC, PlayStation, Xbox, and Cloud Gaming ready for delivery.
-              </p>
-            </div>
-
-            {/* Card 2 */}
-            <div className="glass p-6 sm:p-7 rounded-2xl border border-white/10 hover:border-trust-600/50 transition-all duration-300 hover:-translate-y-1">
-              <span className="text-3xl">⚡</span>
-              <h3 className="font-display text-lg font-bold text-white mt-3 mb-1.5">
-                Fast 15–30m Delivery
-              </h3>
-              <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
-                Receive your login credentials or QR code directly on WhatsApp. Quick, private, and effortless.
-              </p>
-            </div>
-
-            {/* Card 3 */}
-            <div className="glass p-6 sm:p-7 rounded-2xl border border-white/10 hover:border-accent-400/50 transition-all duration-300 hover:-translate-y-1">
-              <span className="text-3xl">💬</span>
-              <h3 className="font-display text-lg font-bold text-white mt-3 mb-1.5">
-                Direct Gamer Support
-              </h3>
-              <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
-                Have questions or need assistance setting up your game? Our team is available directly on chat.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section>
-        <StatsStrip
-          catalogSize={catalog.filter((g) => g.category === "game").length}
-          platformCount={new Set(catalog.flatMap((g) => g.platforms)).size}
-        />
-      </section>
-
-      {/* Rails: New Releases & Popular */}
-      <div className="flex flex-col gap-14">
-        <GameRail title="New Releases & Pre-Orders" ids={NEW_RELEASE_IDS} />
-        <GameRail title="Most Played Blockbusters" ids={POPULAR_IDS} />
-      </div>
-
-      {/* Platform Category Selector */}
-      <section className="flex flex-col items-center gap-5">
-        <span className="text-xs font-bold uppercase tracking-[0.15em] text-text-muted">
-          Supported Platforms
-        </span>
-        <div className="flex flex-wrap justify-center gap-3">
-          {(Object.keys(PLATFORM_LABEL) as (keyof typeof PLATFORM_LABEL)[]).map((platform) => (
-            <Link
-              key={platform}
-              to={`/browse?platform=${platform}`}
-              className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-bg-surface px-6 py-3.5 text-sm font-semibold text-text-primary transition-all duration-200 hover:border-brand-500 hover:text-brand-100 hover:shadow-glow-brand hover:scale-105"
-            >
-              <span>{PLATFORM_LABEL[platform]}</span>
+        <div className="flex flex-wrap justify-center gap-2">
+          {PLATFORMS.map((p) => (
+            <Link key={p} to={`/browse?platform=${p}`} className="inline-flex min-h-10 shrink-0 items-center rounded-full border border-border-subtle bg-bg-surface px-4 text-sm font-medium text-text-muted hover:border-white/30 hover:text-text-primary">
+              {PLATFORM_LABEL[p]}
             </Link>
           ))}
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <HowItWorks />
+      {spotlight.length > 0 && (
+        <Section title="Spotlight" moreTo="/browse" moreLabel="Browse all">
+          <Rail label="Spotlight games">
+            {spotlight.map((g, i) => {
+              const listed = listedGames.find((l) => l.id === g.id);
+              return (
+                <Link
+                  key={g.id}
+                  to={`/games/${g.id}`}
+                  className="group relative w-[82vw] max-w-md shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10 sm:w-96"
+                >
+                  <GameCover game={g} slot="hero" priority={i === 0} sizes="(min-width: 640px) 384px, 82vw" className="w-full" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" aria-hidden="true" />
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-white/80">{platformLine(g.platforms)}</p>
+                      <h3 className="line-clamp-2 font-display text-lg font-black leading-tight text-white">{g.title}</h3>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-brand-500 px-3 py-1.5 text-sm font-bold text-white">
+                      {listed && listed.listing.isAvailable ? formatPrice(listed.listing.price) : "View"}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </Rail>
+        </Section>
+      )}
 
-      {/* Rent vs Buy Comparison Card */}
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-bg-surface/50 p-8 sm:p-12 backdrop-blur-md">
-        <div className="flex flex-col gap-8 max-w-4xl mx-auto">
-          <div className="text-center flex flex-col gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-500">
-              Smart Gamer Economics
-            </span>
-            <h2 className="font-display text-2xl sm:text-3xl font-black text-white">
-              Rent or Buy: Pick What Fits Your Playstyle
-            </h2>
-            <p className="text-sm text-text-muted max-w-lg mx-auto">
-              Different games deserve different choices. Choose the flexible model that gives you maximum value.
-            </p>
-          </div>
+      {availableNow.length > 0 && (
+        <Section title="Available now" eyebrow="Ready to deliver" moreTo="/browse?forsale=1">
+          <Rail label="Games available now">
+            {availableNow.slice(0, 10).map((g) => <div key={g.id} className="w-36 shrink-0 snap-start sm:w-44"><GameCard game={g} /></div>)}
+          </Rail>
+        </Section>
+      )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Rent Box */}
-            <div className="p-6 rounded-2xl border border-trust-600/30 bg-trust-600/5 flex flex-col justify-between gap-4">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="rounded-md bg-trust-600/20 text-trust-600 border border-trust-600/30 px-2.5 py-1 text-xs font-bold uppercase tracking-wider">
-                    ⚡ Option 1: Rent
-                  </span>
-                  <span className="text-xs text-trust-600 font-bold">Save up to 80%</span>
-                </div>
-                <h3 className="font-display text-xl font-bold text-white mb-2">
-                  Complete Single-Player Stories
-                </h3>
-                <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-4">
-                  Cinematic AAA games (God of War, Spider-Man 2, Silent Hill 2, Black Myth: Wukong) take 15–30 hours to finish and are rarely replayed. Renting gives you the full experience for a fraction of the cost.
-                </p>
-                <ul className="space-y-2 text-xs text-text-secondary">
-                  <li className="flex items-center gap-2">
-                    <span className="text-trust-600 font-bold">✓</span> Flat, transparent price per game
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-trust-600 font-bold">✓</span> Full campaign access & official updates
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-trust-600 font-bold">✓</span> Zero physical return hassles
-                  </li>
-                </ul>
-              </div>
-              <Link to="/browse">
-                <Button variant="secondary" size="sm" className="w-full text-xs font-bold">
-                  Browse Rentable Games →
-                </Button>
+      {favourites.length > 0 && (
+        <Section title="Fan favourites" moreTo="/browse">
+          <Rail label="Fan favourite games">
+            {favourites.map((g) => <div key={g.id} className="w-36 shrink-0 snap-start sm:w-44"><GameCard game={g} /></div>)}
+          </Rail>
+        </Section>
+      )}
+
+      {fresh.length > 0 && (
+        <Section title="New & upcoming" moreTo="/browse">
+          <Rail label="New and upcoming games">
+            {fresh.map((g) => <div key={g.id} className="w-36 shrink-0 snap-start sm:w-44"><GameCard game={g} /></div>)}
+          </Rail>
+        </Section>
+      )}
+
+      <Section title="Browse by platform">
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {platformCounts.map(({ p, n }, i) => (
+            <li key={p} className={i === platformCounts.length - 1 && platformCounts.length % 2 === 1 ? "col-span-2 sm:col-span-1" : ""}>
+              <Link to={`/browse?platform=${p}`} className="flex min-h-20 items-center gap-3 rounded-2xl border border-white/10 bg-bg-surface p-4 transition-colors hover:border-brand-500/50 active:bg-bg-surface-raised">
+                <PlatformGlyph platform={p} className="h-8 w-8 shrink-0 text-brand-500" />
+                <span className="min-w-0">
+                  <span className="block truncate font-display text-base font-bold text-text-primary">{PLATFORM_SHORT[p]}</span>
+                  <span className="block text-xs text-text-muted">{n} games</span>
+                </span>
               </Link>
-            </div>
+            </li>
+          ))}
+        </ul>
+      </Section>
 
-            {/* Buy Box */}
-            <div className="p-6 rounded-2xl border border-brand-500/30 bg-brand-500/5 flex flex-col justify-between gap-4">
+      <Section title="How it works">
+        <ol className="grid gap-3 sm:grid-cols-3">
+          {[
+            ["1", "Choose a game", "Buy it or rent it. The price and delivery time are on the game’s page."],
+            ["2", "Confirm with us", "Message us to confirm and pay. We get your game ready."],
+            ["3", "Sign in and play", "We send your login details. Sign in, download from the official store, play."],
+          ].map(([n, t, d]) => (
+            <li key={n} className="flex gap-4 rounded-2xl border border-white/10 bg-bg-surface p-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 font-display text-lg font-black text-white">{n}</span>
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="rounded-md bg-brand-500/20 text-brand-100 border border-brand-500/30 px-2.5 py-1 text-xs font-bold uppercase tracking-wider">
-                    💎 Option 2: Buy
-                  </span>
-                  <span className="text-xs text-brand-400 font-bold">Permanent Access</span>
-                </div>
-                <h3 className="font-display text-xl font-bold text-white mb-2">
-                  Own Endless Replay Staples
-                </h3>
-                <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-4">
-                  For games you return to year-round (GTA V, EA Sports FC 25, Call of Duty, Elden Ring, Forza Horizon 5), permanent ownership lets you keep them in your collection forever.
-                </p>
-                <ul className="space-y-2 text-xs text-text-secondary">
-                  <li className="flex items-center gap-2">
-                    <span className="text-brand-500 font-bold">✓</span> One-time payment, lifetime ownership
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-brand-500 font-bold">✓</span> Online multiplayer & continuous updates
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-brand-500 font-bold">✓</span> Instant WhatsApp delivery & setup support
-                  </li>
-                </ul>
+                <h3 className="font-display text-base font-bold text-text-primary">{t}</h3>
+                <p className="mt-1 text-sm text-text-muted">{d}</p>
               </div>
-              <Link to="/browse">
-                <Button variant="primary" size="sm" className="w-full text-xs font-bold">
-                  Browse Buy to Own Games →
-                </Button>
-              </Link>
-            </div>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      <section aria-label="Why GameBuy" className="grid gap-3 sm:grid-cols-3">
+        <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-bg-surface p-4">
+          <IconShield className="h-6 w-6 shrink-0 text-trust-600" />
+          <p className="text-sm text-text-muted"><span className="block font-semibold text-text-primary">Free replacement</span>Something off after delivery? We replace it.</p>
+        </div>
+        {typicalEta !== null && (
+          <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-bg-surface p-4">
+            <IconClock className="h-6 w-6 shrink-0 text-trust-600" />
+            <p className="text-sm text-text-muted"><span className="block font-semibold text-text-primary">Typical delivery {etaLabel(typicalEta)}</span>Based on the games available right now.</p>
           </div>
+        )}
+        {rating !== null && (
+          <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-bg-surface p-4">
+            <IconStar className="h-6 w-6 shrink-0 text-rating-gold" />
+            <p className="text-sm text-text-muted"><span className="block font-semibold text-text-primary">{rating.toFixed(1)} from {reviews.length} verified {reviews.length === 1 ? "review" : "reviews"}</span>From customers who received their game.</p>
+          </div>
+        )}
+      </section>
+
+      <Section title="Questions">
+        <div className="flex flex-col gap-2">
+          {FAQS.map((f) => (
+            <details key={f.q} className="group rounded-2xl border border-white/10 bg-bg-surface">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-4 py-2 text-left text-base font-semibold text-text-primary">
+                {f.q}
+                <span className="shrink-0 text-text-muted transition-transform group-open:rotate-180" aria-hidden="true">▾</span>
+              </summary>
+              <p className="px-4 pb-4 text-sm leading-relaxed text-text-muted">{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </Section>
+
+      <section className="flex flex-col items-center gap-3 rounded-3xl border border-brand-500/30 bg-brand-500/10 px-6 py-10 text-center">
+        <h2 className="font-display text-2xl font-black text-text-primary">Can’t find a game?</h2>
+        <p className="max-w-md text-sm text-text-muted">Tell us what you want to play and we’ll try to get it.</p>
+        <div className="flex flex-wrap justify-center gap-2 pt-1">
+          <Button href={contactLink("Hi! There's a game I'd like you to add.")}>Request a game</Button>
+          <Button href={chatHref} variant="secondary"><IconChat className="h-5 w-5" />Message us</Button>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <Testimonials />
-
-      {/* Frequently Asked Questions */}
-      <section className="pt-4">
-        <FAQAccordion
-          items={HOME_FAQS}
-          subtitle="Clear Answers"
-          title="Frequently Asked Questions"
-        />
-      </section>
-
-      {/* Closing Call to Action with 4K Background */}
-      <section className="relative overflow-hidden rounded-3xl border border-brand-500/40 bg-gradient-to-r from-brand-900/30 via-bg-surface to-brand-900/30 p-8 sm:p-14 text-center">
-        <div className="relative z-10 flex flex-col items-center gap-4 max-w-xl mx-auto">
-          <span className="rounded-full bg-brand-500/20 px-3.5 py-1 text-xs font-bold text-brand-100 border border-brand-500/30">
-            ⚡ Ready to Game?
-          </span>
-          <h2 className="font-display text-2xl sm:text-4xl font-black text-white leading-tight">
-            Your next adventure is ready to download.
-          </h2>
-          <p className="text-sm text-text-muted leading-relaxed">
-            Choose any game to rent or buy. Fast delivery, instant access, verified accounts.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4 mt-2">
-            <Link to="/browse">
-              <Button size="lg" glow>
-                Browse All Games
-              </Button>
-            </Link>
-            <a
-              href={whatsAppLink("Hi! I have a question about renting or buying a game on GameBuy.")}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Button variant="secondary" size="lg">
-                Chat on WhatsApp
-              </Button>
-            </a>
-          </div>
-        </div>
-      </section>
+      {status === "loading" && <p className="sr-only" aria-live="polite">Loading the latest games and prices…</p>}
     </div>
   );
 }

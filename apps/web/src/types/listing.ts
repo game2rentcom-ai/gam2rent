@@ -20,6 +20,7 @@ export interface Review {
   gameId: string; // references CatalogGame.id
   rating: number; // 1-5
   comment: string;
+  reviewerName?: string; // first name, when the review came from a customer account
 }
 
 export interface Listing {
@@ -35,6 +36,18 @@ export interface Listing {
   isAvailable: boolean;
   isFeatured: boolean;
   deliveryEtaMinutes: number;
+  /** Optional "was" price, so a real discount can be shown. */
+  compareAtPrice?: number;
+}
+
+/** One rental option for a game, priced by the owner (a store-wide plan, or a per-game override). */
+export interface RentalOffer {
+  planId: string;
+  label: string;
+  days: number;
+  tag?: string;
+  isPopular: boolean;
+  price: number; // INR
 }
 
 // Merged view used throughout the UI — catalog facts (title, platforms, genre) + listing facts
