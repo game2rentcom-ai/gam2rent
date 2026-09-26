@@ -26,7 +26,7 @@ function Banner() {
   }
   if (!message || dismissed) return null;
   return (
-    <div className="relative bg-brand-600 px-12 py-2 text-center text-sm font-medium text-white print:hidden">
+    <div className="relative bg-linear-to-r from-brand-700 via-brand-600 to-brand-700 px-12 py-2 text-center text-sm font-semibold text-white print:hidden">
       {message}
       <button
         type="button"
@@ -67,19 +67,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [pathname, hash]);
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
-    `flex min-h-11 items-center px-3 text-sm font-semibold transition-colors ${isActive ? "text-text-primary" : "text-text-muted hover:text-text-primary"}`;
+    `relative flex min-h-11 items-center px-3 font-display text-sm font-bold tracking-wide transition-colors ${isActive ? "text-text-primary after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:bg-accent-400 after:shadow-glow-cyan" : "text-text-muted hover:text-text-primary"}`;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg-base font-sans text-text-primary selection:bg-brand-500 selection:text-white">
+    <div className="flex min-h-dvh flex-col font-sans text-text-primary selection:bg-brand-500 selection:text-white">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-[80] focus:rounded-lg focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white">
         Skip to content
       </a>
       <Banner />
 
-      <header className="sticky top-0 z-40 border-b border-white/5 bg-bg-base/90 backdrop-blur-xl print:hidden">
+      <header className="sticky top-0 z-40 bg-bg-base/85 backdrop-blur-xl print:hidden">
         <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 md:h-16 lg:px-8">
-          <Link to="/" aria-label="GameBuy — home" className="-ml-1 flex min-h-11 shrink-0 items-center px-1 font-display text-2xl font-black tracking-tighter">
-            <span className="text-gradient-brand">Game</span>
+          <Link to="/" aria-label="GameBuy — home" className="-ml-1 flex min-h-11 shrink-0 items-center px-1 font-display text-2xl font-bold tracking-tight">
+            <span className="text-gradient">Game</span>
             <span className="text-white">Buy</span>
           </Link>
 
@@ -98,20 +98,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
               type="button"
               onClick={openSearch}
               aria-label="Search games"
-              className="flex h-11 w-11 items-center justify-center rounded-full text-text-primary hover:bg-white/5 md:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-text-primary hover:bg-white/5 hover:text-accent-300 md:hidden"
             >
               <IconSearch />
             </button>
             {ordering && (
-              <Link to="/cart" aria-label={cart.length ? `Cart, ${cart.length} ${cart.length === 1 ? "game" : "games"}` : "Cart"} className="relative flex h-11 w-11 items-center justify-center rounded-full text-text-primary hover:bg-white/5">
+              <Link to="/cart" aria-label={cart.length ? `Cart, ${cart.length} ${cart.length === 1 ? "game" : "games"}` : "Cart"} className="relative flex h-11 w-11 items-center justify-center rounded-lg text-text-primary hover:bg-white/5 hover:text-accent-300">
                 <IconCart />
-                {cart.length > 0 && <span className="absolute right-0 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-500 px-1 text-xs font-bold text-white">{cart.length}</span>}
+                {cart.length > 0 && <span className="absolute right-0 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-md bg-accent-400 px-1 text-xs font-bold text-black shadow-glow-cyan">{cart.length}</span>}
               </Link>
             )}
             {backendConfigured && (
-              <Link to={accountLink.to} aria-label={accountLink.label} className="flex h-11 items-center gap-2 rounded-full px-3 text-text-primary hover:bg-white/5">
+              <Link to={accountLink.to} aria-label={accountLink.label} className="flex h-11 items-center gap-2 rounded-lg px-3 text-text-primary hover:bg-white/5 hover:text-accent-300">
                 <IconUser />
-                <span className="hidden text-sm font-semibold md:inline">{accountLink.label}</span>
+                <span className="hidden whitespace-nowrap font-display text-sm font-bold tracking-wide lg:inline">{accountLink.label}</span>
               </Link>
             )}
             <div className="hidden md:block">
@@ -122,17 +122,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </div>
+        <div aria-hidden="true" className="h-px bg-linear-to-r from-transparent via-brand-500 to-transparent" />
       </header>
 
       <main id="main" className="mx-auto w-full max-w-7xl flex-1 px-4 pb-10 pt-4 sm:px-6 md:pb-12 md:pt-6 lg:px-8">
         {children}
       </main>
 
-      <footer className="border-t border-white/5 bg-bg-surface pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0 print:hidden">
+      <footer className="border-t border-border-strong bg-bg-surface pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0 print:hidden">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-3 lg:px-8">
           <div>
-            <p className="font-display text-2xl font-black tracking-tighter">
-              <span className="text-gradient-brand">Game</span>
+            <p className="font-display text-2xl font-bold tracking-tight">
+              <span className="text-gradient">Game</span>
               <span className="text-white">Buy</span>
             </p>
             <p className="mt-3 max-w-xs text-sm text-text-muted">Buy or rent digital games for PC, PlayStation, Xbox and cloud gaming.</p>
@@ -140,7 +141,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <nav aria-label="Legal">
             <h2 className="font-display text-sm font-bold text-text-primary">Policies</h2>
             <ul className="mt-3 space-y-1 text-sm text-text-muted">
-              {[["terms", "Terms of Service"], ["privacy", "Privacy Policy"], ["refund", "Refund & Replacement"], ["shipping", "Delivery Times"]].map(([slug, label]) => (
+              {[["terms", "Terms of Service"], ["privacy", "Privacy Policy"], ["refund", "Refund & Replacement"], ["shipping", "Delivery Times"], ["contact", "Contact us"]].map(([slug, label]) => (
                 <li key={slug}><Link to={`/policies/${slug}`} className="flex min-h-11 items-center hover:text-text-primary">{label}</Link></li>
               ))}
             </ul>
@@ -154,7 +155,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Button>
           </div>
         </div>
-        <p className="border-t border-white/5 py-4 text-center text-xs text-text-muted">© {new Date().getFullYear()} GameBuy. All rights reserved.</p>
+        <p className="border-t border-border-subtle py-4 text-center text-xs text-text-muted">© {new Date().getFullYear()} GameBuy. All rights reserved.</p>
       </footer>
 
       {/* Game pages have their own sticky buy bar in this spot */}

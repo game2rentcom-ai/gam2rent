@@ -70,7 +70,7 @@ function ItemCard({ item, deliverable, onChanged }: { item: OrderItem; deliverab
           <h2 className="text-sm font-bold text-text-primary">{item.title}</h2>
           <p className="text-xs text-text-muted">{item.kind === "rent" ? `Rent · ${item.plan_label}` : "Buy"} · {PLATFORM_LABEL[item.platform as Platform] ?? item.platform} · customer gets {item.credential_type === "qr_code" ? "a QR code" : "a login"}</p>
         </div>
-        <p className="shrink-0 font-display text-base font-black text-text-primary">{formatPrice(item.unit_price)}</p>
+        <p className="shrink-0 font-display text-base font-bold text-text-primary">{formatPrice(item.unit_price)}</p>
       </div>
       <div className="flex flex-wrap gap-2">
         <Badge tone={delivered ? "trust" : "warn"}>{delivered ? `Delivered ${item.delivered_at ? formatDateTime(item.delivered_at) : ""}` : "Not delivered"}</Badge>
@@ -114,7 +114,7 @@ function DeliverForm({ item, replacing, onDone }: { item: OrderItem; replacing: 
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3 rounded-xl border border-white/10 bg-bg-base p-3" noValidate aria-label={`Deliver ${item.title}`}>
+    <form onSubmit={submit} className="flex flex-col gap-3 rounded-xl border border-border-strong bg-bg-base p-3" noValidate aria-label={`Deliver ${item.title}`}>
       <p className="text-sm font-semibold text-text-primary">{replacing ? "Replace the details" : "Deliver this item"}</p>
       {(problem || message) && <Notice tone={problem ? "error" : message!.tone}>{problem || message!.text}</Notice>}
       <SelectField label="What the customer receives" value={type} onChange={(e) => setType(e.target.value)}>

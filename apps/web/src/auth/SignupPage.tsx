@@ -58,7 +58,7 @@ export function SignupPage() {
     <AuthShell
       title="Create your account"
       subtitle="Track orders, save games to your wishlist and check out faster."
-      footer={<>Already have an account? <Link to={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="link-tap font-semibold text-brand-500">Log in</Link></>}
+      footer={<>Already have an account? <Link to={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="link-tap font-semibold text-brand-400">Log in</Link></>}
     >
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
         {formError && <Notice tone="error">{formError}</Notice>}
@@ -69,7 +69,7 @@ export function SignupPage() {
           <CheckboxField
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
-            label={<>I agree to the <Link to="/policies/terms" className="link-tap font-semibold text-brand-500">Terms</Link> and <Link to="/policies/privacy" className="link-tap font-semibold text-brand-500">Privacy Policy</Link>.</>}
+            label={<>I agree to the <Link to="/policies/terms" className="link-tap font-semibold text-brand-400">Terms</Link> and <Link to="/policies/privacy" className="link-tap font-semibold text-brand-400">Privacy Policy</Link>.</>}
           />
           {errors.agreed && <p role="alert" className="text-xs font-medium text-red-300">{errors.agreed}</p>}
         </div>

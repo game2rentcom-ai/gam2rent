@@ -283,6 +283,7 @@ suite("settings: the banner, contact number and payments switch are saved and us
     await page.getByLabel("WhatsApp number").fill("98765 43210");
     await page.getByLabel("Support email").fill("help@example.test");
     await page.getByLabel("Business name").fill("Test Traders");
+    await page.getByLabel("Grievance Officer").fill("Asha Rao, Proprietor");
     await page.getByRole("switch", { name: "Take payments online" }).click();
     await page.getByRole("button", { name: "Save settings" }).click();
     await page.getByText(/Settings saved/).waitFor();
@@ -291,7 +292,18 @@ suite("settings: the banner, contact number and payments switch are saved and us
     assert.equal(settings.announcement, "Free replacement guarantee");
     assert.equal(settings.contact_whatsapp, "919876543210", "stored as digits with the country code");
     assert.equal(settings.support_email, "help@example.test");
+    assert.equal(settings.grievance_officer, "Asha Rao, Proprietor");
     assert.equal(settings.payments_enabled, "true");
+
+    // The details the owner saved are what the public legal pages show.
+    await goto("/policies/contact");
+    let legal = await pageText(page);
+    assert.match(legal, /Business name: Test Traders/);
+    assert.match(legal, /Grievance Officer: Asha Rao, Proprietor, at help@example\.test/);
+    await goto("/policies/terms");
+    legal = await pageText(page);
+    assert.match(legal, /run by Test Traders/);
+    await page.getByRole("link", { name: "Contact us" }).first().waitFor();
 
     await goto("/");
     assert.match(await pageText(page), /Free replacement guarantee/);

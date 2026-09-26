@@ -38,13 +38,13 @@ export function AuditPage() {
       <ul className="flex flex-col gap-2">
         {data.map((e) => (
           <li key={e.id}>
-            <details className="rounded-xl border border-white/10 bg-bg-surface">
+            <details className="panel">
               <summary className="flex min-h-14 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2">
                 <Badge tone={e.action === "DELETE" ? "warn" : e.action === "INSERT" ? "trust" : "neutral"}>{e.action}</Badge>
                 <span className="text-sm font-semibold text-text-primary">{e.table_name}{subject(e) ? ` · ${subject(e)}` : ""}</span>
                 <span className="ml-auto text-xs text-text-muted">{new Date(e.at).toLocaleString("en-IN")} · {e.actor ? "signed-in admin" : "dashboard"}</span>
               </summary>
-              <dl className="grid gap-1 border-t border-white/10 px-4 py-3 text-xs">
+              <dl className="grid gap-1 border-t border-border-subtle px-4 py-3 text-xs">
                 {changes(e).map(([k, before, after]) => (
                   <div key={k} className="flex flex-wrap gap-x-2"><dt className="font-semibold text-text-primary">{k}</dt><dd className="min-w-0 break-words text-text-muted">{before === undefined ? show(after) : `${show(before)} → ${show(after)}`}</dd></div>
                 ))}

@@ -4,9 +4,9 @@ import { useRequestLink } from "../community/request";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { useStore } from "../data/store";
 import { searchGames } from "../lib/search";
+import { PlatformLine } from "../components/Badges";
 import { GameCover } from "./GameCover";
 import { IconSearch } from "./icons";
-import { platformLine } from "./format";
 
 // Editorial suggestions for an empty search box — shown only for games that exist in the store.
 const SUGGESTED = ["gta-5", "cyberpunk-2077", "elden-ring", "god-of-war", "red-dead-redemption-2", "spider-man-2"];
@@ -49,7 +49,7 @@ export function SearchPanel({ query, onQuery, onDone, autoFocus = false, dropdow
           autoComplete="off"
           placeholder={placeholder ?? `Search ${games.length} games`}
           aria-label="Search games"
-          className="min-h-11 w-full rounded-xl border border-border-subtle bg-bg-surface pl-11 pr-4 text-base text-text-primary outline-none placeholder:text-text-muted focus:border-brand-500"
+          className="field bg-bg-surface pl-11 pr-4"
         />
       </form>
 
@@ -59,7 +59,7 @@ export function SearchPanel({ query, onQuery, onDone, autoFocus = false, dropdow
           <ul className="flex flex-wrap gap-2">
             {SUGGESTED.map(findGame).filter((g): g is CatalogGame => Boolean(g)).map((g) => (
               <li key={g.id}>
-                <Link to={`/games/${g.id}`} onClick={onDone} className="inline-flex min-h-10 items-center rounded-full border border-border-subtle bg-bg-surface px-4 text-sm text-text-muted hover:text-text-primary">{g.title}</Link>
+                <Link to={`/games/${g.id}`} onClick={onDone} className="chip cut">{g.title}</Link>
               </li>
             ))}
           </ul>
@@ -67,7 +67,7 @@ export function SearchPanel({ query, onQuery, onDone, autoFocus = false, dropdow
           <ul className="flex flex-wrap gap-2">
             {(Object.keys(PLATFORM_LABEL) as Platform[]).map((p) => (
               <li key={p}>
-                <Link to={`/browse?platform=${p}`} onClick={onDone} className="inline-flex min-h-10 items-center rounded-full border border-border-subtle bg-bg-surface px-4 text-sm text-text-muted hover:text-text-primary">{PLATFORM_LABEL[p]}</Link>
+                <Link to={`/browse?platform=${p}`} onClick={onDone} className="chip cut">{PLATFORM_LABEL[p]}</Link>
               </li>
             ))}
           </ul>
@@ -75,13 +75,13 @@ export function SearchPanel({ query, onQuery, onDone, autoFocus = false, dropdow
       )}
 
       {q.length >= 2 && (
-        <div className={dropdown ? "absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-bg-surface shadow-2xl" : "mt-3"}>
+        <div className={dropdown ? "panel absolute inset-x-0 top-full z-50 mt-2 overflow-hidden shadow-2xl" : "mt-3"}>
           {results.length === 0 ? (
             <p className="flex flex-wrap items-center justify-center px-4 py-4 text-center text-sm text-text-muted">
               No games match “{q}”.
               {request.to
-                ? <Link to={request.to} onClick={onDone} className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-500">Request it</Link>
-                : request.href && <a href={request.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-500">Request it</a>}
+                ? <Link to={request.to} onClick={onDone} className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-400">Request it</Link>
+                : request.href && <a href={request.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-400">Request it</a>}
             </p>
           ) : (
             <ul>
@@ -90,14 +90,14 @@ export function SearchPanel({ query, onQuery, onDone, autoFocus = false, dropdow
                   <Link to={`/games/${g.id}`} onClick={onDone} className="flex min-h-14 items-center gap-3 px-3 py-2 hover:bg-white/5 active:bg-white/10">
                     <GameCover game={g} slot="card" sizes="48px" className="w-10 shrink-0 rounded-lg" />
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold text-text-primary">{g.title}</span>
-                      <span className="block truncate text-xs text-text-muted">{platformLine(g.platforms)}</span>
+                      <span className="block truncate font-display text-sm font-bold text-text-primary">{g.title}</span>
+                      <span className="block truncate text-xs font-semibold text-text-muted"><PlatformLine platforms={g.platforms} /></span>
                     </span>
                   </Link>
                 </li>
               ))}
               <li>
-                <Link to={`/browse?q=${encodeURIComponent(q)}`} onClick={onDone} className="flex min-h-12 items-center justify-center border-t border-white/10 text-sm font-semibold text-brand-500 hover:bg-white/5">
+                <Link to={`/browse?q=${encodeURIComponent(q)}`} onClick={onDone} className="flex min-h-12 items-center justify-center border-t border-border-subtle text-sm font-semibold text-brand-400 hover:bg-white/5">
                   See all results for “{q}”
                 </Link>
               </li>

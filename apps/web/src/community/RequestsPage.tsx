@@ -93,18 +93,18 @@ export function RequestsPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 py-2 sm:py-6">
       <header>
-        <h1 className="font-display text-3xl font-black text-text-primary">Request a game</h1>
+        <h1 className="font-display text-3xl font-bold text-text-primary">Request a game</h1>
         <p className="mt-1 text-sm text-text-muted">Tell us what you’d like to play. The more people ask for a game, the sooner we look into getting it.</p>
       </header>
 
       {status === "signed-in" ? (
-        <form onSubmit={submit} className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-bg-surface p-4 sm:p-5" noValidate aria-label="Request a game">
+        <form onSubmit={submit} className="panel hud flex flex-col gap-4 p-4 sm:p-5" noValidate aria-label="Request a game">
           {(problem || message) && <Notice tone={problem ? "error" : message!.tone}>{problem || message!.text}</Notice>}
           <TextField label="Game name" maxLength={100} value={title} onChange={(e) => setTitle(e.target.value)} />
           {already.length > 0 && (
             <div className="rounded-xl bg-bg-base p-3 text-sm">
               <p className="font-semibold text-text-primary">Already in the store?</p>
-              <ul className="mt-1">{already.map((g) => <li key={g.id}><Link to={`/games/${g.id}`} className="flex min-h-11 items-center font-semibold text-brand-500">{g.title}</Link></li>)}</ul>
+              <ul className="mt-1">{already.map((g) => <li key={g.id}><Link to={`/games/${g.id}`} className="flex min-h-11 items-center font-semibold text-brand-400">{g.title}</Link></li>)}</ul>
             </div>
           )}
           <SelectField label="Platform" value={platform} onChange={(e) => setPlatform(e.target.value)}>
@@ -115,7 +115,7 @@ export function RequestsPage() {
           <div><Button type="submit" size="lg" disabled={busy}>{busy ? "Sending…" : "Send request"}</Button></div>
         </form>
       ) : status === "anonymous" ? (
-        <div className="flex flex-col items-start gap-3 rounded-2xl border border-white/10 bg-bg-surface p-4 sm:p-5">
+        <div className="panel flex flex-col items-start gap-3 p-4 sm:p-5">
           <p className="text-sm text-text-muted">Log in to ask for a game or vote for one below.</p>
           <Button to={`/login?next=${encodeURIComponent(pathname)}`}>Log in</Button>
         </div>
@@ -125,24 +125,24 @@ export function RequestsPage() {
       {rows === undefined && <div className="h-32 animate-pulse rounded-2xl bg-bg-surface" aria-busy="true" aria-label="Loading requests" />}
       {rows === null && <Notice tone="error">The request list isn’t available right now. {chat && <a href={chat} target="_blank" rel="noopener noreferrer" className="link-tap font-semibold underline">Message us instead</a>}</Notice>}
       {voteProblem && <Notice tone="error">{voteProblem}</Notice>}
-      {rows && rows.length === 0 && <p className="rounded-2xl border border-dashed border-border-subtle px-4 py-8 text-center text-sm text-text-muted">No requests yet. Be the first.</p>}
+      {rows && rows.length === 0 && <p className="rounded-2xl border border-dashed border-border-strong px-4 py-8 text-center text-sm text-text-muted">No requests yet. Be the first.</p>}
       <ul className="flex flex-col gap-2">
         {rows?.map((r) => {
           const state = STATUS[r.status];
           return (
-            <li key={r.id} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-bg-surface p-4">
+            <li key={r.id} className="panel flex items-center gap-3 p-4">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-text-primary">{r.title}</p>
+                <p className="font-display text-sm font-bold text-text-primary">{r.title}</p>
                 <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-text-muted"><Badge tone={state.tone}>{state.label}</Badge>{r.platform ? PLATFORM_LABEL[r.platform] : "Any platform"}</p>
                 {r.note && <p className="mt-1 text-xs text-text-muted">{r.note}</p>}
               </div>
               {status === "signed-in" ? (
-                <button type="button" aria-pressed={r.voted_by_me} aria-label={`${r.voted_by_me ? "Remove your vote for" : "Vote for"} ${r.title}, ${r.votes} ${r.votes === 1 ? "vote" : "votes"}`} onClick={() => void vote(r.id)} className={`flex min-h-14 min-w-16 flex-col items-center justify-center rounded-xl border px-2 text-xs font-semibold ${r.voted_by_me ? "border-brand-500 bg-brand-500/15 text-text-primary" : "border-border-subtle text-text-muted hover:border-white/30"}`}>
+                <button type="button" aria-pressed={r.voted_by_me} aria-label={`${r.voted_by_me ? "Remove your vote for" : "Vote for"} ${r.title}, ${r.votes} ${r.votes === 1 ? "vote" : "votes"}`} onClick={() => void vote(r.id)} className={`flex min-h-14 min-w-16 flex-col items-center justify-center rounded-xl border px-2 text-xs font-semibold transition-colors ${r.voted_by_me ? "border-brand-400 bg-brand-500/20 text-text-primary shadow-glow-brand" : "border-border-strong text-text-muted hover:border-brand-400"}`}>
                   {r.voted_by_me ? <IconCheck className="h-5 w-5" /> : <span aria-hidden="true">＋</span>}
                   <span>{r.votes}</span>
                 </button>
               ) : (
-                <span className="flex min-h-14 min-w-16 flex-col items-center justify-center rounded-xl border border-border-subtle px-2 text-xs font-semibold text-text-muted"><span>{r.votes}</span><span>{r.votes === 1 ? "vote" : "votes"}</span></span>
+                <span className="flex min-h-14 min-w-16 flex-col items-center justify-center rounded-xl border border-border-strong px-2 text-xs font-semibold text-text-muted"><span>{r.votes}</span><span>{r.votes === 1 ? "vote" : "votes"}</span></span>
               )}
             </li>
           );

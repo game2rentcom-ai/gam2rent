@@ -26,7 +26,7 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <AuthShell title="Reset your password" subtitle="Enter your email and we’ll send you a link to choose a new password." footer={<Link to="/login" className="link-tap font-semibold text-brand-500">Back to log in</Link>}>
+    <AuthShell title="Reset your password" subtitle="Enter your email and we’ll send you a link to choose a new password." footer={<Link to="/login" className="link-tap font-semibold text-brand-400">Back to log in</Link>}>
       {sent ? (
         <Notice tone="success">If there’s an account for {email.trim()}, a reset link is on its way. Check your inbox (and spam).</Notice>
       ) : (

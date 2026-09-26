@@ -50,10 +50,10 @@ export function GamesPage() {
           onChange={(e) => { setQuery(e.target.value); setVisible(PAGE); }}
           placeholder="Search games"
           aria-label="Search games"
-          className="min-h-11 w-full rounded-xl border border-border-subtle bg-bg-surface pl-11 pr-4 text-base text-text-primary outline-none placeholder:text-text-muted focus:border-brand-500"
+          className="field bg-bg-surface pl-11 pr-4"
         />
       </div>
-      <div role="group" aria-label="Show" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <div role="group" aria-label="Show" className="no-scrollbar -mx-4 -my-2 flex gap-2 overflow-x-auto px-4 py-2 sm:mx-0 sm:px-0">
         {([["all", "All"], ["priced", "With a price"], ["unpriced", "No price yet"], ["hidden", "Hidden"]] as [Filter, string][]).map(([value, label]) => (
           <Chip key={value} selected={filter === value} onClick={() => { setFilter(value); setVisible(PAGE); }}>{label}</Chip>
         ))}
@@ -62,7 +62,7 @@ export function GamesPage() {
       <ul className="flex flex-col gap-2">
         {rows.slice(0, visible).map((g) => (
           <li key={g.id}>
-            <Link to={`/admin/games/${g.id}`} className="flex min-h-16 items-center justify-between gap-3 rounded-xl border border-white/10 bg-bg-surface px-4 py-2 hover:border-brand-500/50">
+            <Link to={`/admin/games/${g.id}`} className="panel panel-link flex min-h-16 items-center justify-between gap-3 px-4 py-2">
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold text-text-primary">{g.title}</span>
                 <span className="block truncate text-xs text-text-muted">{g.platforms.map((p) => PLATFORM_SHORT[p as keyof typeof PLATFORM_SHORT] ?? p).join(" · ")}{g.genre ? ` · ${g.genre}` : ""}</span>

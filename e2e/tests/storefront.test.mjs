@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { chromium } from "playwright";
-import { DESKTOP, PHONE, SMALL_PHONE, TABLET, VARIANTS, build, gameRows, mobileProblems, openSite } from "../lib/site.mjs";
+import { DESKTOP, PHONE, SMALL_PHONE, TABLET, VARIANTS, build, defaultRest, gameRows, mobileProblems, openSite } from "../lib/site.mjs";
 
 let browser;
 let live;
@@ -232,14 +232,58 @@ test("routing: old links redirect, unknown pages are friendly, pages start at th
     await page.waitForURL(/\/browse/);
     await goto("/policies/terms");
     const text = await pageText(page);
-    assert.match(text, /being finalised/);
-    assert.doesNotMatch(text, /Razorpay|decision-log|placeholder/i);
+    assert.match(text, /Platform rules and risk/);
+    assert.doesNotMatch(text, /being finalised|decision-log|placeholder|\[[A-Z][^\]]*\]/i, "no draft markers or internal notes on a public page");
     await goto("/browse");
     await page.evaluate(() => window.scrollTo(0, 1200));
     await page.locator("article a").nth(3).click();
     await page.waitForURL(/\/games\//);
     await page.waitForTimeout(200);
     assert.equal(await page.evaluate(() => window.scrollY), 0);
+  });
+});
+
+test("policy pages: real content on every page, filled with the owner's saved details, never with gaps or draft markers", async () => {
+  const details = [
+    { key: "business_name", value: "Test Traders" },
+    { key: "support_email", value: "help@example.test" },
+    { key: "grievance_officer", value: "Asha Rao, Proprietor" },
+  ];
+  await withSite({ dist: live, ...PHONE, rest: { ...defaultRest, site_settings: [...defaultRest.site_settings, ...details] } }, async ({ page, goto }) => {
+    for (const [slug, title] of [["terms", "Terms of Service"], ["privacy", "Privacy Policy"], ["refund", "Refund & Replacement Policy"], ["shipping", "Delivery Times"], ["contact", "Contact us"]]) {
+      await goto(`/policies/${slug}`);
+      assert.equal(await page.getByRole("heading", { level: 1 }).innerText(), title);
+      const text = await pageText(page);
+      assert.match(text, /Last updated 26 September 2026/);
+      assert.doesNotMatch(text, /being finalised|placeholder|\{\w+\}|\[[A-Z][^\]]*\]|undefined/i, `${slug}: no unfilled markers`);
+    }
+
+    await goto("/policies/terms");
+    let text = await pageText(page);
+    assert.match(text, /run by Test Traders/);
+    assert.match(text, /Grievance Officer \(Asha Rao, Proprietor\) at help@example\.test/);
+    assert.match(text, /at least 18 years old/);
+
+    await goto("/policies/refund");
+    text = await pageText(page);
+    assert.match(text, /replacement guarantee for 30 days from delivery/);
+    assert.match(text, /still undelivered 24 hours after payment/);
+
+    // The contact page lists only what the owner has entered: the email, not a GSTIN or address nobody set.
+    await goto("/policies/contact");
+    text = await pageText(page);
+    assert.match(text, /Business name: Test Traders/);
+    assert.match(text, /Email: help@example\.test/);
+    assert.match(text, /WhatsApp: \+91 99999 88888/);
+    assert.doesNotMatch(text, /GSTIN|Registered address/);
+
+    // Without saved details the pages still read naturally.
+    await withSite({ dist: live, ...PHONE }, async (bare) => {
+      await bare.goto("/policies/privacy");
+      const plain = await pageText(bare.page);
+      assert.match(plain, /this store runs this website/);
+      assert.match(plain, /Grievance Officer \(the store owner\)/);
+    });
   });
 });
 

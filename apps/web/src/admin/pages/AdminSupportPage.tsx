@@ -37,7 +37,7 @@ export function AdminSupportPage() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title="Support" subtitle="Questions and problems from customers." />
-      <div role="group" aria-label="Show" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <div role="group" aria-label="Show" className="no-scrollbar -mx-4 -my-2 flex gap-2 overflow-x-auto px-4 py-2 sm:mx-0 sm:px-0">
         {FILTERS.map(([value, label]) => <Chip key={value} selected={filter === value} onClick={() => setFilter(value)}>{label} · {data.tickets.filter(MATCH[value]).length}</Chip>)}
       </div>
       {rows.length === 0 && <p className="rounded-2xl border border-dashed border-border-subtle px-4 py-8 text-center text-sm text-text-muted">{filter === "open" ? "Nothing waiting for a reply." : "Nothing here."}</p>}
@@ -46,7 +46,7 @@ export function AdminSupportPage() {
           const status = TICKET_STATUS[t.status];
           return (
             <li key={t.id}>
-              <Link to={`/admin/support/${t.id}`} className="flex min-h-16 flex-col gap-1 rounded-xl border border-white/10 bg-bg-surface px-4 py-3 hover:border-brand-500/50">
+              <Link to={`/admin/support/${t.id}`} className="panel panel-link flex min-h-16 flex-col gap-1 px-4 py-3">
                 <span className="flex flex-wrap items-center gap-2"><span className="text-sm font-bold text-text-primary">{t.subject}</span><Badge tone={status.tone}>{status.label}</Badge></span>
                 <span className="text-xs text-text-muted">{data.names.get(t.user_id) ?? "Customer"} · {categoryLabel(t.category)} · {formatDateTime(t.last_message_at)}</span>
               </Link>

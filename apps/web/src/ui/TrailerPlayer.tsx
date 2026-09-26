@@ -33,12 +33,12 @@ export function TrailerPlayer({ youtubeId, title, poster, className = "" }: Prop
       type="button"
       onClick={() => setPlaying(true)}
       aria-label={`Play trailer: ${title}`}
-      className={`group relative block w-full overflow-hidden rounded-2xl text-left ${className}`}
+      className={`group relative block w-full overflow-hidden rounded-2xl border border-border-strong text-left ${className}`}
     >
       {poster}
       <span className="absolute inset-0 bg-black/35 transition-colors group-hover:bg-black/25" aria-hidden="true" />
       <span className="absolute inset-0 flex flex-col items-center justify-center gap-2" aria-hidden="true">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-500 text-white shadow-glow-brand transition-transform group-hover:scale-105">
+        <span className="medal cut cut-hex h-16 w-16 [--medal:var(--color-accent-300)] transition-transform group-hover:scale-105">
           <svg viewBox="0 0 24 24" className="ml-1 h-7 w-7" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
         </span>
         <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white">Watch trailer</span>

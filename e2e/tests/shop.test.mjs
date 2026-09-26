@@ -166,6 +166,22 @@ suite("cart and checkout: server-priced, coupons, paying through Razorpay, then 
   });
 });
 
+suite("if the payment functions aren't deployed yet, checkout says so and offers WhatsApp instead of a dead end", async () => {
+  await withSite(DESKTOP, async (site) => {
+    const { page, goto } = site;
+    await signIn(site);
+    // Supabase's own answer for a function that doesn't exist (ours always carry an `error` code).
+    await page.route("**/functions/v1/create-payment", (route) => route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ code: "NOT_FOUND", message: "Requested function was not found" }) }));
+    await goto("/games/god-of-war");
+    await page.getByRole("button", { name: /Buy now/ }).click();
+    await page.getByText("Pay ₹1,500").waitFor();
+    await page.getByRole("button", { name: "Pay ₹1,500" }).click();
+    await page.getByText(/Online payment isn’t available right now/).waitFor();
+    assert.match(await page.getByRole("link", { name: "Order on WhatsApp", exact: true }).getAttribute("href"), /^https:\/\/wa\.me\//);
+    assert.equal((await backend.query("select count(*)::int as n from public.orders where user_id = $1 and status = 'pending_payment'", [customerId()]))[0].n, 0, "no half-made order was left behind");
+  });
+});
+
 suite("closing the payment window charges nothing and keeps the cart; trying again works", async () => {
   await withSite(DESKTOP, async (site) => {
     const { page, goto } = site;

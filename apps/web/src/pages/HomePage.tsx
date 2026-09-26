@@ -8,10 +8,10 @@ import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalog
 import { useStore } from "../data/store";
 import { averageRating } from "../types/listing";
 import { Button } from "../ui/Button";
-import { PLATFORM_SHORT, etaLabel, formatPrice, platformLine } from "../ui/format";
+import { PLATFORM_SHORT, PLATFORM_TEXT, etaLabel, formatPrice, platformLine } from "../ui/format";
 import { GameCard } from "../ui/GameCard";
 import { GameCover } from "../ui/GameCover";
-import { IconChat, IconClock, IconShield, IconStar } from "../ui/icons";
+import { IconChat, IconChevronDown, IconClock, IconShield, IconStar } from "../ui/icons";
 import { Rail, Section } from "../ui/Section";
 import { SearchPanel } from "../ui/SearchPanel";
 
@@ -71,9 +71,9 @@ export function HomePage() {
 
   return (
     <div className="flex flex-col gap-12 sm:gap-16">
-      <section className="flex flex-col items-center gap-5 pt-2 text-center sm:pt-6">
-        <p className="rounded-full border border-brand-500/40 bg-brand-500/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-brand-100">Buy or rent digital games</p>
-        <h1 className="max-w-3xl font-display text-4xl font-black leading-[1.05] tracking-tight text-text-primary sm:text-5xl lg:text-6xl">
+      <section className="hero hud flex flex-col items-center gap-5 px-4 py-9 text-center sm:px-10 sm:py-14">
+        <p className="badge badge-brand cut text-xs font-bold uppercase tracking-wider">Buy or rent digital games</p>
+        <h1 className="max-w-3xl font-display text-4xl font-bold leading-[1.05] text-text-primary sm:text-5xl lg:text-6xl">
           Find your next game. <span className="text-gradient">Play it today.</span>
         </h1>
         <p className="max-w-xl text-base text-text-muted sm:text-lg">PC, PlayStation, Xbox and cloud gaming — with a delivery time you can see up front, and a free replacement if anything goes wrong.</p>
@@ -82,7 +82,8 @@ export function HomePage() {
         </div>
         <div className="flex flex-wrap justify-center gap-2">
           {PLATFORMS.map((p) => (
-            <Link key={p} to={`/browse?platform=${p}`} className="inline-flex min-h-10 shrink-0 items-center rounded-full border border-border-subtle bg-bg-surface px-4 text-sm font-medium text-text-muted hover:border-white/30 hover:text-text-primary">
+            <Link key={p} to={`/browse?platform=${p}`} className="chip cut">
+              <PlatformGlyph platform={p} className={`h-4 w-4 ${PLATFORM_TEXT[p]}`} />
               {PLATFORM_LABEL[p]}
             </Link>
           ))}
@@ -98,19 +99,20 @@ export function HomePage() {
                 <Link
                   key={g.id}
                   to={`/games/${g.id}`}
-                  className="group relative w-[82vw] max-w-md shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10 sm:w-96"
+                  className="group relative w-[82vw] max-w-md shrink-0 snap-start rounded-lg sm:w-96"
                 >
-                  <GameCover game={g} slot="hero" priority={i === 0} sizes="(min-width: 640px) 384px, 82vw" className="w-full" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" aria-hidden="true" />
-                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
-                    <div className="min-w-0">
-                      <p className="truncate text-xs font-semibold text-white/80">{platformLine(g.platforms)}</p>
-                      <h3 className="line-clamp-2 font-display text-lg font-black leading-tight text-white">{g.title}</h3>
+                  <GameCover game={g} slot="hero" priority={i === 0} sizes="(min-width: 640px) 384px, 82vw" className="frame w-full">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" aria-hidden="true" />
+                    <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 pl-5">
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-semibold text-white/80">{platformLine(g.platforms)}</p>
+                        <h3 className="line-clamp-2 font-display text-lg font-bold leading-tight text-white">{g.title}</h3>
+                      </div>
+                      <span className="price-tag cut cut-tag shrink-0 text-base">
+                        {listed && listed.listing.isAvailable ? formatPrice(listed.listing.price) : "View"}
+                      </span>
                     </div>
-                    <span className="shrink-0 rounded-full bg-brand-500 px-3 py-1.5 text-sm font-bold text-white">
-                      {listed && listed.listing.isAvailable ? formatPrice(listed.listing.price) : "View"}
-                    </span>
-                  </div>
+                  </GameCover>
                 </Link>
               );
             })}
@@ -148,8 +150,8 @@ export function HomePage() {
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {platformCounts.map(({ p, n }, i) => (
             <li key={p} className={i === platformCounts.length - 1 && platformCounts.length % 2 === 1 ? "col-span-2 sm:col-span-1" : ""}>
-              <Link to={`/browse?platform=${p}`} className="flex min-h-20 items-center gap-3 rounded-2xl border border-white/10 bg-bg-surface p-4 transition-colors hover:border-brand-500/50 active:bg-bg-surface-raised">
-                <PlatformGlyph platform={p} className="h-8 w-8 shrink-0 text-brand-500" />
+              <Link to={`/browse?platform=${p}`} className="panel panel-link flex min-h-20 items-center gap-3 p-4">
+                <PlatformGlyph platform={p} className={`h-8 w-8 shrink-0 ${PLATFORM_TEXT[p]}`} />
                 <span className="min-w-0">
                   <span className="block truncate font-display text-base font-bold text-text-primary">{PLATFORM_SHORT[p]}</span>
                   <span className="block text-xs text-text-muted">{n} games</span>
@@ -174,8 +176,8 @@ export function HomePage() {
                 ["3", "Sign in and play", "We send your login details. Sign in, download from the official store, play."],
               ]
           ).map(([n, t, d]) => (
-            <li key={n} className="flex gap-4 rounded-2xl border border-white/10 bg-bg-surface p-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 font-display text-lg font-black text-white">{n}</span>
+            <li key={n} className="panel flex gap-4 p-4">
+              <span className="medal cut cut-hex font-display text-lg font-bold [--medal:var(--color-brand-400)]">{n}</span>
               <div>
                 <h3 className="font-display text-base font-bold text-text-primary">{t}</h3>
                 <p className="mt-1 text-sm text-text-muted">{d}</p>
@@ -186,20 +188,20 @@ export function HomePage() {
       </Section>
 
       <section aria-label="Why GameBuy" className="grid gap-3 sm:grid-cols-3">
-        <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-bg-surface p-4">
-          <IconShield className="h-6 w-6 shrink-0 text-trust-600" />
-          <p className="text-sm text-text-muted"><span className="block font-semibold text-text-primary">Free replacement</span>Something off after delivery? We replace it.</p>
+        <div className="panel flex items-center gap-3 p-4">
+          <span className="medal cut cut-hex"><IconShield className="h-6 w-6" /></span>
+          <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">Free replacement</span>Something off after delivery? We replace it.</p>
         </div>
         {typicalEta !== null && (
-          <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-bg-surface p-4">
-            <IconClock className="h-6 w-6 shrink-0 text-trust-600" />
-            <p className="text-sm text-text-muted"><span className="block font-semibold text-text-primary">Typical delivery {etaLabel(typicalEta)}</span>Based on the games available right now.</p>
+          <div className="panel flex items-center gap-3 p-4">
+            <span className="medal cut cut-hex [--medal:var(--color-accent-400)]"><IconClock className="h-6 w-6" /></span>
+            <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">Typical delivery {etaLabel(typicalEta)}</span>Based on the games available right now.</p>
           </div>
         )}
         {rating !== null && (
-          <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-bg-surface p-4">
-            <IconStar className="h-6 w-6 shrink-0 text-rating-gold" />
-            <p className="text-sm text-text-muted"><span className="block font-semibold text-text-primary">{rating.toFixed(1)} from {reviews.length} verified {reviews.length === 1 ? "review" : "reviews"}</span>From customers who received their game.</p>
+          <div className="panel flex items-center gap-3 p-4">
+            <span className="medal cut cut-hex [--medal:var(--color-rating-gold)]"><IconStar className="h-6 w-6" /></span>
+            <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">{rating.toFixed(1)} from {reviews.length} verified {reviews.length === 1 ? "review" : "reviews"}</span>From customers who received their game.</p>
           </div>
         )}
       </section>
@@ -207,10 +209,10 @@ export function HomePage() {
       <Section title="Questions">
         <div className="flex flex-col gap-2">
           {faqs.map((f) => (
-            <details key={f.q} className="group rounded-2xl border border-white/10 bg-bg-surface">
+            <details key={f.q} className="group panel open:border-border-strong">
               <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-4 py-2 text-left text-base font-semibold text-text-primary">
                 {f.q}
-                <span className="shrink-0 text-text-muted transition-transform group-open:rotate-180" aria-hidden="true">▾</span>
+                <IconChevronDown className="h-5 w-5 shrink-0 text-accent-300 transition-transform group-open:rotate-180" />
               </summary>
               <p className="px-4 pb-4 text-sm leading-relaxed text-text-muted">{f.a}</p>
             </details>
@@ -218,8 +220,8 @@ export function HomePage() {
         </div>
       </Section>
 
-      <section className="flex flex-col items-center gap-3 rounded-3xl border border-brand-500/30 bg-brand-500/10 px-6 py-10 text-center">
-        <h2 className="font-display text-2xl font-black text-text-primary">Can’t find a game?</h2>
+      <section className="hero hud flex flex-col items-center gap-3 px-6 py-10 text-center">
+        <h2 className="font-display text-2xl font-bold text-text-primary">Can’t find a game?</h2>
         <p className="max-w-md text-sm text-text-muted">Tell us what you want to play and we’ll try to get it.</p>
         <div className="flex flex-wrap justify-center gap-2 pt-1">
           <Button {...request}>Request a game</Button>

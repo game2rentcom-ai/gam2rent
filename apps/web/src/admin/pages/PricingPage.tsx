@@ -30,7 +30,7 @@ export function PricingPage() {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title="Pricing" subtitle="What you charge to buy or rent. Changes appear on the store straight away." />
-      <div role="tablist" aria-label="Pricing" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <div role="tablist" aria-label="Pricing" className="no-scrollbar -mx-4 -my-2 flex gap-2 overflow-x-auto px-4 py-2 sm:mx-0 sm:px-0">
         {([["buy", "Buy prices"], ["plans", "Rental plans"], ["byGame", "Rental price by game"]] as [Tab, string][]).map(([value, label]) => (
           <span key={value} role="tab" aria-selected={tab === value}><Chip selected={tab === value} onClick={() => setTab(value)}>{label}</Chip></span>
         ))}

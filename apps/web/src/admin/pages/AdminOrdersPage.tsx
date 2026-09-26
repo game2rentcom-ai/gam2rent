@@ -63,10 +63,10 @@ export function AdminOrdersPage() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by receipt, name, phone or game"
           aria-label="Search orders"
-          className="min-h-11 w-full rounded-xl border border-border-subtle bg-bg-surface pl-11 pr-4 text-base text-text-primary outline-none placeholder:text-text-muted focus:border-brand-500"
+          className="field bg-bg-surface pl-11 pr-4"
         />
       </div>
-      <div role="group" aria-label="Show" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <div role="group" aria-label="Show" className="no-scrollbar -mx-4 -my-2 flex gap-2 overflow-x-auto px-4 py-2 sm:mx-0 sm:px-0">
         {FILTERS.map(([value, label]) => <Chip key={value} selected={filter === value} onClick={() => setFilter(value)}>{label} · {count(value)}</Chip>)}
       </div>
       {rows.length === 0 && <p className="rounded-2xl border border-dashed border-border-subtle px-4 py-8 text-center text-sm text-text-muted">{filter === "todo" ? "Nothing waiting for delivery." : "No orders here."}</p>}
@@ -75,7 +75,7 @@ export function AdminOrdersPage() {
           const status = STATUS_LABEL[o.status];
           return (
             <li key={o.id}>
-              <Link to={`/admin/orders/${o.id}`} className="flex min-h-20 flex-col gap-1 rounded-xl border border-white/10 bg-bg-surface px-4 py-3 hover:border-brand-500/50">
+              <Link to={`/admin/orders/${o.id}`} className="panel panel-link flex min-h-20 flex-col gap-1 px-4 py-3">
                 <span className="flex flex-wrap items-center gap-2">
                   <span className="text-sm font-bold text-text-primary">{orderName(o)}</span>
                   <Badge tone={status.tone}>{status.label}</Badge>

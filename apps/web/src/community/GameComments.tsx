@@ -62,10 +62,10 @@ export function GameComments({ gameId }: { gameId: string }) {
 
   return (
     <Section title="Comments">
-      {rows.length === 0 && <p className="rounded-xl border border-dashed border-border-subtle px-4 py-6 text-center text-sm text-text-muted">No comments yet. Be the first to say something.</p>}
+      {rows.length === 0 && <p className="rounded-xl border border-dashed border-border-strong px-4 py-6 text-center text-sm text-text-muted">No comments yet. Be the first to say something.</p>}
       <ul className="flex flex-col gap-3">
         {rows.map((c) => (
-          <li key={c.id} className="rounded-xl border border-white/5 bg-bg-surface p-4">
+          <li key={c.id} className="panel p-4">
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm font-semibold text-text-primary">{c.author_name}</span>
               <span className="text-xs text-text-muted">{formatDate(c.created_at)}</span>

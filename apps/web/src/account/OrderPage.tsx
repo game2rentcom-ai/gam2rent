@@ -4,6 +4,7 @@ import { PLATFORM_LABEL, type Platform } from "../data/catalogTypes";
 import { useStore } from "../data/store";
 import { ok, useLoad } from "../lib/api";
 import { Delivery } from "../shop/Delivery";
+import { OrderProgress } from "./OrderProgress";
 import { ReviewForm, YourReview, type MyReview } from "./ReviewForm";
 import { STATUS_LABEL, formatDate, formatDateTime, orderName, type Order, type OrderItem } from "../shop/orders";
 import { Badge } from "../ui/Chip";
@@ -50,24 +51,25 @@ export function OrderPage() {
         <Link to="/account/orders" className="-ml-2 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-text-muted hover:text-text-primary">← My orders</Link>
       </div>
       <header className="flex flex-wrap items-center gap-3">
-        <h1 className="font-display text-2xl font-black text-text-primary sm:text-3xl">Order {orderName(order)}</h1>
+        <h1 className="font-display text-2xl font-bold text-text-primary sm:text-3xl">Order {orderName(order)}</h1>
         <Badge tone={status.tone}>{status.label}</Badge>
       </header>
       <p className="-mt-3 text-sm text-text-muted">Placed {formatDateTime(order.created_at)}</p>
+      <OrderProgress status={order.status} />
       <Notice tone={order.status === "cancelled" || order.status === "refunded" ? "info" : "success"}>{NEXT_STEP[order.status]}</Notice>
       {order.status === "pending_payment" && <div className="print:hidden"><Button variant="secondary" onClick={reload}>Check again</Button></div>}
 
       <ul className="flex flex-col gap-3">
         {items.map((item) => (
-          <li key={item.id} className="rounded-2xl border border-white/10 bg-bg-surface p-4">
+          <li key={item.id} className="panel p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-bold text-text-primary">{item.title}</p>
+                <p className="font-display text-sm font-bold text-text-primary">{item.title}</p>
                 <p className="text-xs text-text-muted">
                   {item.kind === "rent" ? `Rent · ${item.plan_label}` : "Buy"} · {PLATFORM_LABEL[item.platform as Platform] ?? item.platform}
                 </p>
               </div>
-              <p className="shrink-0 font-display text-base font-black text-text-primary">{formatPrice(item.unit_price)}</p>
+              <p className="price-tag cut cut-tag shrink-0 text-base">{formatPrice(item.unit_price)}</p>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Badge tone={item.delivery_status === "delivered" ? "trust" : "neutral"}>{item.delivery_status === "delivered" ? "Delivered" : "Not delivered yet"}</Badge>
@@ -83,18 +85,18 @@ export function OrderPage() {
         ))}
       </ul>
 
-      <dl className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-bg-surface p-4 text-sm">
+      <dl className="panel flex flex-col gap-2 p-4 text-sm">
         <div className="flex justify-between"><dt className="text-text-muted">Subtotal</dt><dd className="text-text-primary">{formatPrice(order.subtotal)}</dd></div>
-        {order.discount > 0 && <div className="flex justify-between"><dt className="text-text-muted">Discount{order.coupon_code ? ` (${order.coupon_code})` : ""}</dt><dd className="text-trust-600">− {formatPrice(order.discount)}</dd></div>}
-        <div className="flex justify-between border-t border-white/10 pt-2 text-base font-bold"><dt className="text-text-primary">Total</dt><dd className="font-display text-xl font-black text-text-primary">{formatPrice(order.total)}</dd></div>
+        {order.discount > 0 && <div className="flex justify-between"><dt className="text-text-muted">Discount{order.coupon_code ? ` (${order.coupon_code})` : ""}</dt><dd className="font-semibold text-trust-600">− {formatPrice(order.discount)}</dd></div>}
+        <div className="flex items-center justify-between border-t border-dashed border-border-strong pt-3 text-base font-bold"><dt className="text-text-primary">Total</dt><dd className="font-display text-2xl font-bold text-text-primary">{formatPrice(order.total)}</dd></div>
       </dl>
 
       <div className="print:hidden">
-        <Link to={`/account/support?order=${order.id}`} className="flex min-h-11 items-center text-sm font-semibold text-brand-500">Something wrong with this order? Get help</Link>
+        <Link to={`/account/support?order=${order.id}`} className="flex min-h-11 items-center text-sm font-semibold text-brand-400">Something wrong with this order? Get help</Link>
       </div>
 
       {order.receipt_no && (
-        <section aria-label="Receipt" className="rounded-2xl border border-white/10 bg-bg-surface p-4 text-sm text-text-muted">
+        <section aria-label="Receipt" className="panel p-4 text-sm text-text-muted">
           <h2 className="font-display text-base font-bold text-text-primary">Receipt {order.receipt_no}</h2>
           {business.length > 0 && <p className="mt-1">{business.join(" · ")}</p>}
           <p className="mt-1">Billed to {order.contact_name ?? "customer"}{order.contact_phone ? ` · +${order.contact_phone}` : ""}{order.paid_at ? ` · Paid ${formatDate(order.paid_at)}` : ""}</p>

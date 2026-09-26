@@ -29,7 +29,7 @@ export function SupportPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 py-2 sm:py-6">
       <header>
         <Link to="/account" className="-ml-2 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-text-muted hover:text-text-primary">← My account</Link>
-        <h1 className="font-display text-3xl font-black text-text-primary">Help & support</h1>
+        <h1 className="font-display text-3xl font-bold text-text-primary">Help & support</h1>
         <p className="mt-1 text-sm text-text-muted">Something wrong with a game, or a question about a payment? Tell us here and we’ll reply on this page.</p>
       </header>
       {loading && <div className="h-40 animate-pulse rounded-2xl bg-bg-surface" aria-busy="true" aria-label="Loading" />}
@@ -42,13 +42,13 @@ export function SupportPage() {
         <>
           <NewRequest orders={data.orders} onCreated={reload} />
           <h2 className="font-display text-lg font-bold text-text-primary">Your requests</h2>
-          {data.tickets.length === 0 && <p className="rounded-2xl border border-dashed border-border-subtle px-4 py-8 text-center text-sm text-text-muted">No requests yet.</p>}
+          {data.tickets.length === 0 && <p className="rounded-2xl border border-dashed border-border-strong px-4 py-8 text-center text-sm text-text-muted">No requests yet.</p>}
           <ul className="flex flex-col gap-2">
             {data.tickets.map((t) => {
               const status = TICKET_STATUS[t.status];
               return (
                 <li key={t.id}>
-                  <Link to={`/account/support/${t.id}`} className="flex min-h-16 items-center gap-3 rounded-2xl border border-white/10 bg-bg-surface p-4 hover:border-brand-500/50">
+                  <Link to={`/account/support/${t.id}`} className="panel panel-link flex min-h-16 items-center gap-3 p-4">
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-bold text-text-primary">{t.subject}</span>
                       <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-text-muted"><Badge tone={status.tone}>{status.label}</Badge>{categoryLabel(t.category)} · {formatDate(t.last_message_at)}</span>
@@ -98,7 +98,7 @@ function NewRequest({ orders, onCreated }: { orders: Pick<Order, "id" | "receipt
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-bg-surface p-4 sm:p-5" noValidate aria-label="New request">
+    <form onSubmit={submit} className="panel flex flex-col gap-4 p-4 sm:p-5" noValidate aria-label="New request">
       <h2 className="font-display text-lg font-bold text-text-primary">New request</h2>
       {(problem || message?.tone === "error") && <Notice tone="error">{problem || message!.text}</Notice>}
       <TextField label="Title" hint="e.g. “My login isn’t working”" maxLength={120} value={form.subject} onChange={(e) => set("subject", e.target.value)} />

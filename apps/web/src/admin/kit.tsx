@@ -14,7 +14,7 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div className="min-w-0">
-        <h1 className="font-display text-2xl font-black text-text-primary sm:text-3xl">{title}</h1>
+        <h1 className="font-display text-2xl font-bold text-text-primary sm:text-3xl">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-text-muted">{subtitle}</p>}
       </div>
       {actions}
@@ -23,7 +23,7 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
 }
 
 export function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border border-white/10 bg-bg-surface p-4 sm:p-5 ${className}`}>{children}</div>;
+  return <div className={`panel p-4 sm:p-5 ${className}`}>{children}</div>;
 }
 
 /** An on/off switch with a label, at least 44 px tall. */
@@ -42,7 +42,7 @@ export function Toggle({ label, checked, onChange, hint }: { label: string; chec
         onClick={() => onChange(!checked)}
         className="flex h-11 w-14 shrink-0 items-center"
       >
-        <span className={`relative block h-8 w-14 rounded-full transition-colors ${checked ? "bg-brand-500" : "bg-white/15"}`}>
+        <span className={`relative block h-8 w-14 rounded-full transition-colors ${checked ? "bg-brand-500 shadow-glow-brand" : "bg-white/15"}`}>
           <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${checked ? "left-7" : "left-1"}`} />
         </span>
       </button>

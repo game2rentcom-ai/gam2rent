@@ -30,11 +30,11 @@ export function TicketPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 py-2 sm:py-6">
       <Link to="/account/support" className="-ml-2 inline-flex min-h-11 items-center self-start rounded-lg px-2 text-sm font-semibold text-text-muted hover:text-text-primary">← Help & support</Link>
       <header className="flex flex-col gap-2">
-        <h1 className="font-display text-2xl font-black text-text-primary sm:text-3xl">{ticket.subject}</h1>
+        <h1 className="font-display text-2xl font-bold text-text-primary sm:text-3xl">{ticket.subject}</h1>
         <p className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
           <Badge tone={status.tone}>{status.label}</Badge>
           {categoryLabel(ticket.category)}
-          {order && <>· <Link to={`/account/orders/${order.id}`} className="link-tap font-semibold text-brand-500">Order {orderName(order)}</Link></>}
+          {order && <>· <Link to={`/account/orders/${order.id}`} className="link-tap font-semibold text-brand-400">Order {orderName(order)}</Link></>}
         </p>
       </header>
       {ticket.resolution && RESOLUTION_TEXT[ticket.resolution] && <Notice tone={ticket.resolution === "rejected" ? "info" : "success"}>{RESOLUTION_TEXT[ticket.resolution]}</Notice>}

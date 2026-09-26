@@ -54,9 +54,9 @@ export function WelcomePage() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-6 py-6 sm:py-12">
       <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-brand-500">Step {step} of 3</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-accent-300">Step {step} of 3</p>
         <div className="mt-2 flex gap-1.5" aria-hidden="true">
-          {[1, 2, 3].map((n) => <span key={n} className={`h-1.5 flex-1 rounded-full ${n <= step ? "bg-brand-500" : "bg-white/10"}`} />)}
+          {[1, 2, 3].map((n) => <span key={n} className={`h-2 flex-1 -skew-x-[20deg] rounded-[2px] ${n <= step ? "bg-linear-to-r from-brand-500 to-accent-400 shadow-glow-brand" : "bg-white/10"}`} />)}
         </div>
       </div>
 
@@ -65,7 +65,7 @@ export function WelcomePage() {
       {step === 1 && (
         <form onSubmit={continueFromDetails} className="flex flex-col gap-4" noValidate>
           <div>
-            <h1 className="font-display text-3xl font-black text-text-primary">Let’s get you set up</h1>
+            <h1 className="font-display text-3xl font-bold text-text-primary">Let’s get you set up</h1>
             <p className="mt-2 text-sm text-text-muted">We use your WhatsApp number to reach you about your orders, so we need one that works.</p>
           </div>
           <TextField label="Your name" name="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
@@ -78,7 +78,7 @@ export function WelcomePage() {
       {step === 2 && (
         <div className="flex flex-col gap-4">
           <div>
-            <h1 className="font-display text-3xl font-black text-text-primary">What do you play on?</h1>
+            <h1 className="font-display text-3xl font-bold text-text-primary">What do you play on?</h1>
             <p className="mt-2 text-sm text-text-muted">Pick as many as you like — we’ll show games that fit.</p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -92,7 +92,7 @@ export function WelcomePage() {
       {step === 3 && (
         <div className="flex flex-col gap-4">
           <div>
-            <h1 className="font-display text-3xl font-black text-text-primary">What do you like?</h1>
+            <h1 className="font-display text-3xl font-bold text-text-primary">What do you like?</h1>
             <p className="mt-2 text-sm text-text-muted">Choose your favourite kinds of game.</p>
           </div>
           <div className="flex flex-wrap gap-2">

@@ -30,7 +30,7 @@ export function RequireAdmin({ children }: { children: React.ReactNode }) {
   if (!isAdmin) {
     return (
       <div className="flex flex-col items-center gap-3 py-20 text-center">
-        <h1 className="font-display text-2xl font-black text-text-primary">Admins only</h1>
+        <h1 className="font-display text-2xl font-bold text-text-primary">Admins only</h1>
         <p className="max-w-sm text-sm text-text-muted">This area is for the store owner. If that’s you, ask for your account to be added as an admin.</p>
         <Button to="/">Back to the store</Button>
       </div>

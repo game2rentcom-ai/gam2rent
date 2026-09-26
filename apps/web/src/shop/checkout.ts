@@ -19,6 +19,8 @@ export async function callFunction<T>(client: SupabaseClient, name: string, body
   const context = (error as { context?: unknown }).context;
   if (context instanceof Response) {
     const detail = (await context.json().catch(() => null)) as { error?: string; message?: string } | null;
+    // Supabase's own "no such function" answer (ours always carry an `error` code): payments aren't set up yet.
+    if (context.status === 404 && !detail?.error) throw new ApiError("payments_not_configured", "Online payment isn’t set up yet.");
     throw new ApiError(detail?.error ?? "server_error", detail?.message ?? "Something went wrong. Please try again.");
   }
   throw new ApiError("network", "We couldn’t reach the server. Check your connection and try again.");

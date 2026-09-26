@@ -114,7 +114,7 @@ export function BrowsePage() {
   return (
     <div className="flex flex-col gap-4">
       <header>
-        <h1 className="font-display text-2xl font-black text-text-primary sm:text-3xl">Browse games</h1>
+        <h1 className="font-display text-2xl font-bold text-text-primary sm:text-3xl">Browse games</h1>
         <p className="mt-1 text-sm text-text-muted">Buy or rent digital games for PC, PlayStation, Xbox and cloud.</p>
       </header>
 
@@ -129,7 +129,7 @@ export function BrowsePage() {
             autoComplete="off"
             aria-label="Search games"
             placeholder={`Search ${games.length} games`}
-            className="min-h-11 w-full rounded-xl border border-border-subtle bg-bg-surface pl-11 pr-11 text-base text-text-primary outline-none placeholder:text-text-muted focus:border-brand-500"
+            className="field bg-bg-surface pl-11 pr-11"
           />
           {q && (
             <button type="button" onClick={() => { clearTimeout(urlTimer.current); setText(""); set({ q: null }); }} aria-label="Clear search" className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center text-text-muted hover:text-text-primary">
@@ -140,11 +140,11 @@ export function BrowsePage() {
         <Button variant="secondary" onClick={() => setSheetOpen(true)} className="relative shrink-0" aria-label={`Filters${filterCount ? `, ${filterCount} active` : ""}`}>
           <IconFilter className="h-5 w-5" />
           <span className="hidden sm:inline">Filters</span>
-          {filterCount > 0 && <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-500 px-1 text-xs font-bold text-white">{filterCount}</span>}
+          {filterCount > 0 && <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-md bg-accent-400 px-1 text-xs font-bold text-black shadow-glow-cyan">{filterCount}</span>}
         </Button>
       </div>
 
-      <div role="group" aria-label="Platform" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <div role="group" aria-label="Platform" className="no-scrollbar -mx-4 -my-2 flex gap-2 overflow-x-auto px-4 py-2 sm:mx-0 sm:px-0">
         <Chip selected={!platform} onClick={() => set({ platform: null })}>All</Chip>
         {PLATFORMS.map((p) => (
           <Chip key={p} selected={platform === p} onClick={() => set({ platform: platform === p ? null : p })}>{PLATFORM_LABEL[p]}</Chip>
@@ -154,7 +154,7 @@ export function BrowsePage() {
       {activeFilters.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           {activeFilters.map((f) => (
-            <button key={f.key} type="button" onClick={() => set({ [f.key]: null })} className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-brand-500/40 bg-brand-500/10 pl-3 pr-2 text-sm text-brand-100">
+            <button key={f.key} type="button" onClick={() => set({ [f.key]: null })} className="chip chip-on cut gap-1.5 pl-3 pr-2">
               {f.label}
               <IconClose className="h-4 w-4" />
             </button>
@@ -167,7 +167,7 @@ export function BrowsePage() {
       </p>
 
       {results.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border-subtle px-6 py-14 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border-strong px-6 py-14 text-center">
           <p className="font-display text-lg font-bold text-text-primary">No games match</p>
           <p className="max-w-sm text-sm text-text-muted">Try a different spelling or clear the filters. Can’t find a game you want?</p>
           <div className="flex flex-wrap justify-center gap-2">
@@ -194,8 +194,8 @@ export function BrowsePage() {
             <p className="flex flex-wrap items-center justify-center pt-2 text-sm text-text-muted">
               Don’t see your game?
               {request.to
-                ? <Link to={request.to} className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-500">Request it</Link>
-                : <a href={request.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-500">Request it</a>}
+                ? <Link to={request.to} className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-400">Request it</Link>
+                : <a href={request.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-400">Request it</a>}
             </p>
           )}
         </>
@@ -215,20 +215,20 @@ export function BrowsePage() {
         <div className="flex flex-col gap-5 pb-2">
           <label className="flex flex-col gap-1.5 text-sm font-semibold text-text-primary">
             Genre
-            <select value={genre} onChange={(e) => set({ genre: e.target.value })} className="min-h-11 rounded-xl border border-border-subtle bg-bg-base px-3 text-base font-normal text-text-primary">
+            <select value={genre} onChange={(e) => set({ genre: e.target.value })} className="field font-normal">
               <option value="">All genres</option>
               {genres.map((g) => <option key={g} value={g}>{g}</option>)}
             </select>
           </label>
           <label className="flex flex-col gap-1.5 text-sm font-semibold text-text-primary">
             Sort by
-            <select value={sort} onChange={(e) => set({ sort: e.target.value === "recommended" ? null : e.target.value })} className="min-h-11 rounded-xl border border-border-subtle bg-bg-base px-3 text-base font-normal text-text-primary">
+            <select value={sort} onChange={(e) => set({ sort: e.target.value === "recommended" ? null : e.target.value })} className="field font-normal">
               {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
           </label>
           <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-sm font-semibold text-text-primary">
             Only games available to buy now
-            <input type="checkbox" checked={forSale} onChange={(e) => set({ forsale: e.target.checked ? "1" : null })} className="h-6 w-6 accent-[var(--color-brand-500)]" />
+            <input type="checkbox" checked={forSale} onChange={(e) => set({ forsale: e.target.checked ? "1" : null })} className="check" />
           </label>
         </div>
       </Sheet>

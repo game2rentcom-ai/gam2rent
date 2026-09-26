@@ -38,7 +38,7 @@ export function CartPage() {
   if (!shop.ordering) {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-3 py-16 text-center">
-        <h1 className="font-display text-2xl font-black text-text-primary">Ordering opens soon</h1>
+        <h1 className="font-display text-2xl font-bold text-text-primary">Ordering opens soon</h1>
         <p className="text-sm text-text-muted">For now, pick a game and message us — we’ll confirm the price and send it over.</p>
         <Button to="/browse">Browse games</Button>
       </div>
@@ -92,7 +92,7 @@ export function CartPage() {
   if (lines.length === 0) {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-3 py-16 text-center">
-        <h1 className="font-display text-2xl font-black text-text-primary">Your cart is empty</h1>
+        <h1 className="font-display text-2xl font-bold text-text-primary">Your cart is empty</h1>
         <p className="text-sm text-text-muted">Find a game you like and add it here.</p>
         <Button to="/browse">Browse games</Button>
       </div>
@@ -101,7 +101,7 @@ export function CartPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 py-2 sm:py-6">
-      <h1 className="font-display text-3xl font-black text-text-primary">Your cart</h1>
+      <h1 className="font-display text-3xl font-bold text-text-primary">Your cart</h1>
 
       <ul className="flex flex-col gap-3">
         {lines.map((line) => {
@@ -109,16 +109,16 @@ export function CartPage() {
           const item = priced.get(line.gameId);
           const title = game?.title ?? line.gameId;
           return (
-            <li key={line.gameId} className="flex gap-3 rounded-2xl border border-white/10 bg-bg-surface p-3">
-              {game && <Link to={`/games/${game.id}`} aria-label={title} className="w-16 shrink-0"><GameCover game={game} className="w-full rounded-lg" /></Link>}
+            <li key={line.gameId} className="panel flex gap-3 p-3">
+              {game && <Link to={`/games/${game.id}`} aria-label={title} className="w-16 shrink-0"><GameCover game={game} className="frame w-full [--cut:8px]" /></Link>}
               <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <p className="truncate text-sm font-bold text-text-primary">{title}</p>
+                <p className="truncate font-display text-sm font-bold text-text-primary">{title}</p>
                 {item ? (
                   <>
                     <p className="text-xs text-text-muted">
                       {line.kind === "rent" ? `Rent · ${item.plan_label} · ${PLATFORM_LABEL[line.platform as Platform] ?? ""}` : "Buy"}
                     </p>
-                    <p className="font-display text-lg font-black text-text-primary">{formatPrice(item.unit_price)}</p>
+                    <p><span className="price-tag cut cut-tag text-base">{formatPrice(item.unit_price)}</span></p>
                   </>
                 ) : (
                   <p role="alert" className="text-xs font-medium text-red-300">{title} is no longer available. Remove it to continue.</p>
@@ -149,10 +149,10 @@ export function CartPage() {
       )}
 
       {data && (
-        <dl className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-bg-surface p-4 text-sm">
+        <dl className="panel hud flex flex-col gap-2 p-4 text-sm">
           <div className="flex justify-between"><dt className="text-text-muted">Subtotal</dt><dd className="text-text-primary">{formatPrice(data.subtotal)}</dd></div>
-          {data.discount > 0 && <div className="flex justify-between"><dt className="text-text-muted">Discount</dt><dd className="text-trust-600">− {formatPrice(data.discount)}</dd></div>}
-          <div className="flex justify-between border-t border-white/10 pt-2 text-base font-bold"><dt className="text-text-primary">Total</dt><dd className="font-display text-xl font-black text-text-primary">{formatPrice(data.total)}</dd></div>
+          {data.discount > 0 && <div className="flex justify-between"><dt className="text-text-muted">Discount</dt><dd className="font-semibold text-trust-600">− {formatPrice(data.discount)}</dd></div>}
+          <div className="flex items-center justify-between border-t border-dashed border-border-strong pt-3 text-base font-bold"><dt className="text-text-primary">Total</dt><dd className="font-display text-2xl font-bold text-text-primary [text-shadow:0_0_22px_rgb(123_63_245/0.7)]">{formatPrice(data.total)}</dd></div>
         </dl>
       )}
 

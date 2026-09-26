@@ -24,12 +24,12 @@ export function OrdersPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 py-2 sm:py-6">
       <header>
         <Link to="/account" className="-ml-2 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-text-muted hover:text-text-primary">← My account</Link>
-        <h1 className="font-display text-3xl font-black text-text-primary">My orders</h1>
+        <h1 className="font-display text-3xl font-bold text-text-primary">My orders</h1>
       </header>
       {loading && <div className="h-40 animate-pulse rounded-2xl bg-bg-surface" aria-busy="true" aria-label="Loading your orders" />}
       {error && <Notice tone="error">{error}</Notice>}
       {data && data.orders.length === 0 && (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border-subtle px-4 py-12 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border-strong px-4 py-12 text-center">
           <p className="text-sm text-text-muted">You haven’t ordered anything yet.</p>
           <Button to="/browse">Browse games</Button>
         </div>
@@ -39,10 +39,10 @@ export function OrdersPage() {
           const status = STATUS_LABEL[o.status];
           return (
             <li key={o.id}>
-              <Link to={`/account/orders/${o.id}`} className="flex min-h-20 items-center gap-3 rounded-2xl border border-white/10 bg-bg-surface p-4 hover:border-brand-500/50">
+              <Link to={`/account/orders/${o.id}`} className="panel panel-link flex min-h-20 items-center gap-3 p-4">
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-bold text-text-primary">{orderName(o)}</span>
+                    <span className="font-display text-sm font-bold text-text-primary">{orderName(o)}</span>
                     <Badge tone={status.tone}>{status.label}</Badge>
                   </span>
                   <span className="mt-1 block truncate text-sm text-text-muted">{(data.titles.get(o.id) ?? []).join(", ")}</span>

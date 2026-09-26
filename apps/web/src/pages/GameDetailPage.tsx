@@ -9,13 +9,15 @@ import { useShop, type CartLine } from "../shop/context";
 import { OrderButtons } from "../shop/OrderButtons";
 import { WishlistButton } from "../shop/WishlistButton";
 import { averageRating, credentialDisclosure } from "../types/listing";
+import { PlatformBadge } from "../components/Badges";
 import { Badge, Chip } from "../ui/Chip";
 import { Button } from "../ui/Button";
 import { etaLabel, formatPrice } from "../ui/format";
 import { GameCard } from "../ui/GameCard";
 import { GameCover } from "../ui/GameCover";
-import { IconBack, IconClock, IconShield, IconStar } from "../ui/icons";
+import { IconBack, IconChevronDown, IconClock, IconShield } from "../ui/icons";
 import { Rail, Section } from "../ui/Section";
+import { Stars } from "../ui/Stars";
 import { TrailerPlayer } from "../ui/TrailerPlayer";
 import { NotFoundPage } from "./NotFoundPage";
 
@@ -103,20 +105,20 @@ export function GameDetailPage() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-10">
         <div className="flex min-w-0 flex-col gap-6">
-          <GameCover game={game} slot="hero" priority className="w-full rounded-2xl border border-white/10" />
+          <GameCover game={game} slot="hero" priority className="frame w-full" />
 
           <div>
             <div className="flex flex-wrap gap-1.5">
-              {game.platforms.map((p) => <Badge key={p}>{PLATFORM_LABEL[p]}</Badge>)}
-              {game.genre && <Badge tone="brand">{game.genre}</Badge>}
+              {game.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}
+              {game.genre && <Badge tone="rare">{game.genre}</Badge>}
             </div>
             <div className="mt-3 flex items-start justify-between gap-3">
-              <h1 className="font-display text-3xl font-black leading-tight text-text-primary sm:text-4xl">{game.title}</h1>
+              <h1 className="font-display text-3xl font-bold leading-tight text-text-primary sm:text-4xl">{game.title}</h1>
               <WishlistButton gameId={game.id} title={game.title} />
             </div>
             {rating !== null && (
-              <p className="mt-2 flex items-center gap-1.5 text-sm text-text-muted">
-                <IconStar className="h-4 w-4 text-rating-gold" />
+              <p className="mt-2 flex items-center gap-2 text-sm text-text-muted">
+                <Stars value={rating} className="h-[1.125rem] w-[1.125rem]" />
                 <span className="font-semibold text-text-primary">{rating.toFixed(1)}</span>
                 <span>({reviews.length} verified {reviews.length === 1 ? "review" : "reviews"})</span>
               </p>
@@ -126,9 +128,9 @@ export function GameDetailPage() {
 
         {/* Purchase panel: right after the title on a phone, sticky beside the content on desktop */}
         <aside className="lg:sticky lg:top-24 lg:self-start" aria-label="Buy or rent">
-          <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-bg-surface p-4 sm:p-5">
+          <div className="panel hud flex flex-col gap-4 p-4 sm:p-5">
             {listed && offers.length > 0 && (
-              <div role="tablist" aria-label="Buy or rent" className="grid grid-cols-2 gap-1 rounded-xl bg-bg-base p-1">
+              <div role="tablist" aria-label="Buy or rent" className="grid grid-cols-2 gap-2">
                 {(["buy", "rent"] as const).map((o) => (
                   <button
                     key={o}
@@ -136,7 +138,7 @@ export function GameDetailPage() {
                     role="tab"
                     aria-selected={option === o}
                     onClick={() => setOption(o)}
-                    className={`min-h-11 rounded-lg text-sm font-bold transition-colors ${option === o ? "bg-brand-500 text-white" : "text-text-muted hover:text-text-primary"}`}
+                    className={`chip cut min-h-11 font-display text-base font-bold ${option === o ? "chip-on" : ""}`}
                   >
                     {o === "buy" ? "Buy" : "Rent"}
                   </button>
@@ -148,8 +150,8 @@ export function GameDetailPage() {
               <div className="flex flex-col gap-3">
                 {listed ? (
                   <>
-                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <span className="font-display text-4xl font-black text-text-primary">{formatPrice(listed.listing.price)}</span>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="price-tag cut cut-tag py-1 pl-5 pr-4 text-4xl [--cut:14px]">{formatPrice(listed.listing.price)}</span>
                       {listed.listing.compareAtPrice && listed.listing.compareAtPrice > listed.listing.price && (
                         <span className="text-base text-text-muted line-through">{formatPrice(listed.listing.compareAtPrice)}</span>
                       )}
@@ -176,11 +178,11 @@ export function GameDetailPage() {
                           role="radio"
                           aria-checked={plan?.planId === o.planId}
                           onClick={() => setPlanId(o.planId)}
-                          className={`relative flex min-h-16 flex-col items-start justify-center rounded-xl border px-3 py-2 text-left transition-colors ${plan?.planId === o.planId ? "border-trust-600 bg-trust-600/10" : "border-border-subtle hover:border-white/30"}`}
+                          className="option cut relative flex min-h-16 flex-col items-start justify-center px-3 py-2 text-left"
                         >
                           <span className="text-sm font-bold text-text-primary">{o.label}</span>
-                          <span className="font-display text-lg font-black text-trust-600">{formatPrice(o.price)}</span>
-                          {(o.isPopular || o.tag) && <span className="absolute right-2 top-2 rounded bg-trust-600 px-1.5 text-xs font-bold text-black">{o.tag ?? "Popular"}</span>}
+                          <span className="font-display text-lg font-bold text-trust-600">{formatPrice(o.price)}</span>
+                          {(o.isPopular || o.tag) && <span className="absolute right-3 top-1.5 rounded-[3px] bg-trust-600 px-1.5 text-xs font-bold text-black">{o.tag ?? "Popular"}</span>}
                         </button>
                       ))}
                     </div>
@@ -210,8 +212,8 @@ export function GameDetailPage() {
             </div>
             {!line && !primary.href && !primary.disabled && <p className="text-xs text-text-muted">Contact details aren’t set up yet.</p>}
 
-            <div className="flex items-start gap-3 rounded-xl bg-bg-base p-3 text-sm text-text-muted">
-              <IconShield className="mt-0.5 h-5 w-5 shrink-0 text-trust-600" />
+            <div className="flex items-center gap-3 rounded-xl border border-trust-300 bg-trust-100 p-3 text-sm text-text-muted">
+              <span className="medal cut cut-hex h-10 w-10"><IconShield className="h-5 w-5" /></span>
               <p><span className="font-semibold text-text-primary">Replacement guarantee.</span> Something off after delivery? We replace it, free.</p>
             </div>
           </div>
@@ -230,9 +232,9 @@ export function GameDetailPage() {
             <Section title="Details">
               <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {facts.map(([k, v]) => (
-                  <div key={k} className="rounded-xl border border-white/5 bg-bg-surface p-3">
+                  <div key={k} className="panel p-3">
                     <dt className="text-xs font-semibold uppercase tracking-wider text-text-muted">{k}</dt>
-                    <dd className="mt-1 text-sm font-medium text-text-primary">{v}</dd>
+                    <dd className="mt-1 text-sm font-semibold text-text-primary">{v}</dd>
                   </div>
                 ))}
               </dl>
@@ -242,14 +244,14 @@ export function GameDetailPage() {
           {meta && (
             <Section title="Good to know">
               <ul className="flex flex-wrap gap-2">
-                {meta.features.map((f) => <li key={f} className="rounded-full border border-white/10 bg-bg-surface px-3 py-1.5 text-sm text-text-muted">{f}</li>)}
+                {meta.features.map((f) => <li key={f} className="badge badge-neutral cut px-3 py-1.5 text-sm font-normal text-text-muted">{f}</li>)}
               </ul>
               {meta.approxCampaignHours && <p className="text-sm text-text-muted">Main story takes roughly {meta.approxCampaignHours} hours.</p>}
               {meta.specs && (
-                <details className="group rounded-xl border border-white/5 bg-bg-surface">
+                <details className="group panel">
                   <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 text-sm font-semibold text-text-primary">
                     PC system requirements
-                    <span className="text-text-muted transition-transform group-open:rotate-180" aria-hidden="true">▾</span>
+                    <IconChevronDown className="h-5 w-5 text-accent-300 transition-transform group-open:rotate-180" />
                   </summary>
                   <dl className="grid gap-2 px-4 pb-4 text-sm sm:grid-cols-2">
                     {Object.entries(meta.specs).map(([k, v]) => (
@@ -269,16 +271,16 @@ export function GameDetailPage() {
 
           <Section title="Reviews">
             {reviews.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-border-subtle px-4 py-8 text-center text-sm text-text-muted">No reviews yet. Reviews here come only from customers who received this game.</p>
+              <p className="rounded-xl border border-dashed border-border-strong px-4 py-8 text-center text-sm text-text-muted">No reviews yet. Reviews here come only from customers who received this game.</p>
             ) : (
               <>
                 <ul className="flex flex-col gap-3">
                   {(showAllReviews ? reviews : reviews.slice(0, 4)).map((r) => (
-                    <li key={r.id} className="rounded-xl border border-white/5 bg-bg-surface p-4">
+                    <li key={r.id} className="panel p-4">
                       <div className="flex items-center justify-between gap-3">
                         <span className="text-sm font-semibold text-text-primary">{r.reviewerName ?? "Verified customer"}</span>
-                        <span className="flex text-rating-gold" aria-label={`${r.rating} out of 5`}>
-                          {Array.from({ length: r.rating }, (_, i) => <IconStar key={i} className="h-4 w-4" />)}
+                        <span className="flex" aria-label={`${r.rating} out of 5`}>
+                          <Stars value={r.rating} />
                         </span>
                       </div>
                       <p className="mt-2 text-sm text-text-muted">{r.comment}</p>
@@ -305,12 +307,12 @@ export function GameDetailPage() {
       )}
 
       {/* Phone: the main action stays in reach. Desktop uses the button in the panel above. */}
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-bg-base/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border-strong bg-bg-base/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl before:absolute before:inset-x-6 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-accent-400 before:to-transparent md:hidden">
         <div className="mx-auto flex max-w-xl items-center gap-3">
           {primary.price && !primary.disabled && (
             <div className="min-w-0 shrink-0">
               <p className="text-xs text-text-muted">{option === "rent" ? "Rent" : "Price"}</p>
-              <p className="font-display text-lg font-black leading-tight text-text-primary">{primary.price}</p>
+              <p className="font-display text-lg font-bold leading-tight text-text-primary">{primary.price}</p>
             </div>
           )}
           {line ? <div className="min-w-0 flex-1"><OrderButtons line={line} label={primary.label} compact /></div> : <Button href={primary.href} disabled={primary.disabled} size="lg" full>{primary.label}</Button>}

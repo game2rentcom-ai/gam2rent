@@ -33,7 +33,7 @@ export function LoginPage() {
     <AuthShell
       title="Welcome back"
       subtitle="Log in to see your orders, wishlist and account."
-      footer={<>New here? <Link to={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"} className="link-tap font-semibold text-brand-500">Create an account</Link></>}
+      footer={<>New here? <Link to={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"} className="link-tap font-semibold text-brand-400">Create an account</Link></>}
     >
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
         {error && <Notice tone="error">{error}</Notice>}

@@ -37,14 +37,14 @@ export function Thread({ ticketId, messages, viewer, closed, onSent }: { ticketI
           const mine = m.sender_role === viewer;
           return (
             <li key={m.id} className={`flex flex-col gap-1 ${mine ? "items-end" : "items-start"}`}>
-              <div className={`max-w-[88%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm ${mine ? "rounded-br-md bg-brand-500 text-white" : "rounded-bl-md border border-white/10 bg-bg-surface text-text-primary"}`}>{m.message}</div>
+              <div className={`max-w-[88%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm ${mine ? "rounded-br-md bg-linear-to-b from-brand-500 to-brand-600 text-white" : "rounded-bl-md border border-border-strong bg-bg-surface text-text-primary"}`}>{m.message}</div>
               <span className="px-1 text-xs text-text-muted">{m.sender_role === "admin" ? "Support" : "Customer"} · {formatDateTime(m.created_at)}</span>
             </li>
           );
         })}
       </ul>
       {closed ? (
-        <p className="rounded-xl border border-dashed border-border-subtle px-4 py-3 text-center text-sm text-text-muted">This request is closed.</p>
+        <p className="rounded-xl border border-dashed border-border-strong px-4 py-3 text-center text-sm text-text-muted">This request is closed.</p>
       ) : (
         <form onSubmit={send} className="flex flex-col gap-3" noValidate aria-label="Reply">
           {(problem || (message && message.tone === "error")) && <Notice tone="error">{problem || message!.text}</Notice>}

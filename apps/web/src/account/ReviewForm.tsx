@@ -4,6 +4,7 @@ import { ok, useAction } from "../lib/api";
 import { Button } from "../ui/Button";
 import { Notice, TextAreaField } from "../ui/Form";
 import { IconStar } from "../ui/icons";
+import { Stars } from "../ui/Stars";
 
 // A verified review: the database only accepts it from the customer the game was delivered to, once per
 // item, and publishes it on the game's page under their first name.
@@ -12,9 +13,9 @@ export interface MyReview { order_item_id: string; rating: number; comment: stri
 export function YourReview({ review }: { review: MyReview }) {
   return (
     <div className="mt-3 rounded-xl bg-bg-base p-3 text-sm print:hidden">
-      <p className="flex items-center gap-1 text-rating-gold" aria-label={`Your rating: ${review.rating} out of 5`}>
-        {Array.from({ length: review.rating }, (_, i) => <IconStar key={i} className="h-4 w-4" />)}
-        <span className="ml-1 text-xs font-semibold text-text-muted">Your review is on the game’s page</span>
+      <p className="flex items-center gap-2" aria-label={`Your rating: ${review.rating} out of 5`}>
+        <Stars value={review.rating} />
+        <span className="text-xs font-semibold text-text-muted">Your review is on the game’s page</span>
       </p>
       <p className="mt-1 text-text-muted">{review.comment}</p>
     </div>
@@ -55,13 +56,13 @@ export function ReviewForm({ itemId, onDone }: { itemId: string; onDone: () => v
   };
 
   return (
-    <form onSubmit={submit} className="mt-3 flex flex-col gap-3 rounded-xl border border-white/10 bg-bg-base p-3 print:hidden" noValidate aria-label="Review this game">
+    <form onSubmit={submit} className="mt-3 flex flex-col gap-3 rounded-xl border border-border-strong bg-bg-base p-3 print:hidden" noValidate aria-label="Review this game">
       {(problem || message) && <Notice tone={problem ? "error" : message!.tone}>{problem || message!.text}</Notice>}
       <div>
         <p className="mb-1 text-sm font-semibold text-text-primary">How was it?</p>
         <div role="radiogroup" aria-label="Rating" className="flex gap-1">
           {[1, 2, 3, 4, 5].map((n) => (
-            <button key={n} type="button" role="radio" aria-checked={rating === n} aria-label={`${n} ${n === 1 ? "star" : "stars"}`} onClick={() => setRating(n)} className={`flex h-11 w-11 items-center justify-center rounded-lg ${n <= rating ? "text-rating-gold" : "text-white/25"}`}>
+            <button key={n} type="button" role="radio" aria-checked={rating === n} aria-label={`${n} ${n === 1 ? "star" : "stars"}`} onClick={() => setRating(n)} className={`flex h-11 w-11 items-center justify-center rounded-lg transition-transform active:scale-90 ${n <= rating ? "text-rating-gold drop-shadow-[0_0_6px_rgb(255_197_61/0.5)]" : "text-white/25 hover:text-white/50"}`}>
               <IconStar className="h-7 w-7" />
             </button>
           ))}

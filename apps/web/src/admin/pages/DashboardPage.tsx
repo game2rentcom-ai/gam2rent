@@ -37,9 +37,10 @@ export function DashboardPage() {
 
   const steps = [
     { done: Boolean(data.values.contact_whatsapp), label: "Set your contact number", to: "/admin/settings" },
+    { done: Boolean(data.values.business_name && data.values.business_address && data.values.support_email), label: "Add your business details (shown on receipts and the legal pages)", to: "/admin/settings" },
     { done: data.listings > 0, label: "Add your first game price", to: "/admin/pricing" },
     { done: data.plans > 0, label: "Set your rental plans", to: "/admin/pricing" },
-    { done: data.values.payments_enabled === "true", label: "Switch on online payments (when Razorpay is ready)", to: "/admin/settings" },
+    { done: data.values.payments_enabled === "true", label: "Switch on online payments (after a successful test purchase)", to: "/admin/settings" },
   ];
 
   return (
@@ -54,9 +55,9 @@ export function DashboardPage() {
           ["Reviews", data.reviews, "on the site", "/admin/reviews"],
         ].map(([label, value, note, to]) => (
           <li key={String(label)}>
-            <Link to={String(to)} className="block rounded-2xl border border-white/10 bg-bg-surface p-4 hover:border-brand-500/50">
+            <Link to={String(to)} className="panel panel-link block p-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">{label}</p>
-              <p className="mt-1 font-display text-3xl font-black text-text-primary">{value}</p>
+              <p className="mt-1 font-display text-3xl font-bold text-text-primary">{value}</p>
               <p className="text-xs text-text-muted">{note}</p>
             </Link>
           </li>
@@ -69,7 +70,7 @@ export function DashboardPage() {
           {steps.map((s) => (
             <li key={s.label}>
               <Link to={s.to} className="flex min-h-12 items-center gap-3 rounded-xl px-1 hover:bg-white/5">
-                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${s.done ? "border-trust-600 bg-trust-600 text-black" : "border-white/20 text-transparent"}`}><IconCheck className="h-4 w-4" /></span>
+                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${s.done ? "border-trust-600 bg-trust-600 text-black" : "border-border-strong text-transparent"}`}><IconCheck className="h-4 w-4" /></span>
                 <span className={`flex-1 text-sm ${s.done ? "text-text-muted line-through" : "font-semibold text-text-primary"}`}>{s.label}</span>
                 <IconChevron className="h-4 w-4 text-text-muted" />
               </Link>
@@ -82,7 +83,7 @@ export function DashboardPage() {
         <Card>
           <div className="flex items-center justify-between gap-3">
             <h2 className="font-display text-lg font-bold text-text-primary">Orders</h2>
-            <Link to="/admin/orders" className="flex min-h-11 items-center px-2 text-sm font-semibold text-brand-500">Open orders</Link>
+            <Link to="/admin/orders" className="flex min-h-11 items-center px-2 text-sm font-semibold text-brand-400">Open orders</Link>
           </div>
           <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {([
@@ -97,12 +98,12 @@ export function DashboardPage() {
             ] as [string, string | number, string?][]).map(([k, v, to]) => (
               <div key={k}>
                 <dt className="text-xs text-text-muted">{k}</dt>
-                <dd className="font-display text-lg font-black text-text-primary">{to ? <Link to={to} className="-my-2 flex min-h-11 items-center hover:text-brand-500">{v}</Link> : v}</dd>
+                <dd className="font-display text-lg font-bold text-text-primary">{to ? <Link to={to} className="-my-2 flex min-h-11 items-center hover:text-brand-400">{v}</Link> : v}</dd>
               </div>
             ))}
           </dl>
           {data.stats.top_games.length > 0 && (
-            <div className="mt-4 border-t border-white/10 pt-3">
+            <div className="mt-4 border-t border-border-subtle pt-3">
               <h3 className="text-sm font-semibold text-text-primary">Best sellers, last 30 days</h3>
               <ol className="mt-1 flex flex-col text-sm text-text-muted">
                 {data.stats.top_games.map((g) => <li key={g.title} className="flex justify-between gap-3 py-1"><span className="min-w-0 truncate">{g.title}</span><span className="shrink-0 font-semibold text-text-primary">{g.orders}</span></li>)}
@@ -111,7 +112,7 @@ export function DashboardPage() {
           )}
         </Card>
       ) : (
-        <p className="rounded-2xl border border-dashed border-border-subtle px-4 py-6 text-center text-sm text-text-muted">Orders, tickets and revenue will appear here once online ordering is switched on.</p>
+        <p className="rounded-2xl border border-dashed border-border-strong px-4 py-6 text-center text-sm text-text-muted">Orders, tickets and revenue will appear here once online ordering is switched on.</p>
       )}
     </div>
   );

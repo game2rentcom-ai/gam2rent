@@ -44,41 +44,41 @@ export function AccountPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 py-2 sm:py-6">
       <header>
-        <h1 className="font-display text-3xl font-black text-text-primary">My account</h1>
+        <h1 className="font-display text-3xl font-bold text-text-primary">My account</h1>
         <p className="mt-1 text-sm text-text-muted">{user?.email}</p>
       </header>
 
       {isAdmin && (
-        <Link to="/admin" className="flex min-h-14 items-center justify-between rounded-2xl border border-brand-500/40 bg-brand-500/10 px-4 font-semibold text-text-primary hover:bg-brand-500/20">
+        <Link to="/admin" className="panel panel-link flex min-h-14 items-center justify-between border-brand-400/40 px-4 font-semibold text-text-primary">
           Open the admin panel
-          <IconChevron />
+          <IconChevron className="h-5 w-5 text-accent-300" />
         </Link>
       )}
 
       {(shop.ordering || shop.ready) && (
-        <nav aria-label="My shopping" className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-bg-surface">
+        <nav aria-label="My shopping" className="panel flex flex-col overflow-hidden">
           {shop.ordering && (
             <>
-              <Link to="/account/orders" className="flex min-h-14 items-center justify-between border-b border-white/10 px-4 font-semibold text-text-primary hover:bg-white/5">
+              <Link to="/account/orders" className="flex min-h-14 items-center justify-between border-b border-border-subtle px-4 font-semibold text-text-primary hover:bg-white/5">
                 My orders
-                <IconChevron />
+                <IconChevron className="h-5 w-5 text-accent-300" />
               </Link>
-              <Link to="/account/support" className="flex min-h-14 items-center justify-between border-b border-white/10 px-4 font-semibold text-text-primary hover:bg-white/5">
+              <Link to="/account/support" className="flex min-h-14 items-center justify-between border-b border-border-subtle px-4 font-semibold text-text-primary hover:bg-white/5">
                 Help & support
-                <IconChevron />
+                <IconChevron className="h-5 w-5 text-accent-300" />
               </Link>
             </>
           )}
           {shop.ready && (
             <Link to="/account/wishlist" className="flex min-h-14 items-center justify-between px-4 font-semibold text-text-primary hover:bg-white/5">
               My wishlist{shop.wishlist.length > 0 ? ` (${shop.wishlist.length})` : ""}
-              <IconChevron />
+              <IconChevron className="h-5 w-5 text-accent-300" />
             </Link>
           )}
         </nav>
       )}
 
-      <form onSubmit={save} className="flex flex-col gap-6 rounded-2xl border border-white/10 bg-bg-surface p-5" noValidate>
+      <form onSubmit={save} className="panel flex flex-col gap-6 p-5" noValidate>
         {message && <Notice tone={message.tone}>{message.text}</Notice>}
         <TextField label="Your name" name="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
         <TextField label="WhatsApp number" name="phone" type="tel" inputMode="tel" autoComplete="tel" hint="We use this to reach you about your orders." value={phone} onChange={(e) => setPhone(e.target.value)} />

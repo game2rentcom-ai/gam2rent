@@ -37,14 +37,14 @@ const TABS = [
 export function AdminApp() {
   return (
     <div className="flex flex-col gap-6">
-      <nav aria-label="Admin" className="no-scrollbar -mx-4 flex gap-1 overflow-x-auto border-b border-white/10 px-4 sm:mx-0 sm:px-0">
+      <nav aria-label="Admin" className="no-scrollbar -mx-4 flex gap-1 overflow-x-auto border-b border-border-strong px-4 sm:mx-0 sm:px-0">
         {TABS.map((t) => (
           <NavLink
             key={t.to}
             to={t.to}
             end={t.end}
             className={({ isActive }) =>
-              `flex min-h-11 shrink-0 items-center border-b-2 px-4 text-sm font-semibold transition-colors ${isActive ? "border-brand-500 text-text-primary" : "border-transparent text-text-muted hover:text-text-primary"}`
+              `flex min-h-11 shrink-0 items-center border-b-2 px-4 font-display text-sm font-bold tracking-wide transition-colors ${isActive ? "border-accent-400 text-text-primary" : "border-transparent text-text-muted hover:text-text-primary"}`
             }
           >
             {t.label}

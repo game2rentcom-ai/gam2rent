@@ -6,15 +6,15 @@ type Variant = "primary" | "secondary" | "ghost" | "success";
 type Size = "sm" | "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700",
-  secondary: "border border-border-subtle bg-bg-surface text-text-primary hover:border-brand-500 active:bg-bg-surface-raised",
-  ghost: "text-text-muted hover:bg-white/5 hover:text-text-primary active:bg-white/10",
-  success: "bg-trust-600 text-black hover:bg-trust-700 active:bg-trust-700",
+  primary: "btn-primary",
+  secondary: "btn-secondary",
+  ghost: "btn-ghost",
+  success: "btn-success",
 };
 const SIZES: Record<Size, string> = {
-  sm: "min-h-10 px-4 text-sm",
+  sm: "min-h-10 px-4 text-sm [--cut:8px]",
   md: "min-h-11 px-5 text-sm",
-  lg: "min-h-13 px-6 text-base",
+  lg: "min-h-13 px-6 text-base [--cut:12px]",
 };
 
 interface CommonProps {
@@ -30,7 +30,7 @@ type ExternalProps = CommonProps & { href: string | undefined; to?: undefined; d
 
 export function Button(props: ButtonProps | RouterLinkProps | ExternalProps) {
   const { variant = "primary", size = "md", full = false, className = "", children } = props;
-  const cls = `inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-xl font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${VARIANTS[variant]} ${SIZES[size]} ${full ? "w-full" : ""} ${className}`;
+  const cls = `cut inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-sm font-display font-bold tracking-wide ${VARIANTS[variant]} ${SIZES[size]} ${full ? "w-full" : ""} ${className}`;
 
   if ("to" in props && props.to !== undefined) {
     return <Link to={props.to} onClick={props.onClick} className={cls}>{children}</Link>;

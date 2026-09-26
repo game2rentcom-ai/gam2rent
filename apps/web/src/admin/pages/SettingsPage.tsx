@@ -10,7 +10,7 @@ import { Card, ErrorNote, Loading, PageHeader, Toggle } from "../kit";
 // Store-wide settings, kept in the database so changing them never needs a new release of the site.
 // Everything here is PUBLIC (the storefront reads it) — never put a password or a secret key in it.
 type Values = Record<string, string>;
-const KEYS = ["announcement", "contact_whatsapp", "support_email", "business_name", "business_address", "gstin", "payments_enabled"] as const;
+const KEYS = ["announcement", "contact_whatsapp", "support_email", "business_name", "business_address", "gstin", "grievance_officer", "payments_enabled"] as const;
 
 async function loadSettings(client: SupabaseClient): Promise<Values> {
   const rows = (await ok(client.from("site_settings").select("key,value"))) as { key: string; value: unknown }[];
@@ -71,17 +71,18 @@ function SettingsForm({ initial, onSaved }: { initial: Values; onSaved: () => vo
 
       <Card className="flex flex-col gap-4">
         <h2 className="font-display text-lg font-bold text-text-primary">Business details</h2>
-        <p className="-mt-2 text-sm text-text-muted">Printed on receipts.</p>
+        <p className="-mt-2 text-sm text-text-muted">Printed on receipts and shown on the Contact, Terms and Privacy pages. Razorpay asks for the same details.</p>
         <TextField label="Business name" {...field("business_name")} />
         <TextAreaField label="Address" {...field("business_address")} />
         <TextField label="GSTIN" hint="If you’re registered for GST." {...field("gstin")} />
+        <TextField label="Grievance Officer" hint="The person customers can complain to, e.g. “Asha Rao, Proprietor”. Indian e-commerce rules ask for one." {...field("grievance_officer")} />
       </Card>
 
       <Card className="flex flex-col gap-2">
         <h2 className="font-display text-lg font-bold text-text-primary">Payments</h2>
         <Toggle
           label="Take payments online"
-          hint="Turn on only after Razorpay is set up. Until then, Buy and Rent open a chat with you."
+          hint="Turn on only after Razorpay is set up and a test purchase has worked. Until then, Buy and Rent open a chat with you."
           checked={values.payments_enabled === "true"}
           onChange={(v) => set("payments_enabled", v ? "true" : "false")}
         />

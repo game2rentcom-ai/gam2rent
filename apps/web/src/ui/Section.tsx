@@ -16,13 +16,17 @@ interface Props {
 export function Section({ title, eyebrow, moreTo, moreLabel = "See all", children, className = "", id }: Props) {
   return (
     <section id={id} className={`flex flex-col gap-4 ${className}`}>
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex items-end gap-3">
         <div className="min-w-0">
-          {eyebrow && <p className="text-xs font-bold uppercase tracking-wider text-brand-500">{eyebrow}</p>}
-          <h2 className="font-display text-xl font-black leading-tight text-text-primary sm:text-2xl">{title}</h2>
+          {eyebrow && <p className="text-xs font-bold uppercase tracking-wider text-accent-300">{eyebrow}</p>}
+          <h2 className="flex items-center gap-2.5 font-display text-xl font-bold leading-tight text-text-primary sm:text-2xl">
+            <span aria-hidden="true" className="h-5 w-1.5 shrink-0 rounded-[1px] bg-linear-to-b from-brand-300 to-brand-600 shadow-glow-brand" />
+            {title}
+          </h2>
         </div>
+        <span aria-hidden="true" className="mb-3 hidden h-px min-w-6 flex-1 bg-linear-to-r from-border-strong to-transparent sm:block" />
         {moreTo && (
-          <Link to={moreTo} className="-mr-2 flex min-h-11 shrink-0 items-center gap-1 px-2 text-sm font-semibold text-brand-500 hover:text-brand-100">
+          <Link to={moreTo} className="-mr-2 ml-auto flex min-h-11 shrink-0 items-center gap-1 px-2 text-sm font-semibold text-brand-400 hover:text-brand-100 sm:ml-0">
             {moreLabel}
             <IconChevron className="h-4 w-4" />
           </Link>

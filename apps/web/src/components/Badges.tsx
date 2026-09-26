@@ -1,29 +1,35 @@
+import { Fragment } from "react";
 import type { Platform } from "../data/catalogTypes";
 import { PLATFORM_LABEL } from "../data/catalogTypes";
+import { PLATFORM_SHORT, PLATFORM_TEXT } from "../ui/format";
 
 // One badge vocabulary, reused everywhere a listing is shown (grid card, featured rail, detail
 // page) — per ux-principles.md #5 and the "component contract." Iteration 3: platform glyphs
 // redrawn bolder/simpler after the round-2 versions tested as illegible at small size (read as
 // an ambiguous padlock, not a platform) — see brainstorm/iteration-3-ux-designer.md §2c. Each
-// platform also gets its own tinted tile instead of one uniform dark pill, so the grid is
-// scannable by platform at a glance, like a real game library.
-
-const PLATFORM_TINT: Record<Platform, string> = {
-  pc: "bg-slate-700/90 border-slate-500/40",
-  ps4: "bg-blue-950/90 border-blue-400/30",
-  ps5: "bg-indigo-950/90 border-indigo-400/30",
-  xbox: "bg-green-950/90 border-green-400/30",
-  cloud: "bg-teal-900/90 border-teal-400/30",
-};
+// platform also has its own colour (see --color-plat-* in index.css), so the grid is scannable
+// by platform at a glance, like a real game library.
 
 export function PlatformBadge({ platform }: { platform: Platform }) {
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm ${PLATFORM_TINT[platform]}`}
-    >
+    <span className={`badge badge-${platform} cut`}>
       <PlatformGlyph platform={platform} className="h-3.5 w-3.5" />
       {PLATFORM_LABEL[platform]}
     </span>
+  );
+}
+
+/** "PC · PS4 · Xbox" with each name in its platform's colour. */
+export function PlatformLine({ platforms }: { platforms: Platform[] }) {
+  return (
+    <>
+      {platforms.map((p, i) => (
+        <Fragment key={p}>
+          {i > 0 && " · "}
+          <span className={PLATFORM_TEXT[p]}>{PLATFORM_SHORT[p]}</span>
+        </Fragment>
+      ))}
+    </>
   );
 }
 
@@ -32,7 +38,7 @@ export function PlatformBadge({ platform }: { platform: Platform }) {
 // wherever they appear (documentation/brainstorm/ux-designer-perspective.md §4).
 export function EtaBadge({ label }: { label: string }) {
   return (
-    <span className="trust-pill shadow-glow-trust-sm">
+    <span className="trust-pill">
       <ClockIcon />
       {label}
     </span>

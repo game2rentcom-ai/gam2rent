@@ -3,8 +3,7 @@ import { IconCheck } from "./icons";
 
 // Form building blocks. Every field has a real <label>, errors are announced and tied to their input,
 // and every control is at least 44 px tall. Text is 16 px so iPhones don't zoom in on focus.
-export const inputClass =
-  "min-h-11 w-full rounded-xl border border-border-subtle bg-bg-base px-3 text-base text-text-primary outline-none placeholder:text-text-muted focus:border-brand-500 disabled:opacity-60 aria-[invalid=true]:border-red-400";
+export const inputClass = "field";
 
 interface FieldProps {
   label: string;
@@ -80,7 +79,7 @@ export function TextAreaField({ label, hint, error, ...rest }: AreaProps) {
 export function CheckboxField({ label, ...rest }: Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "className" | "children"> & { label: React.ReactNode }) {
   return (
     <label className="flex min-h-11 cursor-pointer items-start gap-3 py-1 text-sm text-text-primary">
-      <input type="checkbox" className="mt-0.5 h-6 w-6 shrink-0 accent-[var(--color-brand-500)]" {...rest} />
+      <input type="checkbox" className="check mt-0.5" {...rest} />
       <span className="pt-0.5">{label}</span>
     </label>
   );
@@ -88,12 +87,12 @@ export function CheckboxField({ label, ...rest }: Omit<React.InputHTMLAttributes
 
 export function Notice({ tone = "info", children }: { tone?: "info" | "success" | "error"; children: React.ReactNode }) {
   const tones = {
-    info: "border-white/10 bg-bg-surface text-text-muted",
-    success: "border-trust-300 bg-trust-100 text-trust-600",
-    error: "border-red-400/40 bg-red-400/10 text-red-200",
+    info: "border-border-strong border-l-accent-400 bg-bg-surface text-text-muted",
+    success: "border-trust-300 border-l-trust-600 bg-trust-100 text-trust-600",
+    error: "border-red-400/40 border-l-red-400 bg-red-400/10 text-red-200",
   };
   return (
-    <div role={tone === "error" ? "alert" : "status"} className={`flex items-start gap-2 rounded-xl border px-4 py-3 text-sm ${tones[tone]}`}>
+    <div role={tone === "error" ? "alert" : "status"} className={`flex items-start gap-2 rounded-xl border border-l-4 px-4 py-3 text-sm ${tones[tone]}`}>
       {tone === "success" && <IconCheck className="mt-0.5 h-5 w-5 shrink-0" />}
       <div>{children}</div>
     </div>

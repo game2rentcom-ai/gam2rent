@@ -13,7 +13,7 @@ export function WishlistButton({ gameId, title }: { gameId: string; title: strin
   const { pathname } = useLocation();
   const [problem, setProblem] = useState("");
   const saved = shop.wishlist.includes(gameId);
-  const style = "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-bg-surface text-text-primary hover:border-brand-500";
+  const style = "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-border-strong bg-bg-surface text-text-primary transition-colors hover:border-brand-400";
 
   if (!backendConfigured || status === "loading" || shop.ready === false) return null;
   if (status === "anonymous") {
@@ -26,7 +26,7 @@ export function WishlistButton({ gameId, title }: { gameId: string; title: strin
         aria-pressed={saved}
         aria-label={saved ? `Remove ${title} from your wishlist` : `Save ${title} to your wishlist`}
         onClick={async () => setProblem((await shop.toggleWishlist(gameId)).error ?? "")}
-        className={`${style} ${saved ? "text-brand-500" : ""}`}
+        className={`${style} ${saved ? "border-brand-400 text-brand-400 shadow-glow-brand" : ""}`}
       >
         <IconHeart filled={saved} />
       </button>
