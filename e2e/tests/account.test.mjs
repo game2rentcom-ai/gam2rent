@@ -103,6 +103,18 @@ suite("protected pages send visitors to log in and bring them back afterwards", 
     await page.getByRole("heading", { name: "My account" }).waitFor();
     assert.equal(new URL(page.url()).hostname, "gamebuy.test", "a login link can never send someone to another site");
   });
+  // Browsers read a backslash as a slash, so "/\evil.example" is an off-site address in disguise.
+  for (const next of ["/\\evil.example/steal", "/\t/evil.example"]) {
+    await withSite(PHONE, async ({ page, goto }) => {
+      await goto(`/login?next=${encodeURIComponent(next)}`);
+      await page.getByLabel("Email").fill("customer@example.test");
+      await page.getByLabel("Password", { exact: true }).fill("password123");
+      await page.getByRole("button", { name: "Log in" }).click();
+      await page.getByRole("heading", { name: "My account" }).waitFor();
+      assert.equal(new URL(page.url()).hostname, "gamebuy.test", `next=${JSON.stringify(next)} stays on this site`);
+      assert.equal(path(page), "/account", "and falls back to the account page");
+    });
+  }
 });
 
 suite("first login walks through set-up: details are validated and saved, the taste steps can be skipped", async () => {

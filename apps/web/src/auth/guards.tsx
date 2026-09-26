@@ -7,13 +7,26 @@ function Waiting() {
   return <div className="h-64 animate-pulse rounded-2xl bg-bg-surface" aria-busy="true" aria-label="Loading" />;
 }
 
+// Shown instead of a page that depends on the profile or admin status when looking them up failed for a moment.
+function AccountUnavailable() {
+  const { refresh } = useAuth();
+  return (
+    <div className="mx-auto flex max-w-md flex-col items-center gap-3 py-20 text-center">
+      <h1 className="font-display text-2xl font-bold text-text-primary">We couldn’t load your account</h1>
+      <p className="text-sm text-text-muted">This is usually a passing connection problem. We’re trying again — or you can try now.</p>
+      <Button onClick={() => void refresh()}>Try again</Button>
+    </div>
+  );
+}
+
 /** Only for signed-in visitors; everyone else is sent to log in and brought back afterwards. */
 export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { status } = useAuth();
+  const { status, degraded } = useAuth();
   const location = useLocation();
   if (!backendConfigured) return <Navigate to="/" replace />;
   if (status === "loading") return <Waiting />;
   if (status === "anonymous") return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  if (degraded) return <AccountUnavailable />;
   return <>{children}</>;
 }
 
@@ -22,11 +35,12 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
  * which refuses every admin operation from anyone who isn't in public.admins.
  */
 export function RequireAdmin({ children }: { children: React.ReactNode }) {
-  const { status, isAdmin } = useAuth();
+  const { status, isAdmin, degraded } = useAuth();
   const location = useLocation();
   if (!backendConfigured) return <Navigate to="/" replace />;
   if (status === "loading") return <Waiting />;
   if (status === "anonymous") return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />;
+  if (degraded) return <AccountUnavailable />;
   if (!isAdmin) {
     return (
       <div className="flex flex-col items-center gap-3 py-20 text-center">

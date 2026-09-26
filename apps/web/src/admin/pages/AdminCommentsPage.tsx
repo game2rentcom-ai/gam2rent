@@ -24,7 +24,7 @@ async function loadComments(client: SupabaseClient) {
 export function AdminCommentsPage() {
   const { data, error, loading, reload } = useLoad(loadComments, undefined);
   if (loading) return <Loading />;
-  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the comments."} />;
+  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the comments."} onRetry={reload} />;
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title="Comments" subtitle={`The latest ${data.comments.length} comments on games.`} />

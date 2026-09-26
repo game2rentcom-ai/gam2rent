@@ -30,6 +30,10 @@ export interface CatalogGame {
   isRentable?: boolean;
 }
 
+/** A title whose real details were never confirmed (its genre is literally "Unverified"). Customers don't see it
+ * until the owner fills the details in from the admin panel — it then appears by itself. */
+export const isPlaceholder = (game: CatalogGame): boolean => game.genre.toLowerCase() === "unverified";
+
 export const PLATFORM_LABEL: Record<Platform, string> = {
   pc: "PC",
   ps4: "PS4",

@@ -13,7 +13,7 @@ import { loadPlans, type Plan } from "../plans";
 export function RentalPlans() {
   const { data, error, loading, reload } = useLoad(loadPlans, undefined);
   if (loading) return <Loading />;
-  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the plans."} />;
+  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the plans."} onRetry={reload} />;
   return (
     <div className="flex flex-col gap-4">
       <PlanForm key={data.length} nextOrder={data.length + 1} onSaved={reload} />

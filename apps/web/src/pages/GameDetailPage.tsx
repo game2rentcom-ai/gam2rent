@@ -3,7 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import { GAME_METADATA } from "../data/gameMeta";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { getGameTrailer } from "../data/gameTrailers";
+import { PROMISE } from "../data/policies";
 import { useStore } from "../data/store";
+import { gameDescription, usePageMeta } from "../lib/pageMeta";
 import { GameComments } from "../community/GameComments";
 import { useShop, type CartLine } from "../shop/context";
 import { OrderButtons } from "../shop/OrderButtons";
@@ -12,6 +14,7 @@ import { averageRating, credentialDisclosure } from "../types/listing";
 import { PlatformBadge } from "../components/Badges";
 import { Badge, Chip } from "../ui/Chip";
 import { Button } from "../ui/Button";
+import { Notice } from "../ui/Form";
 import { etaLabel, formatPrice } from "../ui/format";
 import { GameCard } from "../ui/GameCard";
 import { GameCover } from "../ui/GameCover";
@@ -27,6 +30,16 @@ import { NotFoundPage } from "./NotFoundPage";
 
 type Option = "buy" | "rent";
 
+// Holds the price's place while the database answers, so the panel doesn't briefly claim the game has no price.
+function PriceSkeleton() {
+  return (
+    <div className="flex flex-col gap-3" aria-busy="true" aria-label="Loading price">
+      <div className="h-12 w-40 animate-pulse rounded-lg bg-border-strong/40" />
+      <div className="h-4 w-56 animate-pulse rounded bg-border-strong/40" />
+    </div>
+  );
+}
+
 function relatedGames(game: CatalogGame, all: CatalogGame[]): CatalogGame[] {
   const others = all.filter((g) => g.id !== game.id);
   const family = others.filter((g) => g.franchise && g.franchise === game.franchise);
@@ -36,9 +49,13 @@ function relatedGames(game: CatalogGame, all: CatalogGame[]): CatalogGame[] {
 
 export function GameDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { findGame, games, findListedGame, rentalOffersFor, reviewsFor, status, contactLink } = useStore();
+  const { findGame, games, findListedGame, rentalOffersFor, reviewsFor, status, reload, contactLink } = useStore();
   const shop = useShop();
   const game = id ? findGame(id) : undefined;
+  usePageMeta(
+    game ? `${game.title} — buy or rent` : status === "ready" ? "Page not found" : null,
+    game ? gameDescription(game.title, game.description, game.platforms.map((p) => PLATFORM_LABEL[p]).join(", ")) : undefined,
+  );
 
   const listed = game ? findListedGame(game.id) : undefined;
   const offers = game ? rentalOffersFor(game.id) : [];
@@ -49,7 +66,14 @@ export function GameDetailPage() {
 
   const related = game ? relatedGames(game, games) : [];
 
-  if (!game) return status === "loading" ? <div className="h-96 animate-pulse rounded-2xl bg-bg-surface" aria-busy="true" /> : <NotFoundPage />;
+  if (!game) {
+    if (status === "loading") return <div className="h-96 animate-pulse rounded-2xl bg-bg-surface" aria-busy="true" aria-label="Loading" />;
+    // The built-in list may lack a game the owner added, so a failed load can't say "not found" for certain.
+    if (status === "error") return <div className="mx-auto max-w-md py-16"><Notice tone="error" onRetry={reload}>We couldn’t load this game right now.</Notice></div>;
+    return <NotFoundPage />;
+  }
+  const pricesPending = status === "loading";
+  const pricesFailed = status === "error";
 
   const option: Option = chosenOption ?? (listed ? "buy" : offers.length ? "rent" : "buy");
   const plan = offers.find((o) => o.planId === planId) ?? offers.find((o) => o.isPopular) ?? offers[0];
@@ -70,7 +94,9 @@ export function GameDetailPage() {
   const rentHref = contactLink(rentMessage);
 
   const primary =
-    option === "rent"
+    pricesPending
+      ? { label: "Loading price…", price: "", href: undefined, disabled: true }
+      : option === "rent"
       ? { label: plan ? `Rent · ${plan.label}` : "Ask about renting", price: plan ? formatPrice(plan.price) : "Price on request", href: rentHref, disabled: false }
       : listed && !unavailable
         ? { label: "Buy now", price: formatPrice(listed.listing.price), href: buyHref, disabled: false }
@@ -162,6 +188,10 @@ export function GameDetailPage() {
                     </p>
                     <p className="text-sm text-text-muted">{credentialDisclosure(listed.listing.credentialType)}</p>
                   </>
+                ) : pricesPending ? (
+                  <PriceSkeleton />
+                ) : pricesFailed ? (
+                  <Notice tone="error" onRetry={reload}>We couldn’t load the price just now.</Notice>
                 ) : (
                   <p className="text-sm text-text-muted">This game isn’t listed with a price yet. Message us and we’ll check whether we can get it for you, and how quickly.</p>
                 )}
@@ -187,6 +217,10 @@ export function GameDetailPage() {
                       ))}
                     </div>
                   </>
+                ) : pricesPending ? (
+                  <PriceSkeleton />
+                ) : pricesFailed ? (
+                  <Notice tone="error" onRetry={reload}>We couldn’t load the rental prices just now.</Notice>
                 ) : (
                   <p className="text-sm text-text-muted">Rental prices for this game aren’t set yet. Message us for the price and how quickly we can deliver.</p>
                 )}
@@ -214,7 +248,10 @@ export function GameDetailPage() {
 
             <div className="flex items-center gap-3 rounded-xl border border-trust-300 bg-trust-100 p-3 text-sm text-text-muted">
               <span className="medal cut cut-hex h-10 w-10"><IconShield className="h-5 w-5" /></span>
-              <p><span className="font-semibold text-text-primary">Replacement guarantee.</span> Something off after delivery? We replace it, free.</p>
+              <p>
+                <span className="font-semibold text-text-primary">Replacement guarantee.</span>{" "}
+                {option === "rent" ? "Something off during your rental? We replace it, free." : `Something off in the ${PROMISE.replacementDays} days after delivery? We replace it, free.`}
+              </p>
             </div>
           </div>
         </aside>

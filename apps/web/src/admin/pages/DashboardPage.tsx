@@ -31,9 +31,9 @@ async function loadOverview(client: SupabaseClient) {
 }
 
 export function DashboardPage() {
-  const { data, error, loading } = useLoad(loadOverview, undefined);
+  const { data, error, loading, reload } = useLoad(loadOverview, undefined);
   if (loading) return <Loading />;
-  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the overview."} />;
+  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the overview."} onRetry={reload} />;
 
   const steps = [
     { done: Boolean(data.values.contact_whatsapp), label: "Set your contact number", to: "/admin/settings" },
@@ -93,7 +93,7 @@ export function DashboardPage() {
               ["Last 30 days", formatPrice(data.stats.revenue_30d)],
               ["Awaiting delivery", data.stats.awaiting_delivery, "/admin/orders"],
               ["Open tickets", data.stats.open_tickets, "/admin/support"],
-              ["Rentals ending soon", data.stats.rentals_ending, "/admin/orders"],
+              ["Rentals ending soon", data.stats.rentals_ending, "/admin/orders?show=rentals"],
               ["Game requests", data.stats.open_requests, "/admin/requests"],
             ] as [string, string | number, string?][]).map(([k, v, to]) => (
               <div key={k}>

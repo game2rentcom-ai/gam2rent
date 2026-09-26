@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Link, useParams } from "react-router-dom";
-import { ok, useLoad } from "../lib/api";
+import { isUuid, ok, useLoad } from "../lib/api";
 import { orderName } from "../shop/orders";
 import { RESOLUTION_TEXT, TICKET_STATUS, categoryLabel, type Ticket, type TicketMessage } from "../support/tickets";
 import { Thread } from "../support/Thread";
@@ -9,7 +9,8 @@ import { Button } from "../ui/Button";
 import { Notice } from "../ui/Form";
 
 async function loadTicket(client: SupabaseClient, id: string) {
-  const ticket = (await ok(client.from("support_tickets").select("*").eq("id", id).maybeSingle())) as Ticket | null;
+  if (!isUuid(id)) return null;
+  const ticket =(await ok(client.from("support_tickets").select("*").eq("id", id).maybeSingle())) as Ticket | null;
   if (!ticket) return null;
   const [messages, order] = await Promise.all([
     ok(client.from("ticket_messages").select("*").eq("ticket_id", id).order("created_at")),
@@ -22,7 +23,7 @@ export function TicketPage() {
   const { id = "" } = useParams();
   const { data, error, loading, reload } = useLoad(loadTicket, id);
   if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-bg-surface" aria-busy="true" aria-label="Loading" />;
-  if (error) return <Notice tone="error">{error}</Notice>;
+  if (error) return <Notice tone="error" onRetry={reload}>{error}</Notice>;
   if (!data) return <Notice tone="error">We couldn’t find that request.</Notice>;
   const { ticket, messages, order } = data;
   const status = TICKET_STATUS[ticket.status];

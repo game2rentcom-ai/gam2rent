@@ -12,7 +12,7 @@ async function loadAudit(client: SupabaseClient) {
 }
 
 // The database identifies most rows by an id nobody can read; name them by what the owner would recognise.
-const NAME_FIELD: Record<string, string> = { games: "title", listings: "game_id", reviews: "game_id", rental_plans: "label" };
+const NAME_FIELD: Record<string, string> = { games: "title", listings: "game_id", reviews: "game_id", rental_plans: "label", admins: "email" };
 const subject = (e: Entry) => {
   const row = e.new_row ?? e.old_row;
   const name = row?.[NAME_FIELD[e.table_name]];
@@ -28,9 +28,9 @@ function changes(e: Entry): [string, unknown, unknown][] {
 }
 
 export function AuditPage() {
-  const { data, error, loading } = useLoad(loadAudit, undefined);
+  const { data, error, loading, reload } = useLoad(loadAudit, undefined);
   if (loading) return <Loading />;
-  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the history."} />;
+  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the history."} onRetry={reload} />;
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title="History" subtitle="The last 100 changes, newest first." />

@@ -26,7 +26,7 @@ async function loadRequests(client: SupabaseClient) {
 export function AdminRequestsPage() {
   const { data, error, loading, reload } = useLoad(loadRequests, undefined);
   if (loading) return <Loading />;
-  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the requests."} />;
+  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the requests."} onRetry={reload} />;
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title="Game requests" subtitle={`${data.requests.length} in total, most wanted first.`} />

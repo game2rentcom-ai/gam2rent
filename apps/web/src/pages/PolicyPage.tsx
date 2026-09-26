@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { POLICIES, POLICIES_UPDATED, type PolicyBlock } from "../data/policies";
 import { useStore } from "../data/store";
+import { usePageMeta } from "../lib/pageMeta";
 import { formatPhone } from "../lib/phone";
 import { NotFoundPage } from "./NotFoundPage";
 
@@ -39,7 +40,8 @@ function Block({ block, details, only }: { block: PolicyBlock; details: Details;
 export function PolicyPage() {
   const { slug = "" } = useParams();
   const { setting } = useStore();
-  const policy = POLICIES[slug];
+  const policy = Object.hasOwn(POLICIES, slug) ? POLICIES[slug] : undefined; // not "constructor" and the like
+  usePageMeta(policy ? policy.title : "Page not found", policy?.summary);
   if (!policy) return <NotFoundPage />;
 
   const phone = setting("contact_whatsapp");

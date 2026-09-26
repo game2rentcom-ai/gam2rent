@@ -20,7 +20,7 @@ async function loadSettings(client: SupabaseClient): Promise<Values> {
 export function SettingsPage() {
   const { data, error, loading, reload } = useLoad(loadSettings, undefined);
   if (loading) return <Loading />;
-  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the settings."} />;
+  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the settings."} onRetry={reload} />;
   return <SettingsForm initial={data} onSaved={reload} />;
 }
 

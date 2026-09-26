@@ -25,7 +25,7 @@ async function loadTickets(client: SupabaseClient) {
 }
 
 export function AdminSupportPage() {
-  const { data, error, loading } = useLoad(loadTickets, undefined);
+  const { data, error, loading, reload } = useLoad(loadTickets, undefined);
   const [filter, setFilter] = useState<Filter>("open");
   const rows = useMemo(() => {
     if (!data) return [];
@@ -33,7 +33,7 @@ export function AdminSupportPage() {
     return filter === "open" ? [...list].reverse() : list;
   }, [data, filter]);
   if (loading) return <Loading />;
-  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the requests."} />;
+  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the requests."} onRetry={reload} />;
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title="Support" subtitle="Questions and problems from customers." />

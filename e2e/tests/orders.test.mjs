@@ -3,6 +3,7 @@
 // coupons. The real payment and delivery functions run against the real database rules and a fake
 // Razorpay. Needs the private supabase/ folder next to e2e/ (skipped without it). Tests build on each other.
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { after, before, test } from "node:test";
 import { chromium } from "playwright";
 import { DESKTOP, PHONE, SMALL_PHONE, VARIANTS, build, catalog, fillLogin, mobileProblems } from "../lib/site.mjs";
@@ -14,7 +15,7 @@ const GTA = catalog.find((g) => g.id === "gta-5");
 const GOW = catalog.find((g) => g.id === "god-of-war");
 
 const context = {};
-const { withSite, signedIn, asOwner, one, customerId, text, orderIdOf, customerPays } = scenarios(context);
+const { withSite, signedIn, asOwner, one, customerId, text, orderIdOf, customerPays, markDelivered } = scenarios(context);
 let backend;
 before(async () => {
   if (!backendAvailable) return;
@@ -203,6 +204,36 @@ suite("a rental: the window is shown, and once the owner marks it returned the c
     await goto(`/account/orders/${rental}`);
     await page.getByText("Returned", { exact: true }).waitFor();
     assert.equal(await page.getByRole("button", { name: "Show my login details" }).count(), 0);
+  });
+});
+
+suite("a rental that has run out: the customer sees it ended, and the owner finds it under Rentals due and can export the orders", async () => {
+  const rental = await customerPays("gta-5", { rentPlan: "3 days" });
+  await markDelivered(rental);
+  await one("update public.order_items set rental_starts_at = now() - interval '4 days', rental_ends_at = now() - interval '1 hour' where order_id = $1", [rental]);
+  await one("update public.orders set contact_name = '=SUM(1+1)' where id = $1", [rental]);
+
+  await withSite(DESKTOP, async ({ page, goto }) => {
+    await fillLogin({ page, goto }, "customer@example.test");
+    await signedIn(page);
+    await goto(`/account/orders/${rental}`);
+    await page.getByText(/This rental has ended, so the login details are no longer shown/).waitFor();
+    await page.getByText("Rental ended", { exact: true }).waitFor();
+    assert.equal(await page.getByRole("button", { name: "Show my login details" }).count(), 0, "the server would refuse them anyway");
+  });
+
+  await asOwner(DESKTOP, async ({ page, goto }) => {
+    await goto("/admin/orders?show=rentals"); // where the overview's "Rentals ending soon" figure leads
+    await page.getByRole("button", { name: "Rentals due · 1" }).waitFor();
+    await page.getByText("Rental ended", { exact: true }).waitFor();
+    assert.equal(await page.getByRole("link", { name: /GB-\d{4}-\d{6}/ }).count(), 1, "only the order with a rental to take back");
+
+    const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Download CSV" }).click()]);
+    const csv = readFileSync(await download.path(), "utf8");
+    assert.match(csv, /Receipt,Placed,Paid,Status,Total \(INR\)/);
+    assert.match(csv, /'=SUM\(1\+1\)/, "a customer's name can't turn into a spreadsheet formula");
+    assert.doesNotMatch(csv, /,=SUM/);
+    assert.match(csv, /pay_test_\d+/, "the Razorpay payment id is there for the accounts");
   });
 });
 

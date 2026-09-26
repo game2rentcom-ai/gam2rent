@@ -360,6 +360,36 @@ suite("reviews: an owner-added review appears on the store, can be hidden and de
   });
 });
 
+suite("team: an admin can add another (who must already have an account) and remove them, never themselves; it is on the record", async () => {
+  await asOwner(DESKTOP, async ({ page, goto }) => {
+    await goto("/admin/team");
+    await page.getByRole("heading", { name: "Team" }).waitFor();
+    await page.getByText("a@x").waitFor();
+    assert.equal(await page.getByRole("button", { name: /Remove…/ }).count(), 0, "no way to remove yourself");
+
+    await page.getByLabel("Add an admin by email").fill("nobody@example.test");
+    await page.getByRole("button", { name: "Add admin" }).click();
+    await page.getByText(/There is no account with that email/).waitFor();
+
+    await page.getByLabel("Add an admin by email").fill("O@X");
+    await page.getByRole("button", { name: "Add admin" }).click();
+    await page.getByText(/Added — they can open the admin area now/).waitFor();
+    await page.getByText("o@x", { exact: true }).waitFor();
+    const other = backend.accounts.get("other@example.test").id;
+    assert.equal((await backend.query("select count(*)::int as n from public.admins where user_id = $1", [other]))[0].n, 1);
+
+    await page.getByRole("button", { name: "Remove…" }).click();
+    await page.getByRole("button", { name: "Yes, remove" }).click();
+    await page.getByText("Removed.").waitFor();
+    assert.equal((await backend.query("select count(*)::int as n from public.admins where user_id = $1", [other]))[0].n, 0);
+
+    await goto("/admin/audit");
+    const text = await pageText(page);
+    assert.match(text, /ADD_ADMIN\s+admins · o@x/);
+    assert.match(text, /REMOVE_ADMIN\s+admins · o@x/);
+  });
+});
+
 suite("history records who changed what, written by the database", async () => {
   await asOwner(DESKTOP, async ({ page, goto }) => {
     await goto("/admin/audit");

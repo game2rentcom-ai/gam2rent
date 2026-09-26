@@ -77,7 +77,7 @@ const terms: Policy = {
     {
       heading: "6. Delivery",
       paragraphs: [
-        "Delivery works as set out in the Delivery Times page: your login details appear on your order page once your order is delivered. Rented access ends automatically when the rental period ends, and the details are removed from your order page.",
+        "Delivery works as set out in the Delivery Times page: your login details appear on your order page once your order is delivered. When a rental period ends, the login details stop being shown on your order page, and you must stop using the account.",
       ],
     },
     {
@@ -270,12 +270,12 @@ const refund: Policy = {
       heading: "6. How refunds are paid",
       paragraphs: [
         `Refunds go back to the payment method you used, through Razorpay, and usually reach you in ${P.refundDays}. A refund cannot be made on a payment more than 6 months old. Razorpay’s own fee is not returned to us, so we do not deduct anything from your refund for it.`,
-        "If an order was arranged with us directly instead of through the site, the same rules apply and we will refund the way you paid.",
+        "Where only part of an order is refunded — for example the unused part of a rental — you get back that part. If an order was arranged with us directly instead of through the site, the same rules apply and we will refund the way you paid.",
       ],
     },
     {
       heading: "7. Coupons",
-      paragraphs: ["If an order that used a coupon is refunded, the coupon is not restored unless the refund is because of our error."],
+      paragraphs: ["If an order that used a coupon is refunded, the coupon is not given back. If the refund is because of our mistake, tell us and we will issue you a new code."],
     },
   ],
 };
@@ -308,7 +308,7 @@ const shipping: Policy = {
     },
     {
       heading: "4. Rentals",
-      paragraphs: ["The rental period starts when we deliver, not when you pay. The order page shows the start and end dates. When it ends, the details are removed from your order page."],
+      paragraphs: ["The rental period starts when we deliver, not when you pay. The order page shows the start and end dates. When the rental ends, the login details stop being shown there."],
     },
     {
       heading: "5. Delivery problems",

@@ -12,6 +12,8 @@ export type DataSource = "remote" | "demo" | "none";
 export interface Store {
   /** "loading" only ever happens for the remote source; demo/none are ready immediately. */
   status: "loading" | "ready" | "error";
+  /** Tries the database again after an "error" (games stay browsable meanwhile, just without prices). */
+  reload: () => void;
   source: DataSource;
   /** Every published game: from the database, or the built-in starter list if that is unavailable. */
   games: CatalogGame[];

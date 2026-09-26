@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, NavLink, useLocation, useNavigationType } from "react-router-dom";
 import { useAuth } from "../auth/context";
 import { useStore } from "../data/store";
 import { backendConfigured } from "../lib/supabase";
@@ -61,9 +61,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
     setQuery("");
   }, []);
 
-  // A new page starts at the top (unless the link points at a section on it).
+  // A new page starts at the top (unless the link points at a section on it). Going Back is different: the
+  // browser puts the visitor where they were, so leave the scroll position alone.
+  const latestType = useNavigationType();
+  const navigationType = useRef(latestType);
   useEffect(() => {
-    if (!hash) window.scrollTo(0, 0);
+    navigationType.current = latestType;
+  });
+  useEffect(() => {
+    if (!hash && navigationType.current !== "POP") window.scrollTo(0, 0);
   }, [pathname, hash]);
 
   const navClass = ({ isActive }: { isActive: boolean }) =>

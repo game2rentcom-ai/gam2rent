@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { setContactNumber, whatsAppLink } from "../config";
 import type { Listing, ListedGame, RentalOffer, Review } from "../types/listing";
 import { catalog } from "./catalog";
-import type { CatalogGame } from "./catalogTypes";
+import { isPlaceholder, type CatalogGame } from "./catalogTypes";
 import { demoListings, demoRentalPlans, demoReviews } from "./demo";
 import { fetchRemote, remoteConfigured } from "./remote";
 import { StoreContext, type DataSource, type Store } from "./store";
@@ -43,6 +43,7 @@ function initialState(): Loaded {
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<Loaded>(initialState);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (SOURCE !== "remote") return;
@@ -59,11 +60,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [attempt]);
 
   const store = useMemo<Store>(() => {
     setContactNumber(state.settings.contact_whatsapp);
-    const byId = new Map(state.games.map((g) => [g.id, g]));
+    const games = state.games.filter((g) => !isPlaceholder(g));
+    const byId = new Map(games.map((g) => [g.id, g]));
     const listedGames: ListedGame[] = [];
     for (const listing of state.listings) {
       const game = byId.get(listing.catalogId);
@@ -72,8 +74,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
     return {
       status: state.status,
+      reload: () => {
+        setState((s) => ({ ...s, status: "loading" }));
+        setAttempt((n) => n + 1);
+      },
       source: SOURCE,
-      games: state.games,
+      games,
       findGame: (gameId) => byId.get(gameId),
       listedGames,
       findListedGame: (gameId) => listedGames.find((g) => g.id === gameId),

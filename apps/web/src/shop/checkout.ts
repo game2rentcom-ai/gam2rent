@@ -33,7 +33,6 @@ export function paymentProblem(e: unknown): { code: string; text: string } {
     code === "phone_required" ? "Add your WhatsApp number to your account first — that’s where we send your game."
     : code === "payments_not_configured" ? "Online payment isn’t available right now. You can order on WhatsApp instead."
     : code === "too_many_pending" ? "You have several unpaid orders. Please wait a little while, or message us."
-    : code === "not_captured" ? "Your payment is still being confirmed. It usually takes under a minute — check My orders shortly."
     : e instanceof Error && e.message ? e.message
     : "Something went wrong. Please try again.";
   return { code, text };
@@ -67,14 +66,17 @@ function loadRazorpay(): Promise<void> {
 
 interface Created { order_id: string; status: "paid" | "pending_payment"; razorpay_order_id?: string; amount?: number; currency?: string; key_id?: string }
 
-export type PayResult = { status: "paid"; orderId: string } | { status: "cancelled"; orderId: string };
+// "confirming": the customer paid in Razorpay's window but our confirmation call didn't come back (a dropped
+// connection, a slow bank). The money has moved, so this is never an error: Razorpay also tells our server
+// directly, and the order page shows the order the moment that lands.
+export type PayResult = { status: "paid" | "confirming" | "cancelled"; orderId: string };
 
 export async function payForCart(client: SupabaseClient, options: { coupon: string; name: string; phone: string; business: string }): Promise<PayResult> {
   const created = await callFunction<Created>(client, "create-payment", { coupon: options.coupon });
   if (created.status === "paid") return { status: "paid", orderId: created.order_id };
 
   await loadRazorpay();
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     let settled = false;
     const settle = (finish: () => void) => {
       if (!settled) {
@@ -94,7 +96,7 @@ export async function payForCart(client: SupabaseClient, options: { coupon: stri
       handler: (response) =>
         void callFunction(client, "verify-payment", response).then(
           () => settle(() => resolve({ status: "paid", orderId: created.order_id })),
-          (e: unknown) => settle(() => reject(e)),
+          () => settle(() => resolve({ status: "confirming", orderId: created.order_id })),
         ),
       modal: { ondismiss: () => settle(() => resolve({ status: "cancelled", orderId: created.order_id })) },
     }).open();

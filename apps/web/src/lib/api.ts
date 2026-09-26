@@ -4,8 +4,14 @@ import { useAuth } from "../auth/context";
 
 // Data helpers for every screen that talks to the signed-in API (admin, cart, orders).
 
+/** Ids in the address bar are typed or edited by people; the database rejects a malformed one with a raw error. */
+export const isUuid = (value: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
 export const errorMessage = (e: unknown): string => {
   const text = e instanceof Error ? e.message : typeof e === "object" && e && "message" in e ? String((e as { message: unknown }).message) : "";
+  if (/JWT expired/i.test(text)) return "Your session has expired. Please log in again.";
+  if (/failed to fetch|networkerror|load failed|network request failed/i.test(text)) return "We couldn’t reach the server. Check your connection and try again.";
+  if (/invalid input syntax for type uuid|not_found/i.test(text)) return "We couldn’t find that.";
   if (/row-level security|permission denied|Forbidden/i.test(text)) return "You don’t have permission to do that.";
   if (/invalid_transition/.test(text)) return "That change isn’t allowed for this order’s current status.";
   if (/use_refund_function/.test(text)) return "This order was paid through Razorpay — use “Refund via Razorpay” so the money goes back.";

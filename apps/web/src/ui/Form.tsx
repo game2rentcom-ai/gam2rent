@@ -85,7 +85,7 @@ export function CheckboxField({ label, ...rest }: Omit<React.InputHTMLAttributes
   );
 }
 
-export function Notice({ tone = "info", children }: { tone?: "info" | "success" | "error"; children: React.ReactNode }) {
+export function Notice({ tone = "info", children, onRetry }: { tone?: "info" | "success" | "error"; children: React.ReactNode; onRetry?: () => void }) {
   const tones = {
     info: "border-border-strong border-l-accent-400 bg-bg-surface text-text-muted",
     success: "border-trust-300 border-l-trust-600 bg-trust-100 text-trust-600",
@@ -94,7 +94,15 @@ export function Notice({ tone = "info", children }: { tone?: "info" | "success" 
   return (
     <div role={tone === "error" ? "alert" : "status"} className={`flex items-start gap-2 rounded-xl border border-l-4 px-4 py-3 text-sm ${tones[tone]}`}>
       {tone === "success" && <IconCheck className="mt-0.5 h-5 w-5 shrink-0" />}
-      <div>{children}</div>
+      <div>
+        {children}
+        {onRetry && (
+          <>
+            {" "}
+            <button type="button" onClick={onRetry} className="inline-flex min-h-11 items-center font-semibold underline">Try again</button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

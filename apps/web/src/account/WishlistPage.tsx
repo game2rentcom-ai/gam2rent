@@ -22,7 +22,8 @@ export function WishlistPage() {
       {problem && <Notice tone="error">{problem}</Notice>}
       {shop.ready === null && <div className="h-40 animate-pulse rounded-2xl bg-bg-surface" aria-busy="true" aria-label="Loading your wishlist" />}
       {shop.ready === false && <Notice tone="error">Your wishlist isn’t available right now. Please try again later.</Notice>}
-      {shop.ready && saved.length === 0 && (
+      {shop.failed && <Notice tone="error" onRetry={shop.refresh}>We couldn’t load your wishlist just now.</Notice>}
+      {shop.ready && !shop.failed && saved.length === 0 && (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border-strong px-4 py-12 text-center">
           <p className="text-sm text-text-muted">Tap the heart on a game to save it here.</p>
           <Button to="/browse">Browse games</Button>

@@ -44,7 +44,10 @@ export function CartPage() {
       </div>
     );
   }
+  if (shop.failed) return <div className="mx-auto max-w-md py-16"><Notice tone="error" onRetry={shop.refresh}>We couldn’t load your cart just now.</Notice></div>;
   if (shop.ready === null || quote.loading) return <div className="h-64 animate-pulse rounded-2xl bg-bg-surface" aria-busy="true" aria-label="Loading your cart" />;
+  // Without prices every line would wrongly read "no longer available", so a failed pricing call stops here.
+  if (quote.error) return <div className="mx-auto max-w-md py-16"><Notice tone="error" onRetry={quote.reload}>{quote.error}</Notice></div>;
 
   const data = quote.data;
   const priced = new Map((data?.items ?? []).map((i) => [i.game_id, i]));
@@ -70,9 +73,9 @@ export function CartPage() {
         phone: profile?.phone ?? "",
         business: setting("business_name") ?? "GameBuy",
       });
-      if (result.status === "paid") {
+      if (result.status !== "cancelled") {
         shop.refresh();
-        navigate(`/account/orders/${result.orderId}`);
+        navigate(`/account/orders/${result.orderId}`, { state: { confirming: result.status === "confirming" } });
       } else {
         setMessage({ tone: "info", text: "Payment cancelled — nothing was charged. Your cart is saved." });
       }

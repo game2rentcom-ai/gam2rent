@@ -19,6 +19,10 @@ export interface Auth {
   profile: Profile | null;
   /** From the database (public.admins). The panel hides itself for others, but the DATABASE is what enforces it. */
   isAdmin: boolean;
+  /** Signed in, but the profile or admin lookup failed for a temporary reason, so `profile` and `isAdmin` can't be trusted yet. Retries by itself. */
+  degraded: boolean;
+  /** Look the profile and admin status up again. */
+  refresh(): Promise<void>;
   signIn(email: string, password: string): Promise<AuthResult>;
   signUp(input: { email: string; password: string; fullName: string }): Promise<AuthResult & { needsConfirmation?: boolean }>;
   signOut(): Promise<void>;

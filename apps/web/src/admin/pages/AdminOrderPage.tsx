@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../../auth/context";
 import { PLATFORM_LABEL, type Platform } from "../../data/catalogTypes";
-import { ok, useAction, useLoad } from "../../lib/api";
+import { isUuid, ok, useAction, useLoad } from "../../lib/api";
 import { callFunction } from "../../shop/checkout";
 import { Delivery } from "../../shop/Delivery";
 import { STATUS_LABEL, formatDate, formatDateTime, orderName, type Order, type OrderItem, type OrderStatus } from "../../shop/orders";
@@ -14,7 +14,8 @@ import { formatPrice } from "../../ui/format";
 import { Card, ErrorNote, Loading, PageHeader } from "../kit";
 
 async function loadOrder(client: SupabaseClient, id: string) {
-  const order = (await ok(client.from("orders").select("*").eq("id", id).maybeSingle())) as Order | null;
+  if (!isUuid(id)) return null;
+  const order =(await ok(client.from("orders").select("*").eq("id", id).maybeSingle())) as Order | null;
   if (!order) return null;
   const items = (await ok(client.from("order_items").select("*").eq("order_id", id).order("title"))) as OrderItem[];
   return { order, items };
@@ -24,7 +25,7 @@ export function AdminOrderPage() {
   const { id = "" } = useParams();
   const { data, error, loading, reload } = useLoad(loadOrder, id);
   if (loading) return <Loading />;
-  if (error) return <ErrorNote message={error} />;
+  if (error) return <ErrorNote message={error} onRetry={reload} />;
   if (!data) return <ErrorNote message="That order doesn’t exist." />;
   const { order, items } = data;
   const status = STATUS_LABEL[order.status];
@@ -46,6 +47,9 @@ export function AdminOrderPage() {
         <p className="text-sm text-text-muted">
           {formatPrice(order.total)}{order.discount > 0 ? ` after ${formatPrice(order.discount)} off${order.coupon_code ? ` (${order.coupon_code})` : ""}` : ""} · {order.payment_source === "razorpay" ? "paid through Razorpay" : order.payment_source === "manual" ? "recorded by hand" : "free order"}
         </p>
+        {order.razorpay_payment_id && (
+          <p className="break-all text-xs text-text-muted">Razorpay payment <span className="font-mono text-text-primary">{order.razorpay_payment_id}</span>{order.razorpay_order_id ? <> · order <span className="font-mono">{order.razorpay_order_id}</span></> : null} — search for it in your Razorpay dashboard.</p>
+        )}
       </Card>
 
       <ul className="flex flex-col gap-3">

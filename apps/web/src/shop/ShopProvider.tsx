@@ -6,20 +6,27 @@ import { backendConfigured } from "../lib/supabase";
 import { ShopContext, type CartLine, type Shop } from "./context";
 
 // The signed-in customer's wishlist and cart. Both live in the database (row-level security keeps each
-// customer to their own rows). If those tables aren't reachable — the database predates them — `ready`
-// turns false and the store quietly falls back to "Buy opens a chat", so nothing breaks.
+// customer to their own rows). If those tables don't exist — the database predates them — `ready` turns
+// false and the store quietly falls back to "Buy opens a chat", so nothing breaks. Any other failure (a
+// dropped connection, a busy moment) is temporary: ordering stays on, `failed` is set, and the cart screen
+// offers a retry instead of showing an empty cart.
 
-interface Loaded { userId: string; ready: boolean; wishlist: string[]; cart: CartLine[] }
+interface Loaded { userId: string; ready: boolean; failed: boolean; wishlist: string[]; cart: CartLine[] }
+
+const missingTable = (error: { code?: string } | null) => error?.code === "PGRST205" || error?.code === "42P01";
+const temporarilyFailed = (userId: string): Loaded => ({ userId, ready: true, failed: true, wishlist: [], cart: [] });
 
 async function load(client: SupabaseClient, userId: string): Promise<Loaded> {
   const [wishlist, cart] = await Promise.all([
     client.from("wishlist_items").select("game_id"),
     client.from("cart_items").select("game_id,kind,plan_id,platform"),
   ]);
-  if (wishlist.error || cart.error) return { userId, ready: false, wishlist: [], cart: [] };
+  const failure = wishlist.error ?? cart.error;
+  if (failure) return missingTable(failure) ? { userId, ready: false, failed: false, wishlist: [], cart: [] } : temporarilyFailed(userId);
   return {
     userId,
     ready: true,
+    failed: false,
     wishlist: (wishlist.data as { game_id: string }[]).map((r) => r.game_id),
     cart: (cart.data as { game_id: string; kind: "buy" | "rent"; plan_id: string | null; platform: string | null }[]).map((r) => ({ gameId: r.game_id, kind: r.kind, planId: r.plan_id, platform: r.platform })),
   };
@@ -40,8 +47,8 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     client()
       .then((c) => load(c, userId))
       .then(
-        (result) => !cancelled && setLoaded(result),
-        () => !cancelled && setLoaded({ userId, ready: false, wishlist: [], cart: [] }),
+        (result) => !cancelled && setLoaded((prev) => (result.failed && prev?.userId === userId && !prev.failed ? prev : result)),
+        () => !cancelled && setLoaded((prev) => (prev?.userId === userId && !prev.failed ? prev : temporarilyFailed(userId))),
       );
     return () => {
       cancelled = true;
@@ -62,6 +69,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     return {
       ready,
       ordering: paymentsOn && ready !== false,
+      failed: mine?.failed ?? false,
       wishlist: mine?.wishlist ?? [],
       cart: mine?.cart ?? [],
 

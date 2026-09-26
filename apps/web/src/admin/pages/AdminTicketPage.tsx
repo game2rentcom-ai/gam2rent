@@ -26,7 +26,7 @@ export function AdminTicketPage() {
   const { id = "" } = useParams();
   const { data, error, loading, reload } = useLoad(loadTicket, id);
   if (loading) return <Loading />;
-  if (error) return <ErrorNote message={error} />;
+  if (error) return <ErrorNote message={error} onRetry={reload} />;
   if (!data) return <ErrorNote message="That request doesn’t exist." />;
   const { ticket, messages, person, order } = data;
   const status = TICKET_STATUS[ticket.status];

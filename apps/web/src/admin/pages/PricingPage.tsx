@@ -45,7 +45,7 @@ export function PricingPage() {
 function BuyPrices() {
   const { data, error, loading, reload } = useLoad(loadBuyPrices, undefined);
   if (loading) return <Loading />;
-  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load prices."} />;
+  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load prices."} onRetry={reload} />;
   const titles = new Map(data.games.map((g) => [g.id, g.title]));
   const priced = new Set(data.listings.map((l) => l.game_id));
   const sorted = [...data.listings].sort((a, b) => (titles.get(a.game_id) ?? "").localeCompare(titles.get(b.game_id) ?? ""));

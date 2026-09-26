@@ -24,7 +24,7 @@ async function loadReviews(client: SupabaseClient) {
 export function ReviewsPage() {
   const { data, error, loading, reload } = useLoad(loadReviews, undefined);
   if (loading) return <Loading />;
-  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the reviews."} />;
+  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the reviews."} onRetry={reload} />;
   const titles = new Map(data.games.map((g) => [g.id, g.title]));
   return (
     <div className="flex flex-col gap-5">

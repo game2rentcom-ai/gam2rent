@@ -5,7 +5,8 @@ export type OrderStatus = "pending_payment" | "paid" | "in_progress" | "delivere
 
 export interface Order {
   id: string;
-  user_id: string;
+  /** Null once the customer's login has been deleted; the order itself is kept for the accounts. */
+  user_id: string | null;
   receipt_no: string | null;
   status: OrderStatus;
   payment_source: "razorpay" | "manual" | "free";
@@ -15,6 +16,8 @@ export interface Order {
   coupon_code: string | null;
   contact_name: string | null;
   contact_phone: string | null;
+  razorpay_order_id: string | null;
+  razorpay_payment_id: string | null;
   created_at: string;
   paid_at: string | null;
   delivered_at: string | null;

@@ -1,11 +1,12 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigationType, useSearchParams } from "react-router-dom";
 import { useRequestLink } from "../community/request";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { useStore } from "../data/store";
 import { searchGames } from "../lib/search";
 import { Button } from "../ui/Button";
 import { Chip } from "../ui/Chip";
+import { Notice } from "../ui/Form";
 import { GameCard } from "../ui/GameCard";
 import { IconClose, IconFilter, IconSearch } from "../ui/icons";
 import { Sheet } from "../ui/Sheet";
@@ -23,13 +24,36 @@ const SORTS: { value: Sort; label: string }[] = [
 ];
 const PLATFORMS = Object.keys(PLATFORM_LABEL) as Platform[];
 
+// Coming back to the list with the Back button should land where the visitor left it: as many games shown and the
+// same scroll position. Remembered per history entry, for this tab only.
+interface Left { visible: number; y: number }
+const readLeft = (key: string): Left | null => {
+  try { return JSON.parse(sessionStorage.getItem(key) ?? "null") as Left | null; } catch { return null; }
+};
+const writeLeft = (key: string, value: Left) => {
+  try { sessionStorage.setItem(key, JSON.stringify(value)); } catch { /* private mode: nothing to remember */ }
+};
+
 export function BrowsePage() {
-  const { games, findListedGame, status } = useStore();
+  const { games, findListedGame, status, reload } = useStore();
   const [params, setParams] = useSearchParams();
   const location = useLocation();
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [visible, setVisible] = useState(PAGE_SIZE);
+  const navigationType = useNavigationType();
+  const memory = `browse:${location.key}`;
+  const [returning] = useState(() => (navigationType === "POP" ? readLeft(memory) : null));
+  const [visible, setVisible] = useState(returning?.visible ?? PAGE_SIZE);
   const urlTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => {
+    if (returning?.y) requestAnimationFrame(() => window.scrollTo(0, returning.y));
+  }, [returning]);
+  useEffect(() => {
+    const remember = () => writeLeft(memory, { visible, y: window.scrollY });
+    remember();
+    window.addEventListener("scroll", remember, { passive: true });
+    return () => window.removeEventListener("scroll", remember);
+  }, [memory, visible]);
 
   const urlQuery = params.get("q") ?? "";
   // The search box owns its text so typing is instant; the URL follows a moment later (the router
@@ -166,7 +190,13 @@ export function BrowsePage() {
         {status === "loading" ? "Loading games…" : `${results.length} ${results.length === 1 ? "game" : "games"}${q.trim() ? ` for “${q.trim()}”` : ""}`}
       </p>
 
-      {results.length === 0 ? (
+      {status === "error" && <Notice tone="error" onRetry={reload}>We couldn’t load prices and availability just now, so some filters may look empty.</Notice>}
+
+      {results.length === 0 && status === "loading" ? (
+        <ul className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6" aria-hidden="true">
+          {Array.from({ length: 12 }, (_, i) => <li key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-bg-surface" />)}
+        </ul>
+      ) : results.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border-strong px-6 py-14 text-center">
           <p className="font-display text-lg font-bold text-text-primary">No games match</p>
           <p className="max-w-sm text-sm text-text-muted">Try a different spelling or clear the filters. Can’t find a game you want?</p>

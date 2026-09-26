@@ -19,6 +19,7 @@ const PricingPage = page(() => import("./pages/PricingPage"), "PricingPage");
 const ReviewsPage = page(() => import("./pages/ReviewsPage"), "ReviewsPage");
 const SettingsPage = page(() => import("./pages/SettingsPage"), "SettingsPage");
 const AuditPage = page(() => import("./pages/AuditPage"), "AuditPage");
+const TeamPage = page(() => import("./pages/TeamPage"), "TeamPage");
 
 const TABS = [
   { to: "/admin", label: "Overview", end: true },
@@ -30,6 +31,7 @@ const TABS = [
   { to: "/admin/reviews", label: "Reviews" },
   { to: "/admin/comments", label: "Comments" },
   { to: "/admin/requests", label: "Requests" },
+  { to: "/admin/team", label: "Team" },
   { to: "/admin/settings", label: "Settings" },
   { to: "/admin/audit", label: "History" },
 ];
@@ -66,6 +68,7 @@ export function AdminApp() {
           <Route path="games/:id" element={<GameEditPage />} />
           <Route path="pricing" element={<PricingPage />} />
           <Route path="reviews" element={<ReviewsPage />} />
+          <Route path="team" element={<TeamPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="audit" element={<AuditPage />} />
           <Route path="*" element={<DashboardPage />} />

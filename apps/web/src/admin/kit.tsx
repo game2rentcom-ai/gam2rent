@@ -6,8 +6,8 @@ export function Loading({ label = "Loading…" }: { label?: string }) {
   return <div className="h-40 animate-pulse rounded-2xl bg-bg-surface" aria-busy="true" aria-label={label} />;
 }
 
-export function ErrorNote({ message }: { message: string }) {
-  return <Notice tone="error">{message}</Notice>;
+export function ErrorNote({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  return <Notice tone="error" onRetry={onRetry}>{message}</Notice>;
 }
 
 export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }) {

@@ -1,8 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { PLATFORM_LABEL, type Platform } from "../data/catalogTypes";
 import { useStore } from "../data/store";
-import { ok, useLoad } from "../lib/api";
+import { isUuid, ok, useLoad } from "../lib/api";
 import { Delivery } from "../shop/Delivery";
 import { OrderProgress } from "./OrderProgress";
 import { ReviewForm, YourReview, type MyReview } from "./ReviewForm";
@@ -15,12 +16,13 @@ import { etaLabel, formatPrice } from "../ui/format";
 // One order: where it is, what was bought, the delivered login details (fetched only when the customer
 // asks — the server decrypts them for the order's owner alone), and a printable receipt.
 async function loadOrder(client: SupabaseClient, id: string) {
-  const order = (await ok(client.from("orders").select("*").eq("id", id).maybeSingle())) as Order | null;
+  if (!isUuid(id)) return null;
+  const order =(await ok(client.from("orders").select("*").eq("id", id).maybeSingle())) as Order | null;
   if (!order) return null;
   const items = (await ok(client.from("order_items").select("*").eq("order_id", id).order("title"))) as OrderItem[];
   // Reviews are an extra: if the database predates them, the page simply doesn't offer one.
   const reviews = await client.from("reviews").select("order_item_id,rating,comment").in("order_item_id", items.map((i) => i.id));
-  return { order, items, reviews: reviews.error ? null : new Map((reviews.data as MyReview[]).map((r) => [r.order_item_id, r])) };
+  return { order, items, loadedAt: Date.now(), reviews: reviews.error ? null : new Map((reviews.data as MyReview[]).map((r) => [r.order_item_id, r])) };
 }
 
 const NEXT_STEP: Record<Order["status"], string> = {
@@ -32,17 +34,42 @@ const NEXT_STEP: Record<Order["status"], string> = {
   refunded: "This order was refunded.",
 };
 
+// While an order waits for its payment to be confirmed, look again every few seconds for a couple of minutes:
+// Razorpay's own message to our server usually lands within that time and the page then updates by itself.
+const POLL_EVERY_MS = 4000;
+const POLL_FOR_MS = 120_000;
+
 export function OrderPage() {
   const { id = "" } = useParams();
+  const confirming = (useLocation().state as { confirming?: boolean } | null)?.confirming === true;
   const { data, error, loading, reload } = useLoad(loadOrder, id);
   const { setting } = useStore();
+  const [gaveUp, setGaveUp] = useState(false);
+
+  const latestReload = useRef(reload);
+  useEffect(() => {
+    latestReload.current = reload;
+  });
+  const waiting = data?.order.status === "pending_payment";
+  useEffect(() => {
+    if (!waiting) return;
+    const started = Date.now();
+    const timer = setInterval(() => {
+      if (Date.now() - started > POLL_FOR_MS) {
+        clearInterval(timer);
+        setGaveUp(true);
+      } else latestReload.current();
+    }, POLL_EVERY_MS);
+    return () => clearInterval(timer);
+  }, [waiting]);
 
   if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-bg-surface" aria-busy="true" aria-label="Loading your order" />;
-  if (error) return <Notice tone="error">{error}</Notice>;
+  if (error) return <Notice tone="error" onRetry={reload}>{error}</Notice>;
   if (!data) return <Notice tone="error">We couldn’t find that order.</Notice>;
-  const { order, items, reviews } = data;
+  const { order, items, reviews, loadedAt } = data;
   const status = STATUS_LABEL[order.status];
   const live = order.status === "paid" || order.status === "in_progress" || order.status === "delivered";
+  const paidAtRazorpay = confirming && waiting;
   const business = [setting("business_name"), setting("business_address"), setting("gstin") && `GSTIN ${setting("gstin")}`].filter(Boolean);
 
   return (
@@ -56,11 +83,21 @@ export function OrderPage() {
       </header>
       <p className="-mt-3 text-sm text-text-muted">Placed {formatDateTime(order.created_at)}</p>
       <OrderProgress status={order.status} />
-      <Notice tone={order.status === "cancelled" || order.status === "refunded" ? "info" : "success"}>{NEXT_STEP[order.status]}</Notice>
-      {order.status === "pending_payment" && <div className="print:hidden"><Button variant="secondary" onClick={reload}>Check again</Button></div>}
+      {paidAtRazorpay ? (
+        <Notice tone="info">
+          {gaveUp
+            ? "Your payment went through, but the bank is taking a little longer to confirm it. There is nothing more for you to do and you won’t be charged twice. If this order still shows as waiting after an hour, message us with the order number above."
+            : "Your payment went through and is being confirmed — this usually takes under a minute. Please don’t pay again; this page updates by itself."}
+        </Notice>
+      ) : (
+        <Notice tone={order.status === "cancelled" || order.status === "refunded" ? "info" : "success"}>{NEXT_STEP[order.status]}</Notice>
+      )}
+      {waiting && <div className="print:hidden"><Button variant="secondary" onClick={() => { setGaveUp(false); reload(); }}>Check again</Button></div>}
 
       <ul className="flex flex-col gap-3">
-        {items.map((item) => (
+        {items.map((item) => {
+          const rentalOver = item.kind === "rent" && !item.rental_returned_at && item.rental_ends_at !== null && new Date(item.rental_ends_at).getTime() <= loadedAt;
+          return (
           <li key={item.id} className="panel p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -75,14 +112,17 @@ export function OrderPage() {
               <Badge tone={item.delivery_status === "delivered" ? "trust" : "neutral"}>{item.delivery_status === "delivered" ? "Delivered" : "Not delivered yet"}</Badge>
               {item.delivery_status === "pending" && live && item.eta_minutes && <span className="text-xs text-text-muted">Usually {etaLabel(item.eta_minutes)}</span>}
               {item.rental_returned_at && <Badge>Returned</Badge>}
+              {rentalOver && <Badge>Rental ended</Badge>}
             </div>
             {item.kind === "rent" && item.rental_starts_at && item.rental_ends_at && (
               <p className="mt-2 text-xs text-text-muted">Rental: {formatDate(item.rental_starts_at)} to {formatDate(item.rental_ends_at)}</p>
             )}
-            {live && item.delivery_status === "delivered" && !item.rental_returned_at && <Delivery itemId={item.id} />}
+            {rentalOver && <p className="mt-2 text-xs text-text-muted">This rental has ended, so the login details are no longer shown. Want to play it again? Rent it from the game’s page.</p>}
+            {live && item.delivery_status === "delivered" && !item.rental_returned_at && !rentalOver && <Delivery itemId={item.id} />}
             {live && item.delivery_status === "delivered" && reviews && (reviews.has(item.id) ? <YourReview review={reviews.get(item.id)!} /> : <ReviewForm itemId={item.id} onDone={reload} />)}
           </li>
-        ))}
+          );
+        })}
       </ul>
 
       <dl className="panel flex flex-col gap-2 p-4 text-sm">

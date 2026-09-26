@@ -22,7 +22,7 @@ async function loadGames(client: SupabaseClient) {
 }
 
 export function GamesPage() {
-  const { data, error, loading } = useLoad(loadGames, undefined);
+  const { data, error, loading, reload } = useLoad(loadGames, undefined);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [visible, setVisible] = useState(PAGE);
@@ -37,7 +37,7 @@ export function GamesPage() {
   }, [data, query, filter]);
 
   if (loading) return <Loading />;
-  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the games."} />;
+  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the games."} onRetry={reload} />;
 
   return (
     <div className="flex flex-col gap-4">

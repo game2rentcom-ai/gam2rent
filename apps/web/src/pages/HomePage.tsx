@@ -5,9 +5,11 @@ import { Suggestions } from "../community/Suggestions";
 import { useRequestLink } from "../community/request";
 import { useShop } from "../shop/context";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
+import { PROMISE } from "../data/policies";
 import { useStore } from "../data/store";
 import { averageRating } from "../types/listing";
 import { Button } from "../ui/Button";
+import { Notice } from "../ui/Form";
 import { PLATFORM_SHORT, PLATFORM_TEXT, etaLabel, formatPrice, platformLine } from "../ui/format";
 import { GameCard } from "../ui/GameCard";
 import { GameCover } from "../ui/GameCover";
@@ -28,9 +30,9 @@ const PLATFORMS = Object.keys(PLATFORM_LABEL) as Platform[];
 const FAQS = [
   { q: "How does it work?", a: "Pick a game and choose Buy or Rent, then confirm with us. We send you the login details for an account that has the game (or a scan-to-play code, depending on the game). You sign in on your console or PC, download the game from the official store, and play." },
   { q: "Is this an account or a code?", a: "You get access to an account that has the game — or a QR code that signs you in — not a redeemable key. Each game page says exactly which, before you pay." },
-  { q: "What if something goes wrong?", a: "Accounts shared this way can occasionally be restricted or reclaimed by the platform. If anything goes wrong after delivery, we replace it, free. Keep the login details private." },
+  { q: "What if something goes wrong?", a: `Accounts shared this way can occasionally be restricted or reclaimed by the platform. If anything goes wrong, we replace it, free — for ${PROMISE.replacementDays} days after delivery on a purchase, and for the whole period on a rental. Keep the login details private.` },
   { q: "How long does delivery take?", a: "Each game page shows the delivery time for that game. We deliver on demand, so a game we don’t already hold can take a little longer — the page tells you before you commit." },
-  { q: "Renting or buying — what’s the difference?", a: "Renting gives you access for a set number of days, then it ends. Buying gives you access with no end date, covered by our replacement guarantee. The price for each is on the game’s page." },
+  { q: "Renting or buying — what’s the difference?", a: `Renting gives you access for a set number of days, then it ends. Buying gives you access with no end date, covered by our replacement guarantee for ${PROMISE.replacementDays} days after delivery. The price for each is on the game’s page.` },
   { q: "Can I extend a rental?", a: "Message us before your rental ends and we’ll tell you the options." },
 ];
 
@@ -48,7 +50,7 @@ function pick(ids: string[], find: (id: string) => CatalogGame | undefined): Cat
 }
 
 export function HomePage() {
-  const { games, findGame, listedGames, reviews, status, contactLink } = useStore();
+  const { games, findGame, listedGames, reviews, status, reload, contactLink } = useStore();
   const [query, setQuery] = useState("");
   const chatHref = contactLink("Hi! I have a question about renting or buying games.");
   const request = useRequestLink();
@@ -90,6 +92,8 @@ export function HomePage() {
         </div>
       </section>
 
+      {status === "error" && <Notice tone="error" onRetry={reload}>We couldn’t load prices and availability just now. You can still browse every game.</Notice>}
+
       {spotlight.length > 0 && (
         <Section title="Spotlight" moreTo="/browse" moreLabel="Browse all">
           <Rail label="Spotlight games">
@@ -117,6 +121,12 @@ export function HomePage() {
               );
             })}
           </Rail>
+        </Section>
+      )}
+
+      {status === "loading" && (
+        <Section title="Available now" eyebrow="Ready to deliver">
+          <div className="h-56 animate-pulse rounded-2xl bg-bg-surface" aria-hidden="true" />
         </Section>
       )}
 

@@ -182,6 +182,36 @@ suite("if the payment functions aren't deployed yet, checkout says so and offers
   });
 });
 
+suite("if our confirmation fails after the customer has paid, they are told not to pay again and the order updates by itself", async () => {
+  await withSite(DESKTOP, async (site) => {
+    const { page, goto } = site;
+    await signIn(site);
+    await backend.query("delete from public.cart_items where user_id = $1", [customerId()]); // an earlier test leaves a game in the cart
+    await page.route("**/functions/v1/verify-payment", (route) => route.abort());
+    await goto("/games/gta-5");
+    await page.getByRole("tab", { name: "Rent" }).click();
+    await page.getByRole("radio", { name: /3 days/ }).click();
+    await page.getByRole("button", { name: /Rent · 3 days · ₹300/ }).click();
+    await page.getByText("Pay ₹300").waitFor();
+    await page.getByRole("button", { name: "Pay ₹300" }).click();
+
+    // Not "couldn't reach the server", and no Pay button to press twice: straight to the order.
+    await page.getByRole("heading", { name: /^Order #[0-9A-F]{8}$/ }).waitFor();
+    await page.getByText(/Your payment went through and is being confirmed/).waitFor();
+    assert.match(await text(page), /Please don’t pay again/);
+    assert.equal(await page.getByRole("button", { name: /^Pay/ }).count(), 0);
+    const orderId = path(page).split("/").pop();
+    const order = await one("select status, razorpay_order_id, total from public.orders where id = $1", [orderId]);
+    assert.equal(order.status, "pending_payment", "our own confirmation never arrived");
+
+    // Razorpay's message to the server lands; the page notices within a few seconds.
+    const payment = Object.values(backend.razorpay.state.payments).find((p) => p.order_id === order.razorpay_order_id);
+    await backend.query("select public.mark_order_paid($1, $2, $3, $4, null)", [order.razorpay_order_id, payment.id, order.total * 100, `evt_late_${payment.id}`]);
+    await page.getByText(/Payment received/).waitFor({ timeout: 15000 });
+    assert.doesNotMatch(await text(page), /Please don’t pay again/);
+  });
+});
+
 suite("closing the payment window charges nothing and keeps the cart; trying again works", async () => {
   await withSite(DESKTOP, async (site) => {
     const { page, goto } = site;
@@ -200,8 +230,10 @@ suite("closing the payment window charges nothing and keeps the cart; trying aga
     await page.getByRole("heading", { name: /^Order GB-/ }).waitFor();
     assert.equal((await backend.query("select count(*)::int as n from public.orders where user_id = $1 and total = 1500 and status = 'paid'", [customerId()]))[0].n, 1);
 
+    // Trying again reuses the unpaid order rather than leaving an abandoned duplicate beside the paid one.
+    assert.equal((await backend.query("select count(*)::int as n from public.orders where user_id = $1 and total = 1500", [customerId()]))[0].n, 1);
     await goto("/account/orders");
-    assert.match(await text(page), /Waiting for payment/, "the abandoned attempt is visible, honestly");
+    assert.doesNotMatch(await text(page), /Waiting for payment/);
   });
 });
 

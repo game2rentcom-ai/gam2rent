@@ -33,7 +33,7 @@ const describe = (c: Coupon) => `${c.discount_type === "percent" ? `${c.discount
 export function CouponsPage() {
   const { data, error, loading, reload } = useLoad(loadCoupons, undefined);
   if (loading) return <Loading />;
-  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the coupons."} />;
+  if (error || !data) return <ErrorNote message={error ?? "Couldn’t load the coupons."} onRetry={reload} />;
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title="Coupons" subtitle="Codes customers type in the cart." />

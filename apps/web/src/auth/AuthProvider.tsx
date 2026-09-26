@@ -7,8 +7,10 @@ import { friendlyAuthError } from "./errors";
 // Who is signed in, their profile, and whether they are an admin. The Supabase client is loaded only
 // when there is something to do with it (a saved login, an email link, or someone signing in).
 
-type State = Pick<Auth, "status" | "user" | "profile" | "isAdmin">;
-const ANONYMOUS: State = { status: "anonymous", user: null, profile: null, isAdmin: false };
+type State = Pick<Auth, "status" | "user" | "profile" | "isAdmin" | "degraded">;
+const ANONYMOUS: State = { status: "anonymous", user: null, profile: null, isAdmin: false, degraded: false };
+const RETRY_AFTER_MS = 4000;
+const MAX_RETRIES = 5;
 
 const toProfile = (row: Record<string, unknown> | null): Profile | null =>
   row
@@ -37,11 +39,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       client.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
       client.rpc("is_admin"),
     ]);
+    // A lookup that failed is not an answer: without this an admin would be told "Admins only" and a returning
+    // customer treated as new because of one dropped request.
     setState({
       status: "signed-in",
       user: { id: session.user.id, email: session.user.email ?? "" },
       profile: toProfile(profile.data as Record<string, unknown> | null),
       isAdmin: admin.data === true,
+      degraded: Boolean(profile.error || admin.error),
     });
   }, []);
 
@@ -65,10 +70,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (wantsClientAtStartup()) attach().catch(() => setState(ANONYMOUS));
   }, [attach]);
 
+  const refresh = useCallback(async () => {
+    const client = await attach();
+    const { data } = await client.auth.getSession();
+    await apply(client, data.session);
+  }, [attach, apply]);
+
+  // While the lookup keeps failing, try again every few seconds (a handful of times), then wait for the visitor's tap.
+  const retries = useRef(0);
+  useEffect(() => {
+    if (!state.degraded) {
+      retries.current = 0;
+      return;
+    }
+    if (retries.current >= MAX_RETRIES) return;
+    const timer = setTimeout(() => {
+      retries.current += 1;
+      void refresh().catch(() => undefined);
+    }, RETRY_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, [state, refresh]);
+
   const value = useMemo<Auth>(
     () => ({
       ...state,
       client: attach,
+      refresh: async () => {
+        retries.current = 0;
+        await refresh();
+      },
 
       async signIn(email, password) {
         try {
@@ -146,7 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return {};
       },
     }),
-    [state, attach, apply],
+    [state, attach, apply, refresh],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
