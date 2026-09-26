@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { chromium } from "playwright";
-import { DESKTOP, PHONE, SMALL_PHONE, TABLET, VARIANTS, build, gameRows, openSite } from "../lib/site.mjs";
+import { DESKTOP, PHONE, SMALL_PHONE, TABLET, VARIANTS, build, gameRows, mobileProblems, openSite } from "../lib/site.mjs";
 
 let browser;
 let live;
@@ -248,25 +248,7 @@ for (const [name, size] of [["360px phone", SMALL_PHONE], ["390px phone", PHONE]
     await withSite({ dist: live, ...size }, async ({ page, goto }) => {
       for (const path of ["/", "/browse", "/games/gta-5", "/games/astro-bot", "/policies/terms"]) {
         await goto(path);
-        await page.evaluate(async () => {
-          for (let y = 0; y < document.body.scrollHeight; y += 700) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); }
-          window.scrollTo(0, 0);
-        });
-        const problems = await page.evaluate(() => {
-          const out = [];
-          if (document.documentElement.scrollWidth > window.innerWidth + 1) out.push(`sideways scroll: ${document.documentElement.scrollWidth} > ${window.innerWidth}`);
-          const visible = (el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== "hidden" && s.display !== "none"; };
-          for (const el of document.querySelectorAll("a[href], button, input, select, textarea, summary, [role=tab], [role=radio]")) {
-            if (!visible(el) || el.closest(".sr-only") || el.classList.contains("sr-only")) continue;
-            const r = el.getBoundingClientRect();
-            if (r.height < 40 || r.width < 40) out.push(`small target ${Math.round(r.width)}x${Math.round(r.height)}: ${(el.innerText || el.getAttribute("aria-label") || el.tagName).trim().slice(0, 30)}`);
-          }
-          for (const el of document.querySelectorAll("body *")) {
-            if (!visible(el) || ![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 1)) continue;
-            if (parseFloat(getComputedStyle(el).fontSize) < 12) out.push(`tiny text ${getComputedStyle(el).fontSize}: ${el.textContent.trim().slice(0, 30)}`);
-          }
-          return out;
-        });
+        const problems = await mobileProblems(page);
         assert.deepEqual(problems, [], `${path}: ${problems.join(" | ")}`);
       }
     });

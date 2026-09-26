@@ -60,6 +60,10 @@
   .brand-solid {
     @apply bg-brand-500;
   }
+  /* A link inside running text: looks the same, but its tappable area is at least 44 px tall and never a sliver wide. */
+  .link-tap {
+    @apply -mx-1 -my-3 inline-block px-1 py-3;
+  }
 
   /* Glassmorphism card — frosted glass effect */
   .glass {
@@ -93,24 +97,6 @@
 /* =========================================================================
    Base styles
    ========================================================================= */
-html {
-  scroll-behavior: auto; /* Lenis handles smooth scroll */
-}
-
-/* Lenis smooth scroll integration */
-html.lenis, html.lenis body {
-  height: auto;
-}
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-.lenis.lenis-stopped {
-  overflow: hidden;
-}
-
 body {
   margin: 0;
   background: var(--color-bg-base);

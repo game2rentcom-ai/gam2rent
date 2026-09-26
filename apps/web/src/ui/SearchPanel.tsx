@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useRequestLink } from "../community/request";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { useStore } from "../data/store";
 import { searchGames } from "../lib/search";
@@ -23,10 +24,11 @@ interface Props {
 }
 
 export function SearchPanel({ query, onQuery, onDone, autoFocus = false, dropdown = false, placeholder }: Props) {
-  const { games, findGame, contactLink } = useStore();
+  const { games, findGame } = useStore();
   const navigate = useNavigate();
   const results = useMemo(() => searchGames(games, query, 6), [games, query]);
   const q = query.trim();
+  const request = useRequestLink(q);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,9 +79,9 @@ export function SearchPanel({ query, onQuery, onDone, autoFocus = false, dropdow
           {results.length === 0 ? (
             <p className="flex flex-wrap items-center justify-center px-4 py-4 text-center text-sm text-text-muted">
               No games match “{q}”.
-              {contactLink(`Hi! Could you add "${q}" to the store?`) && (
-                <a href={contactLink(`Hi! Could you add "${q}" to the store?`)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-500">Request it</a>
-              )}
+              {request.to
+                ? <Link to={request.to} onClick={onDone} className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-500">Request it</Link>
+                : request.href && <a href={request.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-500">Request it</a>}
             </p>
           ) : (
             <ul>

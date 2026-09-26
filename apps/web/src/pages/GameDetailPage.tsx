@@ -4,6 +4,10 @@ import { GAME_METADATA } from "../data/gameMeta";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { getGameTrailer } from "../data/gameTrailers";
 import { useStore } from "../data/store";
+import { GameComments } from "../community/GameComments";
+import { useShop, type CartLine } from "../shop/context";
+import { OrderButtons } from "../shop/OrderButtons";
+import { WishlistButton } from "../shop/WishlistButton";
 import { averageRating, credentialDisclosure } from "../types/listing";
 import { Badge, Chip } from "../ui/Chip";
 import { Button } from "../ui/Button";
@@ -31,6 +35,7 @@ function relatedGames(game: CatalogGame, all: CatalogGame[]): CatalogGame[] {
 export function GameDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { findGame, games, findListedGame, rentalOffersFor, reviewsFor, status, contactLink } = useStore();
+  const shop = useShop();
   const game = id ? findGame(id) : undefined;
 
   const listed = game ? findListedGame(game.id) : undefined;
@@ -71,6 +76,14 @@ export function GameDetailPage() {
           ? { label: "Currently unavailable", price: "", href: undefined, disabled: true }
           : { label: "Check availability", price: "", href: buyHref, disabled: false };
 
+  // With online ordering on, a priced and available choice goes in the cart; anything else (no price yet,
+  // sold out, no plan set) keeps the chat / disabled action above.
+  const line: CartLine | null = !shop.ordering
+    ? null
+    : option === "rent"
+      ? plan ? { gameId: game.id, kind: "rent", planId: plan.planId, platform } : null
+      : listed && !unavailable ? { gameId: game.id, kind: "buy", planId: null, platform: null } : null;
+
   const facts: [string, string][] = ([
     ["Genre", game.genre],
     ["Developer", game.developer],
@@ -97,7 +110,10 @@ export function GameDetailPage() {
               {game.platforms.map((p) => <Badge key={p}>{PLATFORM_LABEL[p]}</Badge>)}
               {game.genre && <Badge tone="brand">{game.genre}</Badge>}
             </div>
-            <h1 className="mt-3 font-display text-3xl font-black leading-tight text-text-primary sm:text-4xl">{game.title}</h1>
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <h1 className="font-display text-3xl font-black leading-tight text-text-primary sm:text-4xl">{game.title}</h1>
+              <WishlistButton gameId={game.id} title={game.title} />
+            </div>
             {rating !== null && (
               <p className="mt-2 flex items-center gap-1.5 text-sm text-text-muted">
                 <IconStar className="h-4 w-4 text-rating-gold" />
@@ -184,11 +200,15 @@ export function GameDetailPage() {
             )}
 
             <div className="hidden md:block">
-              <Button href={primary.href} disabled={primary.disabled} size="lg" full>
-                {primary.label}{primary.price ? ` · ${primary.price}` : ""}
-              </Button>
+              {line ? (
+                <OrderButtons line={line} label={`${primary.label} · ${primary.price}`} />
+              ) : (
+                <Button href={primary.href} disabled={primary.disabled} size="lg" full>
+                  {primary.label}{primary.price ? ` · ${primary.price}` : ""}
+                </Button>
+              )}
             </div>
-            {!primary.href && !primary.disabled && <p className="text-xs text-text-muted">Contact details aren’t set up yet.</p>}
+            {!line && !primary.href && !primary.disabled && <p className="text-xs text-text-muted">Contact details aren’t set up yet.</p>}
 
             <div className="flex items-start gap-3 rounded-xl bg-bg-base p-3 text-sm text-text-muted">
               <IconShield className="mt-0.5 h-5 w-5 shrink-0 text-trust-600" />
@@ -269,6 +289,8 @@ export function GameDetailPage() {
               </>
             )}
           </Section>
+
+          <GameComments gameId={game.id} />
         </div>
       </div>
 
@@ -291,7 +313,7 @@ export function GameDetailPage() {
               <p className="font-display text-lg font-black leading-tight text-text-primary">{primary.price}</p>
             </div>
           )}
-          <Button href={primary.href} disabled={primary.disabled} size="lg" full>{primary.label}</Button>
+          {line ? <div className="min-w-0 flex-1"><OrderButtons line={line} label={primary.label} compact /></div> : <Button href={primary.href} disabled={primary.disabled} size="lg" full>{primary.label}</Button>}
         </div>
       </div>
     </div>

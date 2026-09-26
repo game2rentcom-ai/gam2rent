@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { useRequestLink } from "../community/request";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { useStore } from "../data/store";
 import { searchGames } from "../lib/search";
@@ -23,7 +24,7 @@ const SORTS: { value: Sort; label: string }[] = [
 const PLATFORMS = Object.keys(PLATFORM_LABEL) as Platform[];
 
 export function BrowsePage() {
-  const { games, findListedGame, status, contactLink } = useStore();
+  const { games, findListedGame, status } = useStore();
   const [params, setParams] = useSearchParams();
   const location = useLocation();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -107,8 +108,8 @@ export function BrowsePage() {
   ].filter(Boolean) as { key: string; label: string }[];
   const filterCount = activeFilters.length;
   const shown = results.slice(0, visible);
-  // Until game requests become a feature of their own, asking for a game opens a chat with its name filled in.
-  const requestHref = contactLink(q.trim() ? `Hi! Could you add "${q.trim()}" to the store?` : "Hi! There's a game I'd like you to add.");
+  const request = useRequestLink(q);
+  const canRequest = Boolean(request.to ?? request.href);
 
   return (
     <div className="flex flex-col gap-4">
@@ -171,7 +172,7 @@ export function BrowsePage() {
           <p className="max-w-sm text-sm text-text-muted">Try a different spelling or clear the filters. Can’t find a game you want?</p>
           <div className="flex flex-wrap justify-center gap-2">
             <Button variant="secondary" onClick={() => { clearTimeout(urlTimer.current); setText(""); setParams({}, { replace: true, state: { self: true } }); }}>Clear filters</Button>
-            {requestHref && <Button href={requestHref}>Request a game</Button>}
+            {canRequest && <Button {...request}>Request a game</Button>}
           </div>
         </div>
       ) : (
@@ -189,10 +190,12 @@ export function BrowsePage() {
               <Button variant="secondary" size="lg" onClick={() => setVisible((v) => v + PAGE_SIZE)}>Show more games</Button>
             </div>
           )}
-          {requestHref && (
+          {canRequest && (
             <p className="flex flex-wrap items-center justify-center pt-2 text-sm text-text-muted">
               Don’t see your game?
-              <a href={requestHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-500">Request it</a>
+              {request.to
+                ? <Link to={request.to} className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-500">Request it</Link>
+                : <a href={request.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center px-2 font-semibold text-brand-500">Request it</a>}
             </p>
           )}
         </>

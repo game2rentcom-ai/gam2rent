@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "../auth/context";
 import { useStore } from "../data/store";
+import { backendConfigured } from "../lib/supabase";
+import { useShop } from "../shop/context";
 import { BottomNav } from "../ui/BottomNav";
 import { Button } from "../ui/Button";
-import { IconChat, IconClose, IconSearch } from "../ui/icons";
+import { IconCart, IconChat, IconClose, IconSearch, IconUser } from "../ui/icons";
 import { SearchPanel } from "../ui/SearchPanel";
 import { Sheet } from "../ui/Sheet";
 
@@ -23,7 +26,7 @@ function Banner() {
   }
   if (!message || dismissed) return null;
   return (
-    <div className="relative bg-brand-600 px-12 py-2 text-center text-sm font-medium text-white">
+    <div className="relative bg-brand-600 px-12 py-2 text-center text-sm font-medium text-white print:hidden">
       {message}
       <button
         type="button"
@@ -47,6 +50,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [searchOpenAt, setSearchOpenAt] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const chatHref = useStore().contactLink("Hi! I have a question about renting or buying games.");
+  const { status: authStatus, isAdmin } = useAuth();
+  const { ordering, cart } = useShop();
+  const signedIn = authStatus === "signed-in";
+  const accountLink = { to: signedIn ? "/account" : "/login", label: signedIn ? "Account" : "Log in" };
   const searchOpen = searchOpenAt === pathname + hash;
   const openSearch = useCallback(() => setSearchOpenAt(pathname + hash), [pathname, hash]);
   const closeSearch = useCallback(() => {
@@ -69,7 +76,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </a>
       <Banner />
 
-      <header className="sticky top-0 z-40 border-b border-white/5 bg-bg-base/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-white/5 bg-bg-base/90 backdrop-blur-xl print:hidden">
         <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 md:h-16 lg:px-8">
           <Link to="/" aria-label="GameBuy — home" className="-ml-1 flex min-h-11 shrink-0 items-center px-1 font-display text-2xl font-black tracking-tighter">
             <span className="text-gradient-brand">Game</span>
@@ -79,6 +86,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <nav aria-label="Primary" className="ml-4 hidden items-center md:flex">
             <NavLink to="/" end className={navClass}>Home</NavLink>
             <NavLink to="/browse" className={navClass}>Browse</NavLink>
+            {isAdmin && <NavLink to="/admin" className={navClass}>Admin</NavLink>}
           </nav>
 
           <div className="ml-auto hidden w-full max-w-sm md:block lg:max-w-md">
@@ -94,6 +102,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               <IconSearch />
             </button>
+            {ordering && (
+              <Link to="/cart" aria-label={cart.length ? `Cart, ${cart.length} ${cart.length === 1 ? "game" : "games"}` : "Cart"} className="relative flex h-11 w-11 items-center justify-center rounded-full text-text-primary hover:bg-white/5">
+                <IconCart />
+                {cart.length > 0 && <span className="absolute right-0 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-500 px-1 text-xs font-bold text-white">{cart.length}</span>}
+              </Link>
+            )}
+            {backendConfigured && (
+              <Link to={accountLink.to} aria-label={accountLink.label} className="flex h-11 items-center gap-2 rounded-full px-3 text-text-primary hover:bg-white/5">
+                <IconUser />
+                <span className="hidden text-sm font-semibold md:inline">{accountLink.label}</span>
+              </Link>
+            )}
             <div className="hidden md:block">
               <Button href={chatHref} size="sm" variant="secondary">
                 <IconChat className="h-5 w-5" />
@@ -108,7 +128,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <footer className="border-t border-white/5 bg-bg-surface pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
+      <footer className="border-t border-white/5 bg-bg-surface pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0 print:hidden">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-3 lg:px-8">
           <div>
             <p className="font-display text-2xl font-black tracking-tighter">
@@ -138,7 +158,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </footer>
 
       {/* Game pages have their own sticky buy bar in this spot */}
-      {!pathname.startsWith("/games/") && <BottomNav onSearch={openSearch} chatHref={chatHref} />}
+      {!pathname.startsWith("/games/") && (
+        <div className="print:hidden">
+          <BottomNav onSearch={openSearch} chatHref={chatHref} extra={backendConfigured ? [{ to: accountLink.to, label: accountLink.label, icon: <IconUser /> }] : []} />
+        </div>
+      )}
 
       <Sheet open={searchOpen} onClose={closeSearch} title="Search games" variant="full">
         <div className="pb-4 pt-1">

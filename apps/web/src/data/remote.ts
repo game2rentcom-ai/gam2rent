@@ -145,6 +145,26 @@ async function getJson<T>(path: string, signal: AbortSignal): Promise<T> {
   return (await response.json()) as T;
 }
 
+/**
+ * A plain read for the optional extras (comments, the request board, suggestions) — public data only,
+ * with the same no-SDK approach. `body` turns it into a call to a database function. Anything that goes
+ * wrong (not configured, an older database, offline) is just `null`: the extra isn't shown.
+ */
+export async function readRemote<T>(path: string, body?: unknown): Promise<T | null> {
+  if (!remoteConfigured) return null;
+  try {
+    const response = await fetch(`${url}/rest/v1/${path}`, {
+      method: body === undefined ? "GET" : "POST",
+      headers: { apikey: key!, Authorization: `Bearer ${key}`, ...(body === undefined ? {} : { "Content-Type": "application/json" }) },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(8000),
+    });
+    return response.ok ? ((await response.json()) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
 // Games, rental prices and settings degrade to "not there" if their request fails (the store stays
 // browsable from the built-in list). Listings and reviews are the core: if they fail, the caller
 // shows the error state.

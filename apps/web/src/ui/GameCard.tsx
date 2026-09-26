@@ -45,7 +45,7 @@ export function GameCard({ game, actions, priority = false, className = "" }: Pr
                 )}
               </>
             ) : (
-              <span className="text-xs font-medium text-text-muted">{unavailable ? "Notify me when back" : "Check availability"}</span>
+              <span className="text-xs font-medium text-text-muted">{unavailable ? "Ask us about it" : "Check availability"}</span>
             )}
             {rating !== null && (
               <span className="ml-auto inline-flex items-center gap-0.5 text-xs font-semibold text-rating-gold">

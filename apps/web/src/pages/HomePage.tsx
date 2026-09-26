@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { PlatformGlyph } from "../components/Badges";
+import { Suggestions } from "../community/Suggestions";
+import { useRequestLink } from "../community/request";
+import { useShop } from "../shop/context";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { useStore } from "../data/store";
 import { averageRating } from "../types/listing";
@@ -31,6 +34,9 @@ const FAQS = [
   { q: "Can I extend a rental?", a: "Message us before your rental ends and we’ll tell you the options." },
 ];
 
+// The first answer once online ordering is on (the list above describes ordering by message).
+const ORDERING_ANSWER = "Pick a game, choose Buy or Rent and pay securely online. When your account is ready, its login details (or a scan-to-play code, depending on the game) appear on your order page. You sign in on your console or PC, download the game from the official store, and play.";
+
 function median(numbers: number[]): number {
   const s = [...numbers].sort((a, b) => a - b);
   const mid = Math.floor(s.length / 2);
@@ -45,6 +51,9 @@ export function HomePage() {
   const { games, findGame, listedGames, reviews, status, contactLink } = useStore();
   const [query, setQuery] = useState("");
   const chatHref = contactLink("Hi! I have a question about renting or buying games.");
+  const request = useRequestLink();
+  const { ordering } = useShop();
+  const faqs = ordering ? [{ ...FAQS[0], a: ORDERING_ANSWER }, ...FAQS.slice(1)] : FAQS;
 
   const spotlight = useMemo(() => {
     const featured = listedGames.filter((g) => g.listing.isFeatured && g.listing.isAvailable);
@@ -117,6 +126,8 @@ export function HomePage() {
         </Section>
       )}
 
+      <Suggestions />
+
       {favourites.length > 0 && (
         <Section title="Fan favourites" moreTo="/browse">
           <Rail label="Fan favourite games">
@@ -151,11 +162,18 @@ export function HomePage() {
 
       <Section title="How it works">
         <ol className="grid gap-3 sm:grid-cols-3">
-          {[
-            ["1", "Choose a game", "Buy it or rent it. The price and delivery time are on the game’s page."],
-            ["2", "Confirm with us", "Message us to confirm and pay. We get your game ready."],
-            ["3", "Sign in and play", "We send your login details. Sign in, download from the official store, play."],
-          ].map(([n, t, d]) => (
+          {(ordering
+            ? [
+                ["1", "Choose a game", "Buy it or rent it. The price and delivery time are on the game’s page."],
+                ["2", "Pay online", "Add it to your cart and pay securely. We get your game ready."],
+                ["3", "Sign in and play", "Your login details appear on your order page. Sign in, download from the official store, play."],
+              ]
+            : [
+                ["1", "Choose a game", "Buy it or rent it. The price and delivery time are on the game’s page."],
+                ["2", "Confirm with us", "Message us to confirm and pay. We get your game ready."],
+                ["3", "Sign in and play", "We send your login details. Sign in, download from the official store, play."],
+              ]
+          ).map(([n, t, d]) => (
             <li key={n} className="flex gap-4 rounded-2xl border border-white/10 bg-bg-surface p-4">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 font-display text-lg font-black text-white">{n}</span>
               <div>
@@ -188,7 +206,7 @@ export function HomePage() {
 
       <Section title="Questions">
         <div className="flex flex-col gap-2">
-          {FAQS.map((f) => (
+          {faqs.map((f) => (
             <details key={f.q} className="group rounded-2xl border border-white/10 bg-bg-surface">
               <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-4 py-2 text-left text-base font-semibold text-text-primary">
                 {f.q}
@@ -204,7 +222,7 @@ export function HomePage() {
         <h2 className="font-display text-2xl font-black text-text-primary">Can’t find a game?</h2>
         <p className="max-w-md text-sm text-text-muted">Tell us what you want to play and we’ll try to get it.</p>
         <div className="flex flex-wrap justify-center gap-2 pt-1">
-          <Button href={contactLink("Hi! There's a game I'd like you to add.")}>Request a game</Button>
+          <Button {...request}>Request a game</Button>
           <Button href={chatHref} variant="secondary"><IconChat className="h-5 w-5" />Message us</Button>
         </div>
       </section>
