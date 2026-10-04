@@ -93,7 +93,7 @@ export function GameDetailPage() {
 
   const buyMessage = buyListing
     ? `Hi! I want to BUY "${game.title}" (${PLATFORM_LABEL[platform]}) for ${formatPrice(buyListing.price)}.`
-    : `Hi! Is "${game.title}" available to buy on ${PLATFORM_LABEL[platform]}?`;
+    : listed ? `Hi! Is "${game.title}" available to buy on ${PLATFORM_LABEL[platform]}?` : `Hi! Is "${game.title}" available to buy?`;
   const rentMessage = plan
     ? `Hi! I want to RENT "${game.title}" on ${PLATFORM_LABEL[platform]} — ${plan.label} for ${formatPrice(plan.price)}.`
     : `Hi! I'd like to rent "${game.title}" on ${PLATFORM_LABEL[platform]}. What's the price and delivery time?`;

@@ -188,15 +188,16 @@ test("a listed game: real price, was-price, delivery time, rental plans, and cha
     assert.ok((await buy.getAttribute("href")).startsWith("https://wa.me/919999988888"), "the owner's number from Settings beats the build-time default");
     assert.match(whatsappText(await buy.getAttribute("href")), /BUY "GTA 5".*₹999/);
 
-    await page.getByRole("tab", { name: "Rent" }).click();
-    assert.equal(await page.getByRole("radio").count(), 3, "the plans the owner priced");
+    // GTA V is sold on PS4 and rented on PC: renting means picking PC.
+    await page.getByRole("radiogroup", { name: "Platform" }).getByRole("radio", { name: /^PC/ }).click();
+    assert.equal(await page.getByRole("radiogroup", { name: "Rental length" }).getByRole("radio").count(), 3, "the plans the owner priced");
     text = await pageText(page);
     assert.match(text, /Weekend/);
     assert.match(await page.getByRole("link", { name: /Rent · 3 days/ }).innerText(), /Rent · 3 days/, "the popular plan is preselected");
     await page.getByRole("radio", { name: /7 days/ }).click();
     const rent = page.getByRole("link", { name: /Rent · 7 days/ });
     assert.match(whatsappText(await rent.getAttribute("href")), /7 days for ₹500/);
-    assert.match(whatsappText(await rent.getAttribute("href")), /on PC/, "rentals are for the PC online version only, so there is no platform choice");
+    assert.match(whatsappText(await rent.getAttribute("href")), /on PC/, "the rental is for the platform picked");
     assert.deepEqual(errors, []);
   });
 });
