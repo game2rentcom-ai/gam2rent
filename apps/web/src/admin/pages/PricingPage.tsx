@@ -10,9 +10,9 @@ import { Card, ErrorNote, Loading, PageHeader, Toggle } from "../kit";
 import { GameRentalPrices } from "./GameRentalPrices";
 import { RentalPlans } from "./RentalPlans";
 
-// Prices live here, in the database — never in the code. Buy prices are per game; rental plans are
-// store-wide with an optional price override per game.
-interface Listing { game_id: string; platform: string; price: number; compare_at_price: number | null; delivery_eta_minutes: number; credential_type: string; is_available: boolean; is_featured: boolean }
+// Prices live here, in the database — never in the code. Buy prices are per game and platform (GTA V can be
+// sold on PS4 and PS5 at different prices); rental plans are store-wide with an optional price override per game.
+interface Listing { id: string; game_id: string; platform: string; price: number; compare_at_price: number | null; delivery_eta_minutes: number; credential_type: string; is_available: boolean; is_featured: boolean }
 interface GameOption { id: string; title: string; platforms: string[] }
 
 async function loadBuyPrices(client: SupabaseClient) {
@@ -47,15 +47,19 @@ function BuyPrices() {
   if (loading) return <Loading />;
   if (error || !data) return <ErrorNote message={error ?? "Couldn’t load prices."} onRetry={reload} />;
   const titles = new Map(data.games.map((g) => [g.id, g.title]));
-  const priced = new Set(data.listings.map((l) => l.game_id));
-  const sorted = [...data.listings].sort((a, b) => (titles.get(a.game_id) ?? "").localeCompare(titles.get(b.game_id) ?? ""));
+  // A game can still be added while one of its platforms has no price.
+  const pricedPlatforms = (id: string) => data.listings.filter((l) => l.game_id === id).map((l) => l.platform);
+  const addable = data.games
+    .map((g) => ({ ...g, platforms: g.platforms.filter((p) => !pricedPlatforms(g.id).includes(p)) }))
+    .filter((g) => g.platforms.length > 0);
+  const sorted = [...data.listings].sort((a, b) => (titles.get(a.game_id) ?? "").localeCompare(titles.get(b.game_id) ?? "") || a.platform.localeCompare(b.platform));
   return (
     <div className="flex flex-col gap-4">
-      <AddListing games={data.games.filter((g) => !priced.has(g.id))} onAdded={reload} />
-      <h2 className="font-display text-lg font-bold text-text-primary">{sorted.length} {sorted.length === 1 ? "game" : "games"} with a price</h2>
+      <AddListing games={addable} onAdded={reload} />
+      <h2 className="font-display text-lg font-bold text-text-primary">{new Set(sorted.map((l) => l.game_id)).size} {new Set(sorted.map((l) => l.game_id)).size === 1 ? "game" : "games"} with a price</h2>
       {sorted.length === 0 && <p className="rounded-2xl border border-dashed border-border-subtle px-4 py-8 text-center text-sm text-text-muted">No prices yet. Add your first one above — the game will show its price and a Buy button on the store.</p>}
       <ul className="flex flex-col gap-3">
-        {sorted.map((l) => <li key={l.game_id}><ListingRow listing={l} title={titles.get(l.game_id) ?? l.game_id} onChanged={reload} /></li>)}
+        {sorted.map((l) => <li key={l.id}><ListingRow listing={l} title={titles.get(l.game_id) ?? l.game_id} onChanged={reload} /></li>)}
       </ul>
     </div>
   );
@@ -138,11 +142,11 @@ function ListingRow({ listing, title, onChanged }: { listing: Listing; title: st
     if (draft.compare.trim() !== "" && compare === null) return setProblem("Enter the “was” price in whole rupees, or leave it empty.");
     if (!eta || eta < 1) return setProblem("Enter the delivery time in minutes.");
     setProblem("");
-    if (await run(async () => ok((await client()).from("listings").update({ price, compare_at_price: compare, delivery_eta_minutes: eta, credential_type: draft.credential, is_available: draft.available, is_featured: draft.featured }).eq("game_id", listing.game_id)), "Saved.")) onChanged();
+    if (await run(async () => ok((await client()).from("listings").update({ price, compare_at_price: compare, delivery_eta_minutes: eta, credential_type: draft.credential, is_available: draft.available, is_featured: draft.featured }).eq("id", listing.id)), "Saved.")) onChanged();
   };
 
   const remove = async () => {
-    if (await run(async () => ok((await client()).from("listings").delete().eq("game_id", listing.game_id)), "Removed.")) onChanged();
+    if (await run(async () => ok((await client()).from("listings").delete().eq("id", listing.id)), "Removed.")) onChanged();
     else setConfirmRemove(false);
   };
 

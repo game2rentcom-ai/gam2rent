@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+import type { Announcement } from "../types/announcement";
 import type { ListedGame, RentalOffer, Review } from "../types/listing";
 import type { CatalogGame } from "./catalogTypes";
 
@@ -26,6 +27,8 @@ export interface Store {
   reviewsFor: (gameId: string) => Review[];
   /** Rental options the owner has priced for this game. An empty list means no rental price is set. */
   rentalOffersFor: (gameId: string) => RentalOffer[];
+  /** Home-page slides (new games, offers) the owner has switched on. */
+  announcements: Announcement[];
   /** A text setting the owner controls in the admin panel (announcement banner, support email...). */
   setting: (key: string) => string | undefined;
   /** A chat link to the business's number — the owner's Settings value when set, else the build's

@@ -40,7 +40,10 @@ export function GameCard({ game, actions, priority = false, className = "" }: Pr
           <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
             {listed && !unavailable ? (
               <>
-                <span className="price-tag cut cut-tag text-base">{formatPrice(listed.listing.price)}</span>
+                <span className="price-tag cut cut-tag text-base">
+                  {listed.listings.some((l) => l.isAvailable && l.price !== listed.listing.price) && "From "}
+                  {formatPrice(listed.listing.price)}
+                </span>
                 {listed.listing.compareAtPrice && listed.listing.compareAtPrice > listed.listing.price && (
                   <span className="text-xs text-text-muted line-through">{formatPrice(listed.listing.compareAtPrice)}</span>
                 )}

@@ -28,7 +28,14 @@ export interface CatalogGame {
   heroUrl?: string;
   /** false hides the rent option. Defaults to true. */
   isRentable?: boolean;
+  /** Platforms the owner allows renting on. Unset = PC only. */
+  rentalPlatforms?: Platform[];
 }
+
+/** Where this game can be rented: the owner's choice (PC only by default), limited to the game's own platforms.
+ * Mirrors the database rule in quote_cart, so the store never offers a rental checkout would refuse. */
+export const rentalPlatformsOf = (game: CatalogGame): Platform[] =>
+  game.isRentable === false ? [] : (game.rentalPlatforms ?? ["pc"]).filter((p) => game.platforms.includes(p));
 
 /** A title whose real details were never confirmed (its genre is literally "Unverified"). Customers don't see it
  * until the owner fills the details in from the admin panel — it then appears by itself. */

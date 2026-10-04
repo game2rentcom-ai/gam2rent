@@ -1,4 +1,5 @@
 import type { CredentialType, Listing, RentalOffer, Review } from "../types/listing";
+import type { Announcement } from "../types/announcement";
 import type { CatalogGame, Platform } from "./catalogTypes";
 import { catalog } from "./catalog";
 
@@ -21,6 +22,7 @@ export interface RemoteData {
   reviews: Review[];
   offers: Record<string, RentalOffer[]>;
   settings: Record<string, string>;
+  announcements: Announcement[];
 }
 
 const isHttps = (v: unknown): v is string => typeof v === "string" && v.startsWith("https://");
@@ -51,6 +53,9 @@ export function mapGames(rows: Record<string, unknown>[]): CatalogGame[] {
       coverUrl: isHttps(row.cover_url) ? row.cover_url : undefined,
       heroUrl: isHttps(row.hero_url) ? row.hero_url : undefined,
       isRentable: row.is_rentable !== false,
+      rentalPlatforms: Array.isArray(row.rental_platforms)
+        ? row.rental_platforms.filter((p): p is Platform => PLATFORMS.includes(p as Platform))
+        : undefined,
     });
   }
   return games;
@@ -128,6 +133,32 @@ export function mapOffers(rows: Record<string, unknown>[]): Record<string, Renta
   return offers;
 }
 
+const time = (v: unknown) => {
+  const ms = typeof v === "string" ? Date.parse(v) : NaN;
+  return Number.isNaN(ms) ? undefined : ms;
+};
+
+// Only https pictures, and links that stay on the store or go to an https page (the database checks this too).
+export function mapAnnouncements(rows: Record<string, unknown>[]): Announcement[] {
+  const slides: Announcement[] = [];
+  for (const row of rows) {
+    if (typeof row.id !== "string" || typeof row.title !== "string" || !row.title.trim()) continue;
+    const href = typeof row.button_href === "string" && /^(\/[^/]|https:\/\/)/.test(row.button_href) ? row.button_href : undefined;
+    const label = typeof row.button_label === "string" && row.button_label.trim() ? row.button_label.trim() : undefined;
+    slides.push({
+      id: row.id,
+      title: row.title,
+      subtitle: text(row.subtitle) || undefined,
+      imageUrl: isHttps(row.image_url) ? row.image_url : undefined,
+      button: href && label ? { label, href } : undefined,
+      startsAt: time(row.starts_at),
+      endsAt: time(row.ends_at),
+      countdownTo: time(row.countdown_to),
+    });
+  }
+  return slides;
+}
+
 export function mapSettings(rows: Record<string, unknown>[]): Record<string, string> {
   const settings: Record<string, string> = {};
   for (const row of rows) {
@@ -179,7 +210,7 @@ export async function fetchRemote(): Promise<RemoteData> {
   const timeout = setTimeout(() => controller.abort(), 8000);
   const { signal } = controller;
   try {
-    const [listingRows, reviewRows, gameRows, offerRows, settingRows] = await Promise.all([
+    const [listingRows, reviewRows, gameRows, offerRows, settingRows, slideRows] = await Promise.all([
       getJson<Record<string, unknown>[]>("listings?select=*", signal),
       // Newer databases have reviewer_name / is_hidden; an older schema doesn't — fall back rather than fail.
       getJson<Record<string, unknown>[]>("reviews?select=id,game_id,rating,comment,reviewer_name&verified=eq.true&is_hidden=eq.false&order=created_at.desc", signal)
@@ -187,11 +218,12 @@ export async function fetchRemote(): Promise<RemoteData> {
       soft(getJson<Record<string, unknown>[]>("games?select=*&order=title.asc", signal), []),
       soft(getJson<Record<string, unknown>[]>("rental_offers?select=*", signal), []),
       soft(getJson<Record<string, unknown>[]>("site_settings?select=key,value", signal), []),
+      soft(getJson<Record<string, unknown>[]>("announcements?select=*&order=sort_order.asc,created_at.asc", signal), []),
     ]);
     const dbGames = mapGames(gameRows);
     const games = dbGames.length > 0 ? dbGames : catalog;
     const { listings, reviews } = mapRows(listingRows, reviewRows, new Set(games.map((g) => g.id)));
-    return { games, listings, reviews, offers: mapOffers(offerRows), settings: mapSettings(settingRows) };
+    return { games, listings, reviews, offers: mapOffers(offerRows), settings: mapSettings(settingRows), announcements: mapAnnouncements(slideRows) };
   } finally {
     clearTimeout(timeout);
   }

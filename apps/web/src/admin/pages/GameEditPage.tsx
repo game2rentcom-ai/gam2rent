@@ -13,10 +13,12 @@ import { Card, ErrorNote, Loading, PageHeader, Toggle } from "../kit";
 interface GameForm {
   id: string; title: string; category: "game" | "app"; genre: string; franchise: string; platforms: string[];
   developer: string; publisher: string; releaseInfo: string; description: string; coverUrl: string; heroUrl: string;
-  isPublished: boolean; isRentable: boolean;
+  isPublished: boolean;
+  /** Platforms the game can be rented on; the others are sold permanently. Empty = not rentable. */
+  rentOn: string[];
 }
 
-const EMPTY: GameForm = { id: "", title: "", category: "game", genre: "", franchise: "", platforms: [], developer: "", publisher: "", releaseInfo: "", description: "", coverUrl: "", heroUrl: "", isPublished: true, isRentable: true };
+const EMPTY: GameForm = { id: "", title: "", category: "game", genre: "", franchise: "", platforms: [], developer: "", publisher: "", releaseInfo: "", description: "", coverUrl: "", heroUrl: "", isPublished: true, rentOn: ["pc"] };
 const PLATFORMS = Object.keys(PLATFORM_LABEL) as Platform[];
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const slugify = (title: string) => title.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -25,14 +27,22 @@ const fromRow = (r: Record<string, unknown>): GameForm => ({
   id: String(r.id), title: String(r.title ?? ""), category: r.category === "app" ? "app" : "game", genre: String(r.genre ?? ""),
   franchise: String(r.franchise ?? ""), platforms: Array.isArray(r.platforms) ? (r.platforms as string[]) : [], developer: String(r.developer ?? ""),
   publisher: String(r.publisher ?? ""), releaseInfo: String(r.release_info ?? ""), description: String(r.description ?? ""),
-  coverUrl: String(r.cover_url ?? ""), heroUrl: String(r.hero_url ?? ""), isPublished: r.is_published !== false, isRentable: r.is_rentable !== false,
+  coverUrl: String(r.cover_url ?? ""), heroUrl: String(r.hero_url ?? ""), isPublished: r.is_published !== false,
+  rentOn: r.is_rentable === false ? [] : Array.isArray(r.rental_platforms) ? (r.rental_platforms as string[]) : ["pc"],
 });
 
 const toRow = (f: GameForm) => ({
   title: f.title.trim(), category: f.category, genre: f.genre.trim(), platforms: f.platforms, franchise: f.franchise.trim() || null,
   developer: f.developer.trim() || null, publisher: f.publisher.trim() || null, release_info: f.releaseInfo.trim() || null,
-  description: f.description.trim() || null, cover_url: f.coverUrl || null, hero_url: f.heroUrl || null, is_published: f.isPublished, is_rentable: f.isRentable,
+  description: f.description.trim() || null, cover_url: f.coverUrl || null, hero_url: f.heroUrl || null, is_published: f.isPublished,
+  ...rentalColumns(f),
 });
+
+// Only platforms the game is on can be rented (the database checks this too).
+const rentalColumns = (f: GameForm) => {
+  const rentOn = f.rentOn.filter((p) => f.platforms.includes(p));
+  return { is_rentable: rentOn.length > 0, rental_platforms: rentOn.length > 0 ? rentOn : null };
+};
 
 async function loadGame(client: SupabaseClient, id: string | null) {
   if (!id) return null;
@@ -124,7 +134,20 @@ function Editor({ initial, existing }: { initial: GameForm; existing: boolean })
 
       <Card className="flex flex-col gap-2">
         <Toggle label="Shown on the store" hint="Turn off to hide the game without deleting it." checked={form.isPublished} onChange={(v) => set("isPublished", v)} />
-        <Toggle label="Can be rented (PC online games)" hint="Only for PC games that work online, so the customer plays on a shared account. Turn off for offline PC games, and for PlayStation and cloud games, which are sold outright." checked={form.isRentable} onChange={(v) => set("isRentable", v)} />
+      </Card>
+
+      <Card className="flex flex-col gap-2">
+        <fieldset>
+          <legend className="text-sm font-semibold text-text-primary">Rent or buy, per platform</legend>
+          <p className="mb-2 text-xs text-text-muted">Ticked platforms show your rental plans (1 hour, 1 day, 7 days…). Unticked ones are sold permanently at the price you set in Pricing. Usual setup: PC online games rented, PS4 and PS5 sold.</p>
+          {form.platforms.length === 0 ? <p className="text-xs text-text-muted">Choose the game’s platforms above first.</p> : (
+            <div className="grid grid-cols-2 gap-x-4 sm:grid-cols-3">
+              {form.platforms.map((p) => (
+                <CheckboxField key={p} label={`Rent on ${PLATFORM_LABEL[p as Platform] ?? p}`} checked={form.rentOn.includes(p)} onChange={(e) => set("rentOn", e.target.checked ? [...form.rentOn, p] : form.rentOn.filter((x) => x !== p))} />
+              ))}
+            </div>
+          )}
+        </fieldset>
       </Card>
 
       <div className="flex flex-wrap items-center gap-3">

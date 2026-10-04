@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { GAME_METADATA } from "../data/gameMeta";
-import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
+import { PLATFORM_LABEL, rentalPlatformsOf, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { getGameTrailer } from "../data/gameTrailers";
 import { PROMISE } from "../data/policies";
 import { useStore } from "../data/store";
@@ -60,6 +60,7 @@ export function GameDetailPage() {
   const listed = game ? findListedGame(game.id) : undefined;
   const offers = game ? rentalOffersFor(game.id) : [];
   const [chosenOption, setOption] = useState<Option | null>(null);
+  const [chosenPlatform, setPlatform] = useState<Platform | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
   const [showAllReviews, setShowAllReviews] = useState(false);
 
@@ -74,18 +75,25 @@ export function GameDetailPage() {
   const pricesPending = status === "loading";
   const pricesFailed = status === "error";
 
-  const option: Option = chosenOption ?? (listed ? "buy" : offers.length ? "rent" : "buy");
+  // What each platform offers: a permanent purchase (its own listing and price), a rental, or both.
+  const rentPlatforms = rentalPlatformsOf(game);
+  const modes = game.platforms.map((p) => ({ platform: p, buy: listed?.listings.find((l) => l.platform === p), rent: rentPlatforms.includes(p) }));
+  const fallback = modes.find((m) => m.buy?.isAvailable) ?? modes.find((m) => m.buy) ?? modes.find((m) => m.rent && offers.length > 0) ?? modes[0]!;
+  const here = modes.find((m) => m.platform === chosenPlatform) ?? fallback;
+  const platform: Platform = here.platform;
+  const buyListing = here.buy;
+  // Rent is the default only where there is something to rent and nothing to buy; the tabs switch otherwise.
+  const option: Option = here.rent && (chosenOption === "rent" || (!buyListing && offers.length > 0)) ? "rent" : "buy";
   const plan = offers.find((o) => o.planId === planId) ?? offers.find((o) => o.isPopular) ?? offers[0];
-  const platform: Platform = "pc"; // rentals are PC online games only
   const reviews = reviewsFor(game.id);
   const rating = averageRating(reviews);
   const trailer = getGameTrailer(game.id);
   const meta = GAME_METADATA[game.id];
-  const unavailable = listed !== undefined && !listed.listing.isAvailable;
+  const unavailable = buyListing !== undefined && !buyListing.isAvailable;
 
-  const buyMessage = listed
-    ? `Hi! I want to BUY "${game.title}" (${PLATFORM_LABEL[listed.listing.platform]}) for ${formatPrice(listed.listing.price)}.`
-    : `Hi! Is "${game.title}" available to buy?`;
+  const buyMessage = buyListing
+    ? `Hi! I want to BUY "${game.title}" (${PLATFORM_LABEL[platform]}) for ${formatPrice(buyListing.price)}.`
+    : `Hi! Is "${game.title}" available to buy on ${PLATFORM_LABEL[platform]}?`;
   const rentMessage = plan
     ? `Hi! I want to RENT "${game.title}" on ${PLATFORM_LABEL[platform]} — ${plan.label} for ${formatPrice(plan.price)}.`
     : `Hi! I'd like to rent "${game.title}" on ${PLATFORM_LABEL[platform]}. What's the price and delivery time?`;
@@ -97,8 +105,8 @@ export function GameDetailPage() {
       ? { label: "Loading price…", price: "", href: undefined, disabled: true }
       : option === "rent"
       ? { label: plan ? `Rent · ${plan.label}` : "Ask about renting", price: plan ? formatPrice(plan.price) : "Price on request", href: rentHref, disabled: false }
-      : listed && !unavailable
-        ? { label: "Buy now", price: formatPrice(listed.listing.price), href: buyHref, disabled: false }
+      : buyListing && !unavailable
+        ? { label: "Buy now", price: formatPrice(buyListing.price), href: buyHref, disabled: false }
         : unavailable
           ? { label: "Currently unavailable", price: "", href: undefined, disabled: true }
           : { label: "Check availability", price: "", href: buyHref, disabled: false };
@@ -109,7 +117,7 @@ export function GameDetailPage() {
     ? null
     : option === "rent"
       ? plan ? { gameId: game.id, kind: "rent", planId: plan.planId, platform } : null
-      : listed && !unavailable ? { gameId: game.id, kind: "buy", planId: null, platform: null } : null;
+      : buyListing && !unavailable ? { gameId: game.id, kind: "buy", planId: null, platform } : null;
 
   const facts: [string, string][] = ([
     ["Genre", game.genre],
@@ -154,7 +162,28 @@ export function GameDetailPage() {
         {/* Purchase panel: right after the title on a phone, sticky beside the content on desktop */}
         <aside className="lg:sticky lg:top-24 lg:self-start" aria-label="Buy or rent">
           <div className="panel hud flex flex-col gap-4 p-4 sm:p-5">
-            {listed && offers.length > 0 && (
+            {modes.length > 1 && (
+              <div>
+                <p className="mb-1.5 text-sm font-semibold text-text-primary">Platform</p>
+                <div role="radiogroup" aria-label="Platform" className="grid grid-cols-3 gap-2">
+                  {modes.map((m) => (
+                    <button
+                      key={m.platform}
+                      type="button"
+                      role="radio"
+                      aria-checked={m.platform === platform}
+                      onClick={() => { setPlatform(m.platform); setOption(null); }}
+                      className={`chip cut flex min-h-14 flex-col items-center justify-center px-2 py-1.5 ${m.platform === platform ? "chip-on" : ""}`}
+                    >
+                      <span className="font-display text-base font-bold">{PLATFORM_LABEL[m.platform]}</span>
+                      <span className="text-xs opacity-80">{m.buy && m.rent ? "Buy or rent" : m.buy ? "Permanent" : m.rent ? "Rental" : "Ask us"}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {buyListing && here.rent && (
               <div role="tablist" aria-label="Buy or rent" className="grid grid-cols-2 gap-2">
                 {(["buy", "rent"] as const).map((o) => (
                   <button
@@ -165,7 +194,7 @@ export function GameDetailPage() {
                     onClick={() => setOption(o)}
                     className={`chip cut min-h-11 font-display text-base font-bold ${option === o ? "chip-on" : ""}`}
                   >
-                    {o === "buy" ? "Buy" : "Rent"}
+                    {o === "buy" ? "Buy (permanent)" : "Rent"}
                   </button>
                 ))}
               </div>
@@ -173,26 +202,26 @@ export function GameDetailPage() {
 
             {option === "buy" ? (
               <div className="flex flex-col gap-3">
-                {listed ? (
+                {buyListing ? (
                   <>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <span className="price-tag cut cut-tag py-1 pl-5 pr-4 text-4xl [--cut:14px]">{formatPrice(listed.listing.price)}</span>
-                      {listed.listing.compareAtPrice && listed.listing.compareAtPrice > listed.listing.price && (
-                        <span className="text-base text-text-muted line-through">{formatPrice(listed.listing.compareAtPrice)}</span>
+                      <span className="price-tag cut cut-tag py-1 pl-5 pr-4 text-4xl [--cut:14px]">{formatPrice(buyListing.price)}</span>
+                      {buyListing.compareAtPrice && buyListing.compareAtPrice > buyListing.price && (
+                        <span className="text-base text-text-muted line-through">{formatPrice(buyListing.compareAtPrice)}</span>
                       )}
                     </div>
                     <p className="flex items-center gap-2 text-sm text-text-muted">
                       <IconClock className="h-5 w-5 shrink-0 text-trust-600" />
-                      Delivered in {etaLabel(listed.listing.deliveryEtaMinutes)} · {PLATFORM_LABEL[listed.listing.platform]}
+                      Delivered in {etaLabel(buyListing.deliveryEtaMinutes)} · {PLATFORM_LABEL[platform]} · yours to keep
                     </p>
-                    <p className="text-sm text-text-muted">{credentialDisclosure(listed.listing.credentialType)}</p>
+                    <p className="text-sm text-text-muted">{credentialDisclosure(buyListing.credentialType)}</p>
                   </>
                 ) : pricesPending ? (
                   <PriceSkeleton />
                 ) : pricesFailed ? (
                   <Notice tone="error" onRetry={reload}>We couldn’t load the price just now.</Notice>
                 ) : (
-                  <p className="text-sm text-text-muted">This game isn’t listed with a price yet. Message us and we’ll check whether we can get it for you, and how quickly.</p>
+                  <p className="text-sm text-text-muted">{listed ? `This game isn’t listed for ${PLATFORM_LABEL[platform]} yet.` : "This game isn’t listed with a price yet."} Message us and we’ll check whether we can get it for you, and how quickly.</p>
                 )}
               </div>
             ) : (
@@ -223,7 +252,7 @@ export function GameDetailPage() {
                 ) : (
                   <p className="text-sm text-text-muted">Rental prices for this game aren’t set yet. Message us for the price and how quickly we can deliver.</p>
                 )}
-                <p className="text-sm text-text-muted">Rentals are for the PC online version. PlayStation and cloud games are sold outright.</p>
+                <p className="text-sm text-text-muted">You rent the {PLATFORM_LABEL[platform]} version; the time starts when we deliver it.</p>
               </div>
             )}
 

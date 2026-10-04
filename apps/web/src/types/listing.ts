@@ -28,8 +28,7 @@ export interface Listing {
   /** Which specific platform version this listing sells — a real SKU is platform-specific even
    * when the catalog game itself spans several (e.g. GTA V exists on PC/PS4/PS5/Xbox/Cloud, but
    * this particular listing might only be a PS4 version). Must be one of the catalog game's own
-   * `platforms`. One listing per game for now (enforced in the database) — a platform selector is
-   * the natural next feature if the same game is sold on several platforms. */
+   * `platforms`. A game can have one listing per platform (e.g. PS4 and PS5 at different prices). */
   platform: Platform;
   price: number; // INR
   credentialType: CredentialType;
@@ -53,7 +52,10 @@ export interface RentalOffer {
 // Merged view used throughout the UI — catalog facts (title, platforms, genre) + listing facts
 // (price, ETA) + that game's verified reviews, without duplicating catalog data into the listing.
 export interface ListedGame extends CatalogGame {
+  /** The cheapest listing on sale — what cards and price badges show. */
   listing: Listing;
+  /** Every platform this game is sold on (one listing per platform). */
+  listings: Listing[];
   reviews: Review[];
 }
 

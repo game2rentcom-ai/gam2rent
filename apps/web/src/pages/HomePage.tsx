@@ -16,6 +16,7 @@ import { GameCard } from "../ui/GameCard";
 import { GameCover } from "../ui/GameCover";
 import { IconChat, IconChevronDown, IconClock, IconShield, IconStar } from "../ui/icons";
 import { Rail, Section } from "../ui/Section";
+import { AnnouncementSlider } from "../ui/AnnouncementSlider";
 import { SearchPanel } from "../ui/SearchPanel";
 
 // Home: short and purposeful on a phone. Everything shown is real — counts and delivery times are
@@ -59,7 +60,7 @@ export function HomePage() {
   const faqs = ordering ? [{ ...FAQS[0], a: ORDERING_ANSWER }, ...FAQS.slice(1)] : FAQS;
 
   const spotlight = useMemo(() => {
-    const featured = listedGames.filter((g) => g.listing.isFeatured && g.listing.isAvailable);
+    const featured = listedGames.filter((g) => g.listings.some((l) => l.isFeatured && l.isAvailable));
     const rest = pick(SPOTLIGHT_IDS, findGame).filter((g) => !featured.some((f) => f.id === g.id));
     return [...featured, ...rest].slice(0, 6);
   }, [listedGames, findGame]);
@@ -75,6 +76,8 @@ export function HomePage() {
 
   return (
     <div className="flex flex-col gap-12 sm:gap-16">
+      {/* New games and offers the owner announces, right above the search. */}
+      <AnnouncementSlider className="-mb-8 sm:-mb-12" />
       <section className="hero hud flex flex-col items-center gap-5 px-4 py-9 text-center sm:px-10 sm:py-14">
         <p className="badge badge-brand cut text-xs font-bold uppercase tracking-wider">Buy or rent digital games</p>
         <h1 className="max-w-3xl font-display text-4xl font-bold leading-[1.05] text-text-primary sm:text-5xl lg:text-6xl">

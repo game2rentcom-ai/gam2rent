@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { setContactNumber, whatsAppLink } from "../config";
+import type { Announcement } from "../types/announcement";
 import type { Listing, ListedGame, RentalOffer, Review } from "../types/listing";
 import { catalog } from "./catalog";
-import { isPlaceholder, type CatalogGame } from "./catalogTypes";
+import { isPlaceholder, rentalPlatformsOf, type CatalogGame } from "./catalogTypes";
 import { demoListings, demoRentalPlans, demoReviews } from "./demo";
 import { fetchRemote, remoteConfigured } from "./remote";
 import { StoreContext, type DataSource, type Store } from "./store";
@@ -21,8 +22,11 @@ function pickSource(): DataSource {
 
 const SOURCE = pickSource();
 
-// Rentals are for PC online games the owner has marked rentable. PlayStation and cloud games are sold outright.
-const rentable = (game: CatalogGame | undefined) => Boolean(game && game.isRentable !== false && game.platforms.includes("pc"));
+const rentable = (game: CatalogGame | undefined) => Boolean(game && rentalPlatformsOf(game).length > 0);
+
+// The listing a card or price badge shows: the cheapest one on sale, else the cheapest at all.
+const primaryListing = (listings: Listing[]) =>
+  [...listings].sort((a, b) => Number(b.isAvailable) - Number(a.isAvailable) || a.price - b.price)[0]!;
 
 interface Loaded {
   status: Store["status"];
@@ -31,15 +35,16 @@ interface Loaded {
   reviews: Review[];
   offers: Record<string, RentalOffer[]>;
   settings: Record<string, string>;
+  announcements: Announcement[];
 }
 
-const EMPTY = { listings: [], reviews: [], offers: {}, settings: {} };
+const EMPTY = { listings: [], reviews: [], offers: {}, settings: {}, announcements: [] };
 
 function initialState(): Loaded {
   if (SOURCE === "remote") return { status: "loading", games: catalog, ...EMPTY };
   if (SOURCE === "demo") {
     const offers = Object.fromEntries(catalog.map((g) => [g.id, demoRentalPlans]));
-    return { status: "ready", games: catalog, listings: demoListings, reviews: demoReviews, offers, settings: {} };
+    return { status: "ready", games: catalog, listings: demoListings, reviews: demoReviews, offers, settings: {}, announcements: [] };
   }
   return { status: "ready", games: catalog, ...EMPTY };
 }
@@ -69,12 +74,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setContactNumber(state.settings.contact_whatsapp);
     const games = state.games.filter((g) => !isPlaceholder(g));
     const byId = new Map(games.map((g) => [g.id, g]));
-    const listedGames: ListedGame[] = [];
+    const listingsByGame = new Map<string, Listing[]>();
     for (const listing of state.listings) {
-      const game = byId.get(listing.catalogId);
-      if (!game) continue;
-      listedGames.push({ ...game, listing, reviews: state.reviews.filter((r) => r.gameId === game.id) });
+      if (!byId.has(listing.catalogId)) continue;
+      listingsByGame.set(listing.catalogId, [...(listingsByGame.get(listing.catalogId) ?? []), listing]);
     }
+    const listedGames: ListedGame[] = [...listingsByGame].map(([gameId, listings]) => ({
+      ...byId.get(gameId)!,
+      listing: primaryListing(listings),
+      listings,
+      reviews: state.reviews.filter((r) => r.gameId === gameId),
+    }));
     return {
       status: state.status,
       reload: () => {
@@ -89,6 +99,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       reviews: state.reviews,
       reviewsFor: (gameId) => state.reviews.filter((r) => r.gameId === gameId),
       rentalOffersFor: (gameId) => (rentable(byId.get(gameId)) ? state.offers[gameId] ?? [] : []),
+      announcements: state.announcements,
       setting: (key) => state.settings[key],
       contactLink: (message) => whatsAppLink(message),
     };

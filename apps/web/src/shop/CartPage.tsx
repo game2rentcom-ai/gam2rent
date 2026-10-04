@@ -15,7 +15,7 @@ import { payForCart, paymentProblem } from "./checkout";
 
 // The cart. Every price on this page comes back from the database (quote_cart) — the browser only
 // says which games are in the cart and which coupon code was typed.
-interface QuoteItem { game_id: string; unit_price: number; plan_label: string | null; eta_minutes: number | null; free_with_offer: boolean }
+interface QuoteItem { game_id: string; platform: string; unit_price: number; plan_label: string | null; eta_minutes: number | null; free_with_offer: boolean }
 interface Quote {
   items: QuoteItem[]; subtotal: number; discount: number; total: number; problems: string[];
   coupon: { code: string; valid: boolean; message?: string; discount?: number; description?: string } | null;
@@ -122,7 +122,7 @@ export function CartPage() {
                 {item ? (
                   <>
                     <p className="text-xs text-text-muted">
-                      {line.kind === "rent" ? `Rent · ${item.plan_label} · ${PLATFORM_LABEL[line.platform as Platform] ?? ""}` : "Buy"}
+                      {line.kind === "rent" ? `Rent · ${item.plan_label} · ${PLATFORM_LABEL[item.platform as Platform] ?? ""}` : `Buy · ${PLATFORM_LABEL[item.platform as Platform] ?? ""} · permanent`}
                     </p>
                     {item.free_with_offer ? (
                       <p className="flex items-center gap-2">
