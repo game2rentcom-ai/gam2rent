@@ -25,9 +25,9 @@ export const demoListings: Listing[] = [
 // Illustrative rental plans, shown for every game in demo mode only. Real rental prices are entered
 // by the owner in the admin panel; they exist nowhere else.
 export const demoRentalPlans: RentalOffer[] = [
-  { planId: "demo-1", label: "1 day", days: 1, isPopular: false, price: 79 },
-  { planId: "demo-3", label: "3 days", days: 3, isPopular: true, tag: "Weekend", price: 199 },
-  { planId: "demo-7", label: "7 days", days: 7, isPopular: false, price: 399 },
+  { planId: "demo-1", label: "1 day", hours: 24, isPopular: false, price: 79 },
+  { planId: "demo-3", label: "3 days", hours: 72, isPopular: true, tag: "Weekend", price: 199 },
+  { planId: "demo-7", label: "7 days", hours: 168, isPopular: false, price: 399 },
 ];
 
 export const demoReviews: Review[] = [

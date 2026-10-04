@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { arrivedFromEmailLink, backendConfigured, getClient, hasStoredSession } from "../lib/supabase";
 import { AuthContext, type Auth, type AuthResult, type Profile } from "./context";
 import { friendlyAuthError } from "./errors";
+import { claimRememberedReferral } from "../lib/referral";
 
 // Who is signed in, their profile, and whether they are an admin. The Supabase client is loaded only
 // when there is something to do with it (a saved login, an email link, or someone signing in).
@@ -48,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin: admin.data === true,
       degraded: Boolean(profile.error || admin.error),
     });
+    void claimRememberedReferral(client);
   }, []);
 
   // Loads the client once, reads any saved session, and keeps state in step with sign-ins elsewhere

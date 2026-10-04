@@ -25,7 +25,7 @@ before(async () => {
     insert into public.listings (game_id, platform, price, delivery_eta_minutes, credential_type) values
       ('gta-5', '${GTA.platforms[0]}', 1000, 45, 'id_password'),
       ('god-of-war', '${GOW.platforms[0]}', 1500, 60, 'qr_code');
-    insert into public.rental_plans (label, days, price, sort_order) values ('1 day', 1, 120, 1), ('3 days', 3, 300, 2);
+    insert into public.rental_plans (label, hours, price, sort_order) values ('1 day', 24, 120, 1), ('3 days', 72, 300, 2);
     insert into public.coupons (code, discount_type, discount_value, description) values
       ('SAVE10', 'percent', 10, '10% off'), ('FREE', 'flat', 100000, null);
   `);
@@ -316,6 +316,49 @@ suite("orders belong to their customer: another account can't open them", async 
     await goto("/account/orders");
     await page.getByText("You haven’t ordered anything yet.").waitFor();
   });
+});
+
+suite("launch offer: buy one get one free shows in the banner, the cart and the order; the customer pays the rest", async () => {
+  await switchOrderingOn();
+  const today = new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
+  const offer = { launch_offer_enabled: "true", launch_offer_title: "Launch week: buy one, get one free", launch_offer_starts: today, launch_offer_days: "7", launch_offer_max_free: "1" };
+  for (const [key, value] of Object.entries(offer)) {
+    await backend.query("insert into public.site_settings (key, value) values ($1, to_jsonb($2::text)) on conflict (key) do update set value = excluded.value", [key, value]);
+  }
+  try {
+    await withSite(DESKTOP, async (site) => {
+      const { page, goto, errors } = site;
+      await signIn(site);
+      await backend.query("delete from public.cart_items where user_id = $1", [customerId()]);
+      await goto("/games/gta-5");
+      await page.getByRole("button", { name: /Buy now/ }).click();
+      await page.getByRole("heading", { name: "Your cart" }).waitFor();
+      await goto("/games/god-of-war");
+      await page.getByRole("button", { name: "Add to cart" }).click();
+      await page.getByRole("link", { name: /In your cart/ }).waitFor();
+      await page.getByRole("link", { name: "Cart, 2 games" }).click();
+
+      // GTA 5 (1,000) is the cheaper game, so it is the free one: 2,500 less 1,000.
+      await page.getByText("Pay ₹1,500").waitFor();
+      let body = await text(page);
+      assert.match(body, /Launch week: buy one, get one free — until/, "the banner shows the offer");
+      assert.match(body, /Free with the offer/);
+      assert.match(body, /− ₹1,000/);
+
+      await page.getByRole("button", { name: "Pay ₹1,500" }).click();
+      await page.getByRole("heading", { name: /^Order GB-/ }).waitFor();
+      body = await text(page);
+      assert.match(body, /Launch week: buy one, get one free\s+− ₹1,000/, "the order shows the offer as its own line");
+      assert.equal(await page.evaluate(() => window.__razorpayOptions.amount), 150000, "Razorpay is asked for the price after the free game");
+      const order = await one("select promo_title, promo_discount, discount, total from public.orders where id = $1", [path(page).split("/").pop()]);
+      assert.deepEqual([order.promo_title, order.promo_discount, order.discount, order.total], ["Launch week: buy one, get one free", 1000, 1000, 1500]);
+      assert.equal((await one("select free_with_offer from public.order_items where order_id = $1 and game_id = 'gta-5'", [path(page).split("/").pop()])).free_with_offer, true);
+      assert.deepEqual(errors, []);
+    });
+  } finally {
+    await backend.query("delete from public.site_settings where key like 'launch_offer_%'");
+    await backend.query("delete from public.cart_items where user_id = $1", [customerId()]);
+  }
 });
 
 for (const size of [SMALL_PHONE, PHONE]) {

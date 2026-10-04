@@ -4,6 +4,7 @@ import { useAuth } from "../auth/context";
 import { GENRE_CHOICES } from "../auth/genres";
 import { PLATFORM_LABEL, type Platform } from "../data/catalogTypes";
 import { formatPhone, normalizePhone } from "../lib/phone";
+import { ReferralCard } from "./ReferralCard";
 import { useShop } from "../shop/context";
 import { Button } from "../ui/Button";
 import { Chip } from "../ui/Chip";
@@ -77,6 +78,8 @@ export function AccountPage() {
           )}
         </nav>
       )}
+
+      {shop.ordering && <ReferralCard />}
 
       <form onSubmit={save} className="panel flex flex-col gap-6 p-5" noValidate>
         {message && <Notice tone={message.tone}>{message.text}</Notice>}

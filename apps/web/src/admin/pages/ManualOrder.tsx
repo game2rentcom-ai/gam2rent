@@ -27,7 +27,7 @@ export function ManualOrder() {
   const navigate = useNavigate();
   const { busy, message, run } = useAction();
   const context = useLoad(loadContext, undefined);
-  const [form, setForm] = useState({ customerFilter: "", customer: "", gameFilter: "", game: "", kind: "buy", platform: "", price: "", days: "", credential: "id_password", note: "" });
+  const [form, setForm] = useState({ customerFilter: "", customer: "", gameFilter: "", game: "", kind: "buy", platform: "", price: "", hours: "", credential: "id_password", note: "" });
   const [problem, setProblem] = useState("");
   const set = (key: keyof typeof form, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -42,15 +42,15 @@ export function ManualOrder() {
   const record = async (e: React.FormEvent) => {
     e.preventDefault();
     const price = toInt(form.price);
-    const days = form.kind === "rent" ? toInt(form.days) : null;
+    const hours = form.kind === "rent" ? toInt(form.hours) : null;
     if (!form.customer) return setProblem("Choose the customer.");
     if (!game) return setProblem("Choose the game.");
     if (price === null) return setProblem("Enter the price in whole rupees.");
-    if (form.kind === "rent" && (!days || days < 1)) return setProblem("Enter how many days the rental lasts.");
+    if (form.kind === "rent" && (!hours || hours < 1)) return setProblem("Enter how many hours the rental lasts.");
     setProblem("");
     const item = {
       game_id: game.id, platform: form.platform || game.platforms[0], kind: form.kind, unit_price: price, credential_type: form.credential,
-      ...(days ? { rental_days: days, plan_label: `${days} ${days === 1 ? "day" : "days"}` } : {}),
+      ...(hours ? { rental_hours: hours, plan_label: hours % 24 === 0 ? `${hours / 24} ${hours === 24 ? "day" : "days"}` : `${hours} hours` } : {}),
     };
     let created = "";
     const saved = await run(async () => {
@@ -83,7 +83,7 @@ export function ManualOrder() {
             {(game?.platforms ?? []).map((p) => <option key={p} value={p}>{PLATFORM_LABEL[p as Platform] ?? p}</option>)}
           </SelectField>
           <TextField label="Price paid (₹)" inputMode="numeric" value={form.price} onChange={(e) => set("price", e.target.value)} />
-          {form.kind === "rent" && <TextField label="Rental days" inputMode="numeric" value={form.days} onChange={(e) => set("days", e.target.value)} />}
+          {form.kind === "rent" && <TextField label="Rental hours" inputMode="numeric" hint="24 = 1 day" value={form.hours} onChange={(e) => set("hours", e.target.value)} />}
           <SelectField label="Customer receives" value={form.credential} onChange={(e) => set("credential", e.target.value)}>
             <option value="id_password">Login (ID and password)</option>
             <option value="qr_code">A scan-to-play code</option>

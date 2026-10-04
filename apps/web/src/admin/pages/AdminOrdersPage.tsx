@@ -54,9 +54,9 @@ const csvCell = (value: unknown): string => {
 };
 
 function downloadCsv(orders: Order[], titles: Map<string, string[]>) {
-  const header = ["Receipt", "Placed", "Paid", "Status", "Total (INR)", "Discount (INR)", "Coupon", "Payment", "Razorpay payment id", "Customer", "Phone", "Games"];
+  const header = ["Receipt", "Placed", "Paid", "Status", "Total (INR)", "Total discount (INR)", "of which launch offer (INR)", "Coupon", "Payment", "Razorpay payment id", "Customer", "Phone", "Games"];
   const rows = orders.map((o) => [
-    orderName(o), o.created_at, o.paid_at, o.status, o.total, o.discount, o.coupon_code, o.payment_source, o.razorpay_payment_id,
+    orderName(o), o.created_at, o.paid_at, o.status, o.total, o.discount, o.promo_discount, o.coupon_code, o.payment_source, o.razorpay_payment_id,
     o.contact_name, o.contact_phone ? `+${o.contact_phone}` : "", (titles.get(o.id) ?? []).join("; "),
   ]);
   const csv = [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");

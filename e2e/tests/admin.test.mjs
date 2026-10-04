@@ -223,14 +223,14 @@ suite("rental plans and per-game rental prices: the store shows the plan price u
     await add.getByRole("button", { name: "Add plan" }).click();
     await add.getByText(/Give the plan a name/).waitFor();
     await add.getByLabel("Name").fill("1 day");
-    await add.getByLabel("Days").fill("1");
+    await add.getByLabel("Hours").fill("24");
     await add.getByLabel("Price (₹)").fill("120");
     await add.getByRole("button", { name: "Add plan" }).click();
     await page.getByRole("heading", { name: "1 plan" }).waitFor();
 
     const addAgain = page.getByRole("form", { name: "Add a plan" });
     await addAgain.getByLabel("Name").fill("3 days");
-    await addAgain.getByLabel("Days").fill("3");
+    await addAgain.getByLabel("Hours").fill("72");
     await addAgain.getByLabel("Price (₹)").fill("300");
     await addAgain.getByLabel("Tag").fill("Weekend");
     await addAgain.getByRole("button", { name: "Add plan" }).click();
@@ -358,6 +358,35 @@ suite("reviews: an owner-added review appears on the store, can be hidden and de
     await page.getByRole("button", { name: "Yes, delete it" }).click();
     await page.getByText("0 in total").waitFor();
   });
+});
+
+suite("launch offer and game counts: the owner runs the offer for a set number of days and decides whether the counts show", async () => {
+  const today = new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
+  await asOwner(DESKTOP, async ({ page, goto }) => {
+    await goto("/admin/settings");
+    await page.getByRole("switch", { name: "Run the offer" }).click();
+    await page.getByRole("button", { name: "Save settings" }).click();
+    await page.getByText("Choose the first day of the offer.").waitFor();
+
+    await page.getByLabel("Name shown to customers").fill("Launch week: buy one, get one free");
+    await page.getByLabel("Starts on").fill(today);
+    await page.getByLabel("For how many days").fill("7");
+    await page.getByLabel("Free games per order").fill("1");
+    await page.getByText(/Runs from .* 7 days\. It ends by itself\./).waitFor();
+    await page.getByRole("switch", { name: "Show how many games there are" }).click();
+    await page.getByRole("button", { name: "Save settings" }).click();
+    await page.getByText(/Settings saved/).waitFor();
+
+    const s = await settingsRows();
+    assert.deepEqual(
+      [s.launch_offer_enabled, s.launch_offer_title, s.launch_offer_starts, s.launch_offer_days, s.launch_offer_max_free, s.show_game_counts],
+      ["true", "Launch week: buy one, get one free", today, "7", "1", "true"],
+    );
+    await goto("/browse");
+    assert.match(await pageText(page), /Launch week: buy one, get one free — until/, "the banner names the offer and its last day");
+    assert.match(await page.getByRole("searchbox", { name: "Search games" }).last().getAttribute("placeholder"), /^Search \d+ games$/, "the count shows once the owner turns it on");
+  });
+  await backend.query("delete from public.site_settings where key like 'launch_offer_%'");
 });
 
 suite("team: an admin can add another (who must already have an account) and remove them, never themselves; it is on the record", async () => {

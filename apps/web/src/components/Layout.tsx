@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigationType } from "react-router-dom";
 import { useAuth } from "../auth/context";
 import { useStore } from "../data/store";
+import { activeOffer } from "../lib/offer";
 import { backendConfigured } from "../lib/supabase";
 import { useShop } from "../shop/context";
 import { BottomNav } from "../ui/BottomNav";
@@ -15,7 +16,9 @@ import { Sheet } from "../ui/Sheet";
 
 function Banner() {
   const { source, setting } = useStore();
-  const message = setting("announcement");
+  const [now] = useState(() => Date.now());
+  const offer = activeOffer(setting, now);
+  const message = offer ? `${offer.title} — until ${offer.until}` : setting("announcement");
   const [dismissed, setDismissed] = useState(() => {
     try { return sessionStorage.getItem("banner-dismissed") === (message ?? ""); } catch { return false; }
   });
@@ -84,9 +87,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <header className="sticky top-0 z-40 bg-bg-base/85 backdrop-blur-xl print:hidden">
         <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 md:h-16 lg:px-8">
-          <Link to="/" aria-label="GameBuy — home" className="-ml-1 flex min-h-11 shrink-0 items-center px-1 font-display text-2xl font-bold tracking-tight">
+          <Link to="/" aria-label="Game2Rent — home" className="-ml-1 flex min-h-11 shrink-0 items-center px-1 font-display text-2xl font-bold tracking-tight">
             <span className="text-gradient">Game</span>
-            <span className="text-white">Buy</span>
+            <span className="text-white">2Rent</span>
           </Link>
 
           <nav aria-label="Primary" className="ml-4 hidden items-center md:flex">
@@ -140,9 +143,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div>
             <p className="font-display text-2xl font-bold tracking-tight">
               <span className="text-gradient">Game</span>
-              <span className="text-white">Buy</span>
+              <span className="text-white">2Rent</span>
             </p>
-            <p className="mt-3 max-w-xs text-sm text-text-muted">Buy or rent digital games for PC, PlayStation, Xbox and cloud gaming.</p>
+            <p className="mt-3 max-w-xs text-sm text-text-muted">Buy or rent digital games for PC, PlayStation and cloud gaming.</p>
           </div>
           <nav aria-label="Legal">
             <h2 className="font-display text-sm font-bold text-text-primary">Policies</h2>
@@ -161,7 +164,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Button>
           </div>
         </div>
-        <p className="border-t border-border-subtle py-4 text-center text-xs text-text-muted">© {new Date().getFullYear()} GameBuy. All rights reserved.</p>
+        <p className="border-t border-border-subtle py-4 text-center text-xs text-text-muted">© {new Date().getFullYear()} Game2Rent. All rights reserved.</p>
       </footer>
 
       {/* Game pages have their own sticky buy bar in this spot */}

@@ -45,7 +45,7 @@ export function AdminOrderPage() {
           {order.contact_phone && <Button href={`https://wa.me/${order.contact_phone}`} variant="secondary">Message on WhatsApp</Button>}
         </div>
         <p className="text-sm text-text-muted">
-          {formatPrice(order.total)}{order.discount > 0 ? ` after ${formatPrice(order.discount)} off${order.coupon_code ? ` (${order.coupon_code})` : ""}` : ""} · {order.payment_source === "razorpay" ? "paid through Razorpay" : order.payment_source === "manual" ? "recorded by hand" : "free order"}
+          {formatPrice(order.total)}{order.discount > 0 ? ` after ${formatPrice(order.discount)} off${order.promo_discount > 0 ? ` (${formatPrice(order.promo_discount)} from ${order.promo_title ?? "the launch offer"})` : ""}${order.coupon_code ? ` · code ${order.coupon_code}` : ""}` : ""} · {order.payment_source === "razorpay" ? "paid through Razorpay" : order.payment_source === "manual" ? "recorded by hand" : "free order"}
         </p>
         {order.razorpay_payment_id && (
           <p className="break-all text-xs text-text-muted">Razorpay payment <span className="font-mono text-text-primary">{order.razorpay_payment_id}</span>{order.razorpay_order_id ? <> · order <span className="font-mono">{order.razorpay_order_id}</span></> : null} — search for it in your Razorpay dashboard.</p>

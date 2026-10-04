@@ -14,6 +14,9 @@ export interface Order {
   discount: number;
   total: number;
   coupon_code: string | null;
+  promo_title: string | null;
+  promo_discount: number;
+  coins_used: number;
   contact_name: string | null;
   contact_phone: string | null;
   razorpay_order_id: string | null;
@@ -31,7 +34,7 @@ export interface OrderItem {
   platform: string;
   kind: "buy" | "rent";
   plan_label: string | null;
-  rental_days: number | null;
+  rental_hours: number | null;
   unit_price: number;
   credential_type: "id_password" | "qr_code" | null;
   eta_minutes: number | null;
@@ -40,6 +43,7 @@ export interface OrderItem {
   rental_starts_at: string | null;
   rental_ends_at: string | null;
   rental_returned_at: string | null;
+  free_with_offer: boolean;
 }
 
 export const STATUS_LABEL: Record<OrderStatus, { label: string; tone: "neutral" | "brand" | "trust" | "warn" }> = {

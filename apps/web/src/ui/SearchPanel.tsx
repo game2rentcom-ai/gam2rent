@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useRequestLink } from "../community/request";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { useStore } from "../data/store";
+import { searchPlaceholder } from "../lib/display";
 import { searchGames } from "../lib/search";
 import { PlatformLine } from "../components/Badges";
 import { GameCover } from "./GameCover";
@@ -24,7 +25,7 @@ interface Props {
 }
 
 export function SearchPanel({ query, onQuery, onDone, autoFocus = false, dropdown = false, placeholder }: Props) {
-  const { games, findGame } = useStore();
+  const { games, findGame, setting } = useStore();
   const navigate = useNavigate();
   const results = useMemo(() => searchGames(games, query, 6), [games, query]);
   const q = query.trim();
@@ -47,7 +48,7 @@ export function SearchPanel({ query, onQuery, onDone, autoFocus = false, dropdow
           autoFocus={autoFocus}
           enterKeyHint="search"
           autoComplete="off"
-          placeholder={placeholder ?? `Search ${games.length} games`}
+          placeholder={placeholder ?? searchPlaceholder(setting, games.length)}
           aria-label="Search games"
           className="field bg-bg-surface pl-11 pr-4"
         />

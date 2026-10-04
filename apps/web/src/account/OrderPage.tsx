@@ -113,6 +113,7 @@ export function OrderPage() {
               {item.delivery_status === "pending" && live && item.eta_minutes && <span className="text-xs text-text-muted">Usually {etaLabel(item.eta_minutes)}</span>}
               {item.rental_returned_at && <Badge>Returned</Badge>}
               {rentalOver && <Badge>Rental ended</Badge>}
+              {item.free_with_offer && <Badge tone="trust">Free with the offer</Badge>}
             </div>
             {item.kind === "rent" && item.rental_starts_at && item.rental_ends_at && (
               <p className="mt-2 text-xs text-text-muted">Rental: {formatDate(item.rental_starts_at)} to {formatDate(item.rental_ends_at)}</p>
@@ -127,7 +128,9 @@ export function OrderPage() {
 
       <dl className="panel flex flex-col gap-2 p-4 text-sm">
         <div className="flex justify-between"><dt className="text-text-muted">Subtotal</dt><dd className="text-text-primary">{formatPrice(order.subtotal)}</dd></div>
-        {order.discount > 0 && <div className="flex justify-between"><dt className="text-text-muted">Discount{order.coupon_code ? ` (${order.coupon_code})` : ""}</dt><dd className="font-semibold text-trust-600">− {formatPrice(order.discount)}</dd></div>}
+        {order.promo_discount > 0 && <div className="flex justify-between"><dt className="text-text-muted">{order.promo_title ?? "Launch offer"}</dt><dd className="font-semibold text-trust-600">− {formatPrice(order.promo_discount)}</dd></div>}
+        {order.coins_used > 0 && <div className="flex justify-between"><dt className="text-text-muted">Your referral coins</dt><dd className="font-semibold text-trust-600">− {formatPrice(order.coins_used)}</dd></div>}
+        {order.discount - order.promo_discount - order.coins_used > 0 && <div className="flex justify-between"><dt className="text-text-muted">Discount{order.coupon_code ? ` (${order.coupon_code})` : ""}</dt><dd className="font-semibold text-trust-600">− {formatPrice(order.discount - order.promo_discount - order.coins_used)}</dd></div>}
         <div className="flex items-center justify-between border-t border-dashed border-border-strong pt-3 text-base font-bold"><dt className="text-text-primary">Total</dt><dd className="font-display text-2xl font-bold text-text-primary">{formatPrice(order.total)}</dd></div>
       </dl>
 

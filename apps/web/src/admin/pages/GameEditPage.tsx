@@ -124,7 +124,7 @@ function Editor({ initial, existing }: { initial: GameForm; existing: boolean })
 
       <Card className="flex flex-col gap-2">
         <Toggle label="Shown on the store" hint="Turn off to hide the game without deleting it." checked={form.isPublished} onChange={(v) => set("isPublished", v)} />
-        <Toggle label="Can be rented" hint="Turn off to hide rental options for this game." checked={form.isRentable} onChange={(v) => set("isRentable", v)} />
+        <Toggle label="Can be rented (PC online games)" hint="Only for PC games that work online, so the customer plays on a shared account. Turn off for offline PC games, and for PlayStation and cloud games, which are sold outright." checked={form.isRentable} onChange={(v) => set("isRentable", v)} />
       </Card>
 
       <div className="flex flex-wrap items-center gap-3">

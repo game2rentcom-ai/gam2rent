@@ -44,7 +44,7 @@ export interface Listing {
 export interface RentalOffer {
   planId: string;
   label: string;
-  days: number;
+  hours: number;
   tag?: string;
   isPopular: boolean;
   price: number; // INR

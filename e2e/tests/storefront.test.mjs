@@ -41,6 +41,8 @@ const whatsappText = (href) => new URL(href).searchParams.get("text");
 // Titles whose real details were never confirmed are kept from customers until the owner fills them in.
 const PLACEHOLDERS = gameRows.filter((g) => g.genre === "Unverified");
 const SHOWN = gameRows.length - PLACEHOLDERS.length;
+// The storefront hides its game counts unless the owner turns them on; the tests that check them turn them on.
+const COUNTS_ON = { ...defaultRest, site_settings: [...defaultRest.site_settings, { key: "show_game_counts", value: "true" }] };
 
 test("home shows only real data: prices, delivery time, reviews and the owner's banner come from the database", async () => {
   await withSite({ dist: live, ...PHONE }, async ({ page, goto, errors }) => {
@@ -51,7 +53,8 @@ test("home shows only real data: prices, delivery time, reviews and the owner's 
     assert.match(text, /₹999/);
     assert.match(text, /Typical delivery ~45 min/);
     assert.match(text, /4\.5 from 2 verified reviews/);
-    assert.equal(await page.getByPlaceholder(`Search ${SHOWN} games`).count() > 0, true, "the count is the database's, including the owner's added game but not the placeholder titles");
+    assert.equal(await page.getByPlaceholder("Search games").count() > 0, true, "no game count shown by default");
+    assert.doesNotMatch(text, new RegExp(`Search ${SHOWN} games`), "the count stays out of sight until the owner turns it on");
     for (const invented of [/1,400/, /Shaurya/, /LIVE ACTIVITY/, /Instant digital/i, /₹49\b/]) assert.doesNotMatch(text, invented);
     await page.getByRole("button", { name: "Dismiss announcement" }).click();
     assert.doesNotMatch(await pageText(page), /Sale this weekend/);
@@ -93,7 +96,7 @@ test("phone search: forgiving of typos, opens full-screen, Enter goes to the res
 });
 
 test("browse: platform chips, filter sheet, sort and 'show more' all work and live in the URL", async () => {
-  await withSite({ dist: live, ...PHONE }, async ({ page, goto, errors }) => {
+  await withSite({ dist: live, ...PHONE, rest: COUNTS_ON }, async ({ page, goto, errors }) => {
     await goto("/browse");
     const count = () => page.locator('p[aria-live="polite"]').innerText();
     assert.match(await count(), new RegExp(`^${SHOWN} games`));
@@ -140,10 +143,10 @@ test("browse: Back from a game lands where the visitor left — the same games s
     const left = await page.evaluate(() => window.scrollY);
     assert.ok(left > 2000, "scrolled well down the list");
 
-    // Open a game that is already on screen (so opening it doesn't move the page first).
-    const onScreen = await page.evaluate(() => [...document.querySelectorAll("article a")].findIndex((a) => { const r = a.getBoundingClientRect(); return r.top > 120 && r.bottom < window.innerHeight - 20; }));
-    assert.ok(onScreen >= 0);
-    await page.locator("article a").nth(onScreen).click();
+    // Open a game further down the list; Playwright scrolls it into view first.
+    await page.locator("article a").nth(30).scrollIntoViewIfNeeded();
+    const leftAtClick = await page.evaluate(() => window.scrollY);
+    await page.locator("article a").nth(30).click();
     await page.waitForURL(/\/games\//);
     await page.waitForTimeout(200);
     assert.equal(await page.evaluate(() => window.scrollY), 0, "a new page starts at the top");
@@ -152,12 +155,12 @@ test("browse: Back from a game lands where the visitor left — the same games s
     await page.waitForFunction(() => document.querySelectorAll("article").length === 48);
     await page.waitForTimeout(400);
     const back = await page.evaluate(() => window.scrollY);
-    assert.ok(Math.abs(back - left) < 150, `back at ${back}, left at ${left}`);
+    assert.ok(Math.abs(back - leftAtClick) < 150, `back at ${back}, left at ${left}`);
   });
 });
 
 test("browse search box keeps up with fast typing, and the URL follows once you pause", async () => {
-  await withSite({ dist: live, ...PHONE }, async ({ page, goto }) => {
+  await withSite({ dist: live, ...PHONE, rest: COUNTS_ON }, async ({ page, goto }) => {
     await goto("/browse");
     const box = page.getByRole("searchbox", { name: "Search games" }).last();
     await box.pressSequentially("elden ring", { delay: 15 });
@@ -193,8 +196,7 @@ test("a listed game: real price, was-price, delivery time, rental plans, and cha
     await page.getByRole("radio", { name: /7 days/ }).click();
     const rent = page.getByRole("link", { name: /Rent · 7 days/ });
     assert.match(whatsappText(await rent.getAttribute("href")), /7 days for ₹500/);
-    await page.getByRole("button", { name: "PS5", exact: true }).click();
-    assert.match(whatsappText(await rent.getAttribute("href")), /PS5/);
+    assert.match(whatsappText(await rent.getAttribute("href")), /on PC/, "rentals are for the PC online version only, so there is no platform choice");
     assert.deepEqual(errors, []);
   });
 });

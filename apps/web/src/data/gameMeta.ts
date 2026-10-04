@@ -122,7 +122,7 @@ export function getGameMetadata(id: string, genre: string): GameMetadata {
 export const COMMON_FAQS = [
   {
     q: 'Can I play the game on my personal account?',
-    a: 'Yes! For console rentals and purchases, you add the profile to your PlayStation or Xbox as a primary account, and you can play directly from your own personal profile with your own save files and trophies.',
+    a: 'Yes! For console purchases, you add the profile to your PlayStation as a primary account, and you can play directly from your own personal profile with your own save files and trophies.',
   },
   {
     q: 'How fast do I receive the game after payment?',

@@ -19,7 +19,7 @@ export function PlatformBadge({ platform }: { platform: Platform }) {
   );
 }
 
-/** "PC · PS4 · Xbox" with each name in its platform's colour. */
+/** "PC · PS4 · PS5" with each name in its platform's colour. */
 export function PlatformLine({ platforms }: { platforms: Platform[] }) {
   return (
     <>

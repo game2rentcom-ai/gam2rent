@@ -60,9 +60,9 @@ export const defaultRest = {
     { id: "r2", game_id: "gta-5", rating: 4, comment: "Took about 40 minutes.", reviewer_name: null },
   ],
   rental_offers: [
-    { game_id: "gta-5", plan_id: "p1", label: "1 day", days: 1, tag: null, is_popular: false, sort_order: 1, price: 100 },
-    { game_id: "gta-5", plan_id: "p3", label: "3 days", days: 3, tag: "Weekend", is_popular: true, sort_order: 2, price: 250 },
-    { game_id: "gta-5", plan_id: "p7", label: "7 days", days: 7, tag: null, is_popular: false, sort_order: 3, price: 500 },
+    { game_id: "gta-5", plan_id: "p1", label: "1 day", hours: 24, tag: null, is_popular: false, sort_order: 1, price: 100 },
+    { game_id: "gta-5", plan_id: "p3", label: "3 days", hours: 72, tag: "Weekend", is_popular: true, sort_order: 2, price: 250 },
+    { game_id: "gta-5", plan_id: "p7", label: "7 days", hours: 168, tag: null, is_popular: false, sort_order: 3, price: 500 },
   ],
   site_settings: [
     { key: "announcement", value: "Sale this weekend" },

@@ -12,7 +12,7 @@ const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const remoteConfigured = Boolean(url && key);
 
-const PLATFORMS: Platform[] = ["pc", "ps4", "ps5", "xbox", "cloud"];
+const PLATFORMS: Platform[] = ["pc", "ps4", "ps5", "cloud"];
 const CREDENTIALS: CredentialType[] = ["id_password", "qr_code"];
 
 export interface RemoteData {
@@ -114,17 +114,17 @@ export function mapRows(
 export function mapOffers(rows: Record<string, unknown>[]): Record<string, RentalOffer[]> {
   const offers: Record<string, RentalOffer[]> = {};
   for (const row of rows) {
-    if (typeof row.game_id !== "string" || typeof row.plan_id !== "string" || typeof row.price !== "number" || typeof row.days !== "number") continue;
+    if (typeof row.game_id !== "string" || typeof row.plan_id !== "string" || typeof row.price !== "number" || typeof row.hours !== "number") continue;
     (offers[row.game_id] ??= []).push({
       planId: row.plan_id,
       label: text(row.label),
-      days: row.days,
+      hours: row.hours,
       tag: typeof row.tag === "string" && row.tag ? row.tag : undefined,
       isPopular: row.is_popular === true,
       price: row.price,
     });
   }
-  for (const list of Object.values(offers)) list.sort((a, b) => a.days - b.days);
+  for (const list of Object.values(offers)) list.sort((a, b) => a.hours - b.hours);
   return offers;
 }
 

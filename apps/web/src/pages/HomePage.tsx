@@ -6,6 +6,7 @@ import { useRequestLink } from "../community/request";
 import { useShop } from "../shop/context";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { PROMISE } from "../data/policies";
+import { gameCountsShown, searchPlaceholder } from "../lib/display";
 import { useStore } from "../data/store";
 import { averageRating } from "../types/listing";
 import { Button } from "../ui/Button";
@@ -32,7 +33,7 @@ const FAQS = [
   { q: "Is this an account or a code?", a: "You get access to an account that has the game — or a QR code that signs you in — not a redeemable key. Each game page says exactly which, before you pay." },
   { q: "What if something goes wrong?", a: `Accounts shared this way can occasionally be restricted or reclaimed by the platform. If anything goes wrong, we replace it, free — for ${PROMISE.replacementDays} days after delivery on a purchase, and for the whole period on a rental. Keep the login details private.` },
   { q: "How long does delivery take?", a: "Each game page shows the delivery time for that game. We deliver on demand, so a game we don’t already hold can take a little longer — the page tells you before you commit." },
-  { q: "Renting or buying — what’s the difference?", a: `Renting gives you access for a set number of days, then it ends. Buying gives you access with no end date, covered by our replacement guarantee for ${PROMISE.replacementDays} days after delivery. The price for each is on the game’s page.` },
+  { q: "Renting or buying — what’s the difference?", a: `Renting gives you access for a set time, then it ends. Buying gives you access with no end date, covered by our replacement guarantee for ${PROMISE.replacementDays} days after delivery. The price for each is on the game’s page.` },
   { q: "Can I extend a rental?", a: "Message us before your rental ends and we’ll tell you the options." },
 ];
 
@@ -50,7 +51,7 @@ function pick(ids: string[], find: (id: string) => CatalogGame | undefined): Cat
 }
 
 export function HomePage() {
-  const { games, findGame, listedGames, reviews, status, reload, contactLink } = useStore();
+  const { games, findGame, listedGames, reviews, status, reload, contactLink, setting } = useStore();
   const [query, setQuery] = useState("");
   const chatHref = contactLink("Hi! I have a question about renting or buying games.");
   const request = useRequestLink();
@@ -68,6 +69,7 @@ export function HomePage() {
   const fresh = pick(NEW_IDS, findGame);
   const platformCounts = PLATFORMS.map((p) => ({ p, n: games.filter((g) => g.platforms.includes(p)).length })).filter((x) => x.n > 0);
 
+  const showCounts = gameCountsShown(setting);
   const rating = averageRating(reviews);
   const typicalEta = availableNow.length ? median(availableNow.map((g) => g.listing.deliveryEtaMinutes)) : null;
 
@@ -78,9 +80,9 @@ export function HomePage() {
         <h1 className="max-w-3xl font-display text-4xl font-bold leading-[1.05] text-text-primary sm:text-5xl lg:text-6xl">
           Find your next game. <span className="text-gradient">Play it today.</span>
         </h1>
-        <p className="max-w-xl text-base text-text-muted sm:text-lg">PC, PlayStation, Xbox and cloud gaming — with a delivery time you can see up front, and a free replacement if anything goes wrong.</p>
+        <p className="max-w-xl text-base text-text-muted sm:text-lg">PC, PlayStation and cloud gaming — with a delivery time you can see up front, and a free replacement if anything goes wrong.</p>
         <div className="w-full max-w-xl text-left">
-          <SearchPanel query={query} onQuery={setQuery} onDone={() => setQuery("")} dropdown placeholder={`Search ${games.length} games`} />
+          <SearchPanel query={query} onQuery={setQuery} onDone={() => setQuery("")} dropdown placeholder={searchPlaceholder(setting, games.length)} />
         </div>
         <div className="flex flex-wrap justify-center gap-2">
           {PLATFORMS.map((p) => (
@@ -164,7 +166,7 @@ export function HomePage() {
                 <PlatformGlyph platform={p} className={`h-8 w-8 shrink-0 ${PLATFORM_TEXT[p]}`} />
                 <span className="min-w-0">
                   <span className="block truncate font-display text-base font-bold text-text-primary">{PLATFORM_SHORT[p]}</span>
-                  <span className="block text-xs text-text-muted">{n} games</span>
+                  {showCounts && <span className="block text-xs text-text-muted">{n} games</span>}
                 </span>
               </Link>
             </li>
@@ -197,7 +199,7 @@ export function HomePage() {
         </ol>
       </Section>
 
-      <section aria-label="Why GameBuy" className="grid gap-3 sm:grid-cols-3">
+      <section aria-label="Why Game2Rent" className="grid gap-3 sm:grid-cols-3">
         <div className="panel flex items-center gap-3 p-4">
           <span className="medal cut cut-hex"><IconShield className="h-6 w-6" /></span>
           <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">Free replacement</span>Something off after delivery? We replace it.</p>

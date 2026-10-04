@@ -3,8 +3,8 @@ import { useStore } from "../data/store";
 
 // Each page names itself in the browser tab, in history and in what a search engine or a link preview shows.
 // The shop's name is the owner's (Settings), falling back to the built-in one.
-const FALLBACK_NAME = "GameBuy";
-const DEFAULT_DESCRIPTION = "Buy or rent digital games for PC, PlayStation, Xbox and cloud gaming — with a delivery time you can see up front, and a free replacement if anything goes wrong.";
+const FALLBACK_NAME = "Game2Rent";
+const DEFAULT_DESCRIPTION = "Buy or rent digital games for PC, PlayStation and cloud gaming — with a delivery time you can see up front, and a free replacement if anything goes wrong.";
 
 /** `title` undefined = the shop's name alone (home); null = leave the tab alone (a page that names itself). */
 export function usePageMeta(title: string | null | undefined, description?: string) {

@@ -12,7 +12,7 @@ import { OrderButtons } from "../shop/OrderButtons";
 import { WishlistButton } from "../shop/WishlistButton";
 import { averageRating, credentialDisclosure } from "../types/listing";
 import { PlatformBadge } from "../components/Badges";
-import { Badge, Chip } from "../ui/Chip";
+import { Badge } from "../ui/Chip";
 import { Button } from "../ui/Button";
 import { Notice } from "../ui/Form";
 import { etaLabel, formatPrice } from "../ui/format";
@@ -61,7 +61,6 @@ export function GameDetailPage() {
   const offers = game ? rentalOffersFor(game.id) : [];
   const [chosenOption, setOption] = useState<Option | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
-  const [rentPlatform, setRentPlatform] = useState<Platform | null>(null);
   const [showAllReviews, setShowAllReviews] = useState(false);
 
   const related = game ? relatedGames(game, games) : [];
@@ -77,7 +76,7 @@ export function GameDetailPage() {
 
   const option: Option = chosenOption ?? (listed ? "buy" : offers.length ? "rent" : "buy");
   const plan = offers.find((o) => o.planId === planId) ?? offers.find((o) => o.isPopular) ?? offers[0];
-  const platform = rentPlatform ?? game.platforms[0];
+  const platform: Platform = "pc"; // rentals are PC online games only
   const reviews = reviewsFor(game.id);
   const rating = averageRating(reviews);
   const trailer = getGameTrailer(game.id);
@@ -224,14 +223,7 @@ export function GameDetailPage() {
                 ) : (
                   <p className="text-sm text-text-muted">Rental prices for this game aren’t set yet. Message us for the price and how quickly we can deliver.</p>
                 )}
-                {game.platforms.length > 1 && (
-                  <div>
-                    <p className="mb-1.5 text-sm font-semibold text-text-primary">Platform</p>
-                    <div className="flex flex-wrap gap-2">
-                      {game.platforms.map((p) => <Chip key={p} selected={platform === p} onClick={() => setRentPlatform(p)}>{PLATFORM_LABEL[p]}</Chip>)}
-                    </div>
-                  </div>
-                )}
+                <p className="text-sm text-text-muted">Rentals are for the PC online version. PlayStation and cloud games are sold outright.</p>
               </div>
             )}
 

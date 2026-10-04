@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { CheckboxField, Notice, PasswordField, TextField } from "../ui/Form";
+import { rememberReferral } from "../lib/referral";
 import { backendConfigured } from "../lib/supabase";
 import { AuthShell } from "./AuthShell";
 import { useAuth } from "./context";
@@ -11,6 +12,8 @@ export function SignupPage() {
   const { status, signUp } = useAuth();
   const [params] = useSearchParams();
   const next = safeNext(params.get("next"));
+  const referral = params.get("ref");
+  useEffect(() => rememberReferral(referral), [referral]);
   const [form, setForm] = useState({ fullName: "", email: "", password: "" });
   const [agreed, setAgreed] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});

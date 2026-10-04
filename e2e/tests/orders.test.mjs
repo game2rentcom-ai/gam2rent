@@ -26,7 +26,7 @@ before(async () => {
     insert into public.listings (game_id, platform, price, delivery_eta_minutes, credential_type) values
       ('gta-5', '${GTA.platforms[0]}', 1000, 45, 'id_password'),
       ('god-of-war', '${GOW.platforms[0]}', 1500, 60, 'qr_code');
-    insert into public.rental_plans (label, days, price, sort_order) values ('3 days', 3, 300, 1);
+    insert into public.rental_plans (label, hours, price, sort_order) values ('3 days', 72, 300, 1);
     insert into public.site_settings (key, value) values ('payments_enabled', to_jsonb('true'::text));
   `);
 });

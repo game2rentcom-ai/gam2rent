@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigationType, useSearchParams } from "react-rou
 import { useRequestLink } from "../community/request";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { useStore } from "../data/store";
+import { gameCountsShown, searchPlaceholder } from "../lib/display";
 import { searchGames } from "../lib/search";
 import { Button } from "../ui/Button";
 import { Chip } from "../ui/Chip";
@@ -35,7 +36,8 @@ const writeLeft = (key: string, value: Left) => {
 };
 
 export function BrowsePage() {
-  const { games, findListedGame, status, reload } = useStore();
+  const { games, findListedGame, status, reload, setting } = useStore();
+  const showCounts = gameCountsShown(setting);
   const [params, setParams] = useSearchParams();
   const location = useLocation();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -139,7 +141,7 @@ export function BrowsePage() {
     <div className="flex flex-col gap-4">
       <header>
         <h1 className="font-display text-2xl font-bold text-text-primary sm:text-3xl">Browse games</h1>
-        <p className="mt-1 text-sm text-text-muted">Buy or rent digital games for PC, PlayStation, Xbox and cloud.</p>
+        <p className="mt-1 text-sm text-text-muted">Buy or rent digital games for PC, PlayStation and cloud.</p>
       </header>
 
       <div className="sticky top-14 z-30 -mx-4 flex gap-2 bg-bg-base/95 px-4 py-2 backdrop-blur-xl sm:-mx-6 sm:px-6 md:top-16 lg:-mx-8 lg:px-8">
@@ -152,7 +154,7 @@ export function BrowsePage() {
             enterKeyHint="search"
             autoComplete="off"
             aria-label="Search games"
-            placeholder={`Search ${games.length} games`}
+            placeholder={searchPlaceholder(setting, games.length)}
             className="field bg-bg-surface pl-11 pr-11"
           />
           {q && (
@@ -187,7 +189,9 @@ export function BrowsePage() {
       )}
 
       <p className="text-sm text-text-muted" aria-live="polite">
-        {status === "loading" ? "Loading games…" : `${results.length} ${results.length === 1 ? "game" : "games"}${q.trim() ? ` for “${q.trim()}”` : ""}`}
+        {status === "loading" ? "Loading games…"
+          : showCounts ? `${results.length} ${results.length === 1 ? "game" : "games"}${q.trim() ? ` for “${q.trim()}”` : ""}`
+          : q.trim() ? `Results for “${q.trim()}”` : ""}
       </p>
 
       {status === "error" && <Notice tone="error" onRetry={reload}>We couldn’t load prices and availability just now, so some filters may look empty.</Notice>}
@@ -216,7 +220,7 @@ export function BrowsePage() {
           </ul>
           {results.length > shown.length && (
             <div className="flex flex-col items-center gap-2 pt-2">
-              <p className="text-xs text-text-muted">Showing {shown.length} of {results.length}</p>
+              {showCounts && <p className="text-xs text-text-muted">Showing {shown.length} of {results.length}</p>}
               <Button variant="secondary" size="lg" onClick={() => setVisible((v) => v + PAGE_SIZE)}>Show more games</Button>
             </div>
           )}
@@ -238,7 +242,7 @@ export function BrowsePage() {
         footer={
           <div className="flex gap-2">
             <Button variant="secondary" full onClick={() => set({ genre: null, forsale: null, sort: null })}>Reset</Button>
-            <Button full onClick={() => setSheetOpen(false)}>Show {results.length} {results.length === 1 ? "game" : "games"}</Button>
+            <Button full onClick={() => setSheetOpen(false)}>{showCounts ? `Show ${results.length} ${results.length === 1 ? "game" : "games"}` : "Show games"}</Button>
           </div>
         }
       >

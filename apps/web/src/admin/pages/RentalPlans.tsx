@@ -7,7 +7,7 @@ import { ok, toInt, useAction, useLoad } from "../../lib/api";
 import { Card, ErrorNote, Loading, Toggle } from "../kit";
 import { loadPlans, type Plan } from "../plans";
 
-// Store-wide rental plans (1 day, 3 days, …). A plan's price applies to every rentable game unless a
+// Store-wide rental plans (24 hours, 72 hours, …; shown to customers by name, e.g. “3 days”). A plan's price applies to every rentable game unless a
 // game has its own price for it (see "Rental price by game").
 
 export function RentalPlans() {
@@ -30,7 +30,7 @@ function PlanForm({ plan, nextOrder = 1, onSaved }: { plan?: Plan; nextOrder?: n
   const { client } = useAuth();
   const { busy, message, run } = useAction();
   const [draft, setDraft] = useState({
-    label: plan?.label ?? "", days: plan ? String(plan.days) : "", price: plan ? String(plan.price) : "", tag: plan?.tag ?? "",
+    label: plan?.label ?? "", hours: plan ? String(plan.hours) : "", price: plan ? String(plan.price) : "", tag: plan?.tag ?? "",
     popular: plan?.is_popular ?? false, active: plan?.is_active ?? true, order: String(plan?.sort_order ?? nextOrder),
   });
   const [problem, setProblem] = useState("");
@@ -39,14 +39,14 @@ function PlanForm({ plan, nextOrder = 1, onSaved }: { plan?: Plan; nextOrder?: n
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    const days = toInt(draft.days);
+    const hours = toInt(draft.hours);
     const price = toInt(draft.price);
     const order = toInt(draft.order) ?? 0;
     if (!draft.label.trim()) return setProblem("Give the plan a name, e.g. “3 days”.");
-    if (!days || days < 1) return setProblem("Enter how many days the plan lasts.");
+    if (!hours || hours < 1) return setProblem("Enter how many hours the plan lasts. 24 is one day, 168 is a week.");
     if (price === null) return setProblem("Enter the price in whole rupees.");
     setProblem("");
-    const row = { label: draft.label.trim(), days, price, tag: draft.tag.trim() || null, is_popular: draft.popular, is_active: draft.active, sort_order: order };
+    const row = { label: draft.label.trim(), hours, price, tag: draft.tag.trim() || null, is_popular: draft.popular, is_active: draft.active, sort_order: order };
     const saved = await run(async () => {
       const supabase = await client();
       if (plan) await ok(supabase.from("rental_plans").update(row).eq("id", plan.id));
@@ -70,7 +70,7 @@ function PlanForm({ plan, nextOrder = 1, onSaved }: { plan?: Plan; nextOrder?: n
         {(problem || message) && <Notice tone={problem ? "error" : message!.tone}>{problem || message!.text}</Notice>}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <TextField label="Name" value={draft.label} onChange={(e) => set("label", e.target.value)} placeholder="3 days" />
-          <TextField label="Days" inputMode="numeric" value={draft.days} onChange={(e) => set("days", e.target.value)} />
+          <TextField label="Hours" inputMode="numeric" hint="24 = 1 day, 168 = 7 days" value={draft.hours} onChange={(e) => set("hours", e.target.value)} />
           <TextField label="Price (₹)" inputMode="numeric" value={draft.price} onChange={(e) => set("price", e.target.value)} />
           <TextField label="Tag" hint="Optional, e.g. Weekend" value={draft.tag} onChange={(e) => set("tag", e.target.value)} />
         </div>

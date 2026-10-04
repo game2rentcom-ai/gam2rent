@@ -5,6 +5,7 @@ import { useAuth } from "../auth/context";
 import { PLATFORM_LABEL, type Platform } from "../data/catalogTypes";
 import { useStore } from "../data/store";
 import { ok, useLoad } from "../lib/api";
+import { Badge } from "../ui/Chip";
 import { Button } from "../ui/Button";
 import { Notice, TextField } from "../ui/Form";
 import { etaLabel, formatPrice } from "../ui/format";
@@ -14,10 +15,12 @@ import { payForCart, paymentProblem } from "./checkout";
 
 // The cart. Every price on this page comes back from the database (quote_cart) — the browser only
 // says which games are in the cart and which coupon code was typed.
-interface QuoteItem { game_id: string; unit_price: number; plan_label: string | null; eta_minutes: number | null }
+interface QuoteItem { game_id: string; unit_price: number; plan_label: string | null; eta_minutes: number | null; free_with_offer: boolean }
 interface Quote {
   items: QuoteItem[]; subtotal: number; discount: number; total: number; problems: string[];
   coupon: { code: string; valid: boolean; message?: string; discount?: number; description?: string } | null;
+  promo: { title: string; discount: number; free_games: number } | null;
+  coins: { balance: number; applied: number; max_per_order: number } | null;
 }
 
 async function loadQuote(client: SupabaseClient, coupon: string) {
@@ -71,7 +74,7 @@ export function CartPage() {
         coupon: couponNote?.valid ? couponNote.code : "",
         name: profile?.fullName ?? "",
         phone: profile?.phone ?? "",
-        business: setting("business_name") ?? "GameBuy",
+        business: setting("business_name") ?? "Game2Rent",
       });
       if (result.status !== "cancelled") {
         shop.refresh();
@@ -121,7 +124,14 @@ export function CartPage() {
                     <p className="text-xs text-text-muted">
                       {line.kind === "rent" ? `Rent · ${item.plan_label} · ${PLATFORM_LABEL[line.platform as Platform] ?? ""}` : "Buy"}
                     </p>
-                    <p><span className="price-tag cut cut-tag text-base">{formatPrice(item.unit_price)}</span></p>
+                    {item.free_with_offer ? (
+                      <p className="flex items-center gap-2">
+                        <span className="text-sm text-text-muted line-through">{formatPrice(item.unit_price)}</span>
+                        <Badge tone="trust">Free with the offer</Badge>
+                      </p>
+                    ) : (
+                      <p><span className="price-tag cut cut-tag text-base">{formatPrice(item.unit_price)}</span></p>
+                    )}
                   </>
                 ) : (
                   <p role="alert" className="text-xs font-medium text-red-300">{title} is no longer available. Remove it to continue.</p>
@@ -154,7 +164,9 @@ export function CartPage() {
       {data && (
         <dl className="panel hud flex flex-col gap-2 p-4 text-sm">
           <div className="flex justify-between"><dt className="text-text-muted">Subtotal</dt><dd className="text-text-primary">{formatPrice(data.subtotal)}</dd></div>
-          {data.discount > 0 && <div className="flex justify-between"><dt className="text-text-muted">Discount</dt><dd className="font-semibold text-trust-600">− {formatPrice(data.discount)}</dd></div>}
+          {data.promo && data.promo.discount > 0 && <div className="flex justify-between"><dt className="text-text-muted">{data.promo.title}</dt><dd className="font-semibold text-trust-600">− {formatPrice(data.promo.discount)}</dd></div>}
+          {(data.coins?.applied ?? 0) > 0 && <div className="flex justify-between"><dt className="text-text-muted">Your referral coins</dt><dd className="font-semibold text-trust-600">− {formatPrice(data.coins!.applied)}</dd></div>}
+          {data.discount - (data.promo?.discount ?? 0) - (data.coins?.applied ?? 0) > 0 && <div className="flex justify-between"><dt className="text-text-muted">Discount</dt><dd className="font-semibold text-trust-600">− {formatPrice(data.discount - (data.promo?.discount ?? 0) - (data.coins?.applied ?? 0))}</dd></div>}
           <div className="flex items-center justify-between border-t border-dashed border-border-strong pt-3 text-base font-bold"><dt className="text-text-primary">Total</dt><dd className="font-display text-2xl font-bold text-text-primary [text-shadow:0_0_22px_rgb(123_63_245/0.7)]">{formatPrice(data.total)}</dd></div>
         </dl>
       )}

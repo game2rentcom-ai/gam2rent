@@ -21,6 +21,9 @@ function pickSource(): DataSource {
 
 const SOURCE = pickSource();
 
+// Rentals are for PC online games the owner has marked rentable. PlayStation and cloud games are sold outright.
+const rentable = (game: CatalogGame | undefined) => Boolean(game && game.isRentable !== false && game.platforms.includes("pc"));
+
 interface Loaded {
   status: Store["status"];
   games: CatalogGame[];
@@ -85,7 +88,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       findListedGame: (gameId) => listedGames.find((g) => g.id === gameId),
       reviews: state.reviews,
       reviewsFor: (gameId) => state.reviews.filter((r) => r.gameId === gameId),
-      rentalOffersFor: (gameId) => (byId.get(gameId)?.isRentable === false ? [] : state.offers[gameId] ?? []),
+      rentalOffersFor: (gameId) => (rentable(byId.get(gameId)) ? state.offers[gameId] ?? [] : []),
       setting: (key) => state.settings[key],
       contactLink: (message) => whatsAppLink(message),
     };

@@ -53,7 +53,7 @@ const terms: Policy = {
     {
       heading: "3. Platform rules and risk — please read",
       paragraphs: [
-        "Platform holders (for example PlayStation, Xbox or Steam) have their own terms, and some of them do not allow accounts to be shared. Because of that, an account can occasionally be restricted, suspended or taken back by the platform or by its original owner, outside our control. This is the main risk of this kind of product, and it is why we offer the replacement guarantee.",
+        "Platform holders (for example PlayStation or Steam) have their own terms, and some of them do not allow accounts to be shared. Because of that, an account can occasionally be restricted, suspended or taken back by the platform or by its original owner, outside our control. This is the main risk of this kind of product, and it is why we offer the replacement guarantee.",
         "By ordering you confirm that you understand this. You are responsible for how you use the account after delivery.",
       ],
     },
@@ -257,7 +257,7 @@ const refund: Policy = {
     {
       heading: "4. Rentals",
       paragraphs: [
-        "A rental is for the number of days you chose, counted from delivery. There is no refund for unused days of a rental that worked as described. If it stops working during the rental, we replace it for the rest of the period or refund the unused part.",
+        "A rental is for the time you chose, counted from delivery. There is no refund for unused time of a rental that worked as described. If it stops working during the rental, we replace it for the rest of the period or refund the unused part.",
       ],
     },
     {
