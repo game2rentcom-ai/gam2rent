@@ -31,7 +31,7 @@ function Countdown({ to, now }: { to: number; now: number }) {
       {parts.map(([n, unit]) => (
         <div key={unit} className="flex min-w-14 flex-col items-center rounded-lg border border-accent-400/40 bg-black/45 px-2 py-1.5 backdrop-blur-sm">
           <span className="font-display text-xl font-bold tabular-nums leading-none text-text-primary sm:text-2xl">{String(n).padStart(2, "0")}</span>
-          <span className="mt-1 text-[0.65rem] font-semibold uppercase tracking-wider text-accent-300">{unit}</span>
+          <span className="mt-1 text-xs font-semibold uppercase tracking-wide text-accent-300">{unit}</span>
         </div>
       ))}
     </div>
@@ -48,7 +48,7 @@ function Slide({ slide, active, now, first }: { slide: Announcement; active: boo
       )}
       <div aria-hidden="true" className="absolute inset-0 bg-linear-to-t from-bg-base via-bg-base/60 to-transparent sm:bg-linear-to-r sm:from-bg-base/95 sm:via-bg-base/55" />
       {active && (
-        <div key={slide.id} className="slide-rise relative flex max-w-xl flex-col items-start gap-3 p-5 sm:p-8">
+        <div key={slide.id} className="slide-rise relative flex max-w-xl flex-col items-start gap-3 p-5 sm:px-16 sm:py-8">
           <h2 className="font-display text-2xl font-bold leading-tight text-text-primary sm:text-4xl">{slide.title}</h2>
           {slide.subtitle && <p className="text-sm text-text-muted sm:text-base">{slide.subtitle}</p>}
           {slide.countdownTo !== undefined && <Countdown to={slide.countdownTo} now={now} />}
@@ -111,7 +111,7 @@ export function AnnouncementSlider({ className = "" }: { className?: string }) {
         <>
           <button type="button" onClick={() => go(current - 1)} aria-label="Previous announcement" className="absolute left-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-xl text-text-primary backdrop-blur-sm hover:bg-black/70 sm:flex">‹</button>
           <button type="button" onClick={() => go(current + 1)} aria-label="Next announcement" className="absolute right-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-xl text-text-primary backdrop-blur-sm hover:bg-black/70 sm:flex">›</button>
-          <div className="absolute bottom-3 right-4 flex gap-1.5">
+          <div className="absolute bottom-0 right-2 flex">
             {slides.map((s, i) => (
               <button
                 key={s.id}
@@ -119,15 +119,18 @@ export function AnnouncementSlider({ className = "" }: { className?: string }) {
                 onClick={() => go(i)}
                 aria-label={`Show announcement ${i + 1}`}
                 aria-current={i === current}
-                className={`relative h-2 overflow-hidden rounded-full bg-white/25 transition-[width] duration-300 ${i === current ? "w-8" : "w-2"}`}
+                className="flex h-11 min-w-11 items-center justify-center"
               >
-                {i === current && (
-                  <span
-                    key={`${current}-${paused}`}
-                    className="absolute inset-0 origin-left bg-accent-400"
-                    style={{ animation: paused ? "none" : `slide-progress ${SLIDE_MS}ms linear both`, transform: paused ? "scaleX(1)" : undefined }}
-                  />
-                )}
+                {/* The visible dot is small; the button around it is a full-size tap target. */}
+                <span className={`relative h-2 overflow-hidden rounded-full bg-white/25 transition-[width] duration-300 ${i === current ? "w-8" : "w-2"}`}>
+                  {i === current && (
+                    <span
+                      key={`${current}-${paused}`}
+                      className="absolute inset-0 origin-left bg-accent-400"
+                      style={{ animation: paused ? "none" : `slide-progress ${SLIDE_MS}ms linear both`, transform: paused ? "scaleX(1)" : undefined }}
+                    />
+                  )}
+                </span>
               </button>
             ))}
           </div>

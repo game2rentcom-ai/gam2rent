@@ -130,7 +130,7 @@ suite("announcements: the owner adds slides; the home page shows live ones above
     await form.getByRole("button", { name: "Add slide" }).click();
     await page.getByRole("form", { name: "Slide GTA 6 is coming" }).waitFor();
   });
-  await backend.query(`
+  await backend.db.exec(`
     update public.announcements set countdown_to = now() + interval '3 days 4 hours' where title = 'GTA 6 is coming';
     insert into public.announcements (title, subtitle, sort_order) values ('Weekend offer', '20% off every rental', 5);
     insert into public.announcements (title, ends_at, sort_order) values ('Finished offer', now() - interval '1 hour', 6);
@@ -146,7 +146,9 @@ suite("announcements: the owner adds slides; the home page shows live ones above
       return s.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING;
     });
     assert.ok(order, "the slider sits above the search hero");
-    assert.equal(await slider.getByRole("group").count(), 2, "the finished offer is not shown");
+    // Hidden slides are inert, so count the slide elements rather than what assistive tech sees.
+    assert.equal(await slider.locator('[aria-roledescription="slide"]').count(), 2, "the finished offer is not shown");
+    assert.equal(await slider.getByRole("group").count(), 1, "only the visible slide is reachable");
     await slider.getByRole("heading", { name: "GTA 6 is coming" }).waitFor();
     assert.match(await slider.getByRole("timer").getAttribute("aria-label"), /^3 days [34] hours/);
 

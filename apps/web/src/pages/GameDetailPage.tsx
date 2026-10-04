@@ -175,7 +175,7 @@ export function GameDetailPage() {
                       onClick={() => { setPlatform(m.platform); setOption(null); }}
                       className={`chip cut flex min-h-14 flex-col items-center justify-center px-2 py-1.5 ${m.platform === platform ? "chip-on" : ""}`}
                     >
-                      <span className="font-display text-base font-bold">{PLATFORM_LABEL[m.platform]}</span>
+                      <span className="font-display text-sm font-bold leading-tight">{PLATFORM_LABEL[m.platform]}</span>
                       <span className="text-xs opacity-80">{m.buy && m.rent ? "Buy or rent" : m.buy ? "Permanent" : m.rent ? "Rental" : "Ask us"}</span>
                     </button>
                   ))}
