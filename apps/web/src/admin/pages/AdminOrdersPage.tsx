@@ -97,7 +97,7 @@ export function AdminOrdersPage() {
         title="Orders"
         subtitle="Deliver paid orders here, and record sales made on WhatsApp."
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="ghost" onClick={() => downloadCsv(data.orders, data.titles)}>Download CSV</Button>
             <Button variant="secondary" onClick={() => setRecording((r) => !r)}>{recording ? "Close" : "Record a sale"}</Button>
           </div>

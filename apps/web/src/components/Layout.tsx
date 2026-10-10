@@ -170,7 +170,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Game pages have their own sticky buy bar in this spot */}
       {!pathname.startsWith("/games/") && (
         <div className="print:hidden">
-          <BottomNav onSearch={openSearch} chatHref={chatHref} extra={backendConfigured ? [{ to: accountLink.to, label: accountLink.label, icon: <IconUser /> }] : []} />
+          <BottomNav
+            onSearch={openSearch}
+            chatHref={chatHref}
+            extra={[
+              ...(ordering && cart.length > 0 ? [{ to: "/cart", label: "Cart", icon: <IconCart />, badge: cart.length }] : []),
+              ...(backendConfigured ? [{ to: accountLink.to, label: accountLink.label, icon: <IconUser /> }] : []),
+            ]}
+          />
         </div>
       )}
 

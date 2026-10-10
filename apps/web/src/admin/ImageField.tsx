@@ -47,7 +47,7 @@ export function ImageField({ label, value, onChange, folder, kind, hint }: Props
   return (
     <div className="flex flex-col gap-2">
       <p className="text-sm font-semibold text-text-primary">{label}</p>
-      <div className="flex items-center gap-3">
+      <div className="flex items-start gap-3">
         <div className={`flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-strong bg-bg-base ${kind === "cover" ? "h-24 w-16" : "h-16 w-28"}`}>
           {value ? <img src={value} alt={`${label} preview`} className="h-full w-full object-cover" /> : <span className="px-1 text-center text-xs text-text-muted">No picture</span>}
         </div>

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { NavLink, Route, Routes } from "react-router-dom";
+import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { Loading } from "./kit";
 
 // The owner's control panel. Everything the storefront shows — games, descriptions, photos, prices,
@@ -39,9 +39,27 @@ const TABS = [
 ];
 
 export function AdminApp() {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const activeTab = TABS.find((t) => (t.end ? pathname === t.to : pathname === t.to || pathname.startsWith(t.to + "/")))?.to ?? TABS[0]!.to;
+
   return (
     <div className="flex flex-col gap-6">
-      <nav aria-label="Admin" className="no-scrollbar -mx-4 flex gap-1 overflow-x-auto border-b border-border-strong px-4 sm:mx-0 sm:px-0">
+      {/* Mobile: select dropdown */}
+      <div className="md:hidden">
+        <select
+          value={activeTab}
+          onChange={(e) => navigate(e.target.value)}
+          aria-label="Admin section"
+          className="field w-full font-display font-bold"
+        >
+          {TABS.map((t) => (
+            <option key={t.to} value={t.to}>{t.label}</option>
+          ))}
+        </select>
+      </div>
+      {/* Desktop: horizontal tab bar */}
+      <nav aria-label="Admin" className="no-scrollbar -mx-4 hidden gap-1 overflow-x-auto border-b border-border-strong px-4 md:flex sm:mx-0 sm:px-0">
         {TABS.map((t) => (
           <NavLink
             key={t.to}
