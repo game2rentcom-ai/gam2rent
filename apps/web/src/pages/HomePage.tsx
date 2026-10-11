@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../auth/context";
 import { PlatformGlyph } from "../components/Badges";
 import { Suggestions } from "../community/Suggestions";
 import { useRequestLink } from "../community/request";
@@ -14,7 +15,7 @@ import { Notice } from "../ui/Form";
 import { PLATFORM_SHORT, PLATFORM_TEXT, etaLabel, formatPrice, platformLine } from "../ui/format";
 import { GameCard } from "../ui/GameCard";
 import { GameCover } from "../ui/GameCover";
-import { IconChat, IconChevronDown, IconClock, IconShield, IconStar } from "../ui/icons";
+import { IconChat, IconCheck, IconChevronDown, IconClock, IconGift, IconShield, IconStar } from "../ui/icons";
 import { Rail, Section } from "../ui/Section";
 import { AnnouncementSlider } from "../ui/AnnouncementSlider";
 import { SearchPanel } from "../ui/SearchPanel";
@@ -23,22 +24,34 @@ import { SearchPanel } from "../ui/SearchPanel";
 // computed from the store's data, and a block with nothing to say (no listings, no reviews yet)
 // simply doesn't appear.
 
-// Editorial picks (not sales claims): shown only if the game exists in the store.
 const SPOTLIGHT_IDS = ["gta-5", "cyberpunk-2077", "black-myth-wukong", "elden-ring", "spider-man-2", "god-of-war"];
 const FAVOURITE_IDS = ["gta-5", "red-dead-redemption-2", "cyberpunk-2077", "elden-ring", "the-witcher-3", "god-of-war", "ghost-of-tsushima", "forza-horizon-5"];
 const NEW_IDS = ["silent-hill-2", "dragon-ball-sparking-zero", "marvel-rivals", "ea-sports-fc", "astro-bot", "tekken", "call-of-duty"];
 const PLATFORMS = Object.keys(PLATFORM_LABEL) as Platform[];
 
+// Genre discovery — top genres with emoji for the browsing strip
+const GENRE_TILES = [
+  { label: "Action RPG", emoji: "⚔️" },
+  { label: "Open-World Action", emoji: "🌍" },
+  { label: "FPS", emoji: "🔫" },
+  { label: "Sports (Football)", emoji: "⚽" },
+  { label: "Racing", emoji: "🏎️" },
+  { label: "Fighting", emoji: "🥊" },
+  { label: "Survival Horror", emoji: "👾" },
+  { label: "Sports (Cricket)", emoji: "🏏" },
+];
+
 const FAQS = [
   { q: "How does it work?", a: "Pick a game and choose Buy or Rent, then confirm with us. We send you the login details for an account that has the game (or a scan-to-play code, depending on the game). You sign in on your console or PC, download the game from the official store, and play." },
   { q: "Is this an account or a code?", a: "You get access to an account that has the game — or a QR code that signs you in — not a redeemable key. Each game page says exactly which, before you pay." },
-  { q: "What if something goes wrong?", a: `Accounts shared this way can occasionally be restricted or reclaimed by the platform. If anything goes wrong, we replace it, free — for ${PROMISE.replacementDays} days after delivery on a purchase, and for the whole period on a rental. Keep the login details private.` },
-  { q: "How long does delivery take?", a: "Each game page shows the delivery time for that game. We deliver on demand, so a game we don’t already hold can take a little longer — the page tells you before you commit." },
-  { q: "Renting or buying — what’s the difference?", a: `Renting gives you access for a set time, then it ends. Buying gives you access with no end date, covered by our replacement guarantee for ${PROMISE.replacementDays} days after delivery. The price for each is on the game’s page.` },
-  { q: "Can I extend a rental?", a: "Message us before your rental ends and we’ll tell you the options." },
+  { q: "What if something goes wrong?", a: `Accounts shared this way can occasionally be restricted. If anything goes wrong, we replace it, free — for ${PROMISE.replacementDays} days after delivery on a purchase, and for the whole period on a rental. Keep the login details private.` },
+  { q: "How long does delivery take?", a: "Each game page shows the delivery time for that game. We deliver on demand — the page tells you the usual time before you commit." },
+  { q: "Renting or buying — what's the difference?", a: `Renting gives you access for a set time, then it ends. Buying gives you access with no end date, covered by our replacement guarantee for ${PROMISE.replacementDays} days. The price for each is on the game's page.` },
+  { q: "Can I extend a rental?", a: "Message us before your rental ends and we'll tell you the options." },
+  { q: "Do I need a PlayStation account?", a: "For PlayStation games you sign in with the account we provide — you don't need your own PSN account for the game itself. For PC games (Steam, Epic, etc.) we provide the account credentials directly." },
+  { q: "Is it safe to share my payment details?", a: "Your payment is handled entirely by Razorpay, a PCI-DSS certified payment processor. We never see or store your card, UPI, or bank details." },
 ];
 
-// The first answer once online ordering is on (the list above describes ordering by message).
 const ORDERING_ANSWER = "Pick a game, choose Buy or Rent and pay securely online. When your account is ready, its login details (or a scan-to-play code, depending on the game) appear on your order page. You sign in on your console or PC, download the game from the official store, and play.";
 
 function median(numbers: number[]): number {
@@ -57,6 +70,8 @@ export function HomePage() {
   const chatHref = contactLink("Hi! I have a question about renting or buying games.");
   const request = useRequestLink();
   const { ordering } = useShop();
+  const { status: authStatus } = useAuth();
+  const signedIn = authStatus === "signed-in";
   const faqs = ordering ? [{ ...FAQS[0], a: ORDERING_ANSWER }, ...FAQS.slice(1)] : FAQS;
 
   const spotlight = useMemo(() => {
@@ -74,16 +89,23 @@ export function HomePage() {
   const rating = averageRating(reviews);
   const typicalEta = availableNow.length ? median(availableNow.map((g) => g.listing.deliveryEtaMinutes)) : null;
 
+  // Top reviews for social proof (up to 4, sorted by highest rating)
+  const topReviews = useMemo(() => [...reviews].sort((a, b) => b.rating - a.rating).slice(0, 4), [reviews]);
+
   return (
     <div className="flex flex-col gap-12 sm:gap-16">
-      {/* New games and offers the owner announces, right above the search. */}
+      {/* Announcements / active offers */}
       <AnnouncementSlider className="-mb-8 sm:-mb-12" />
+
+      {/* ── Hero ── */}
       <section className="hero hud flex flex-col items-center gap-5 px-4 py-9 text-center sm:px-10 sm:py-14">
         <p className="badge badge-brand cut text-xs font-bold uppercase tracking-wider">Buy or rent digital games</p>
         <h1 className="max-w-3xl font-display text-4xl font-bold leading-[1.05] text-text-primary sm:text-5xl lg:text-6xl">
           Find your next game. <span className="text-gradient">Play it today.</span>
         </h1>
-        <p className="max-w-xl text-base text-text-muted sm:text-lg">PC and PlayStation — with a delivery time you can see up front, and a free replacement if anything goes wrong.</p>
+        <p className="max-w-xl text-base text-text-muted sm:text-lg">
+          PC and PlayStation — with a delivery time you can see up front, and a free replacement if anything goes wrong.
+        </p>
         <div className="w-full max-w-xl text-left">
           <SearchPanel query={query} onQuery={setQuery} onDone={() => setQuery("")} dropdown placeholder={searchPlaceholder(setting, games.length)} />
         </div>
@@ -97,19 +119,27 @@ export function HomePage() {
         </div>
       </section>
 
-      {status === "error" && <Notice tone="error" onRetry={reload}>We couldn’t load prices and availability just now. You can still browse every game.</Notice>}
+      {/* Live stats bar — only shown when there are verified buyer reviews */}
+      {status === "ready" && rating !== null && reviews.length > 0 && (
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+          <span className="flex items-center gap-2 text-text-muted">
+            <IconStar className="h-4 w-4 text-rating-gold" />
+            <strong className="font-display font-bold text-text-primary">{rating.toFixed(1)}</strong>
+            {" "}from {reviews.length} verified {reviews.length === 1 ? "buyer" : "buyers"}
+          </span>
+        </div>
+      )}
 
+      {status === "error" && <Notice tone="error" onRetry={reload}>We couldn't load prices and availability just now. You can still browse every game.</Notice>}
+
+      {/* ── Spotlight ── */}
       {spotlight.length > 0 && (
         <Section title="Spotlight" moreTo="/browse" moreLabel="Browse all">
           <Rail label="Spotlight games">
             {spotlight.map((g, i) => {
               const listed = listedGames.find((l) => l.id === g.id);
               return (
-                <Link
-                  key={g.id}
-                  to={`/games/${g.id}`}
-                  className="group relative w-[82vw] max-w-md shrink-0 snap-start rounded-lg sm:w-96"
-                >
+                <Link key={g.id} to={`/games/${g.id}`} className="group relative w-[82vw] max-w-md shrink-0 snap-start rounded-lg sm:w-96">
                   <GameCover game={g} slot="hero" priority={i === 0} sizes="(min-width: 640px) 384px, 82vw" className="frame w-full">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" aria-hidden="true" />
                     <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 pl-5">
@@ -129,12 +159,12 @@ export function HomePage() {
         </Section>
       )}
 
+      {/* ── Available now ── */}
       {status === "loading" && (
         <Section title="Available now" eyebrow="Ready to deliver">
           <div className="h-56 animate-pulse rounded-2xl bg-bg-surface" aria-hidden="true" />
         </Section>
       )}
-
       {availableNow.length > 0 && (
         <Section title="Available now" eyebrow="Ready to deliver" moreTo="/browse?forsale=1">
           <Rail label="Games available now">
@@ -143,8 +173,33 @@ export function HomePage() {
         </Section>
       )}
 
+      {/* ── Trust strip ── */}
+      <section aria-label="Why Game2Rent" className="grid gap-3 sm:grid-cols-3">
+        <div className="panel flex items-center gap-3 p-4">
+          <span className="medal cut cut-hex"><IconShield className="h-6 w-6" /></span>
+          <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">Free replacement</span>Something off after delivery? We replace it, no questions asked.</p>
+        </div>
+        <div className="panel flex items-center gap-3 p-4">
+          <span className="medal cut cut-hex [--medal:var(--color-accent-400)]"><IconClock className="h-6 w-6" /></span>
+          <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">Ready within 60 minutes</span>Once your order is confirmed, your game details are delivered fast.</p>
+        </div>
+        {rating !== null ? (
+          <div className="panel flex items-center gap-3 p-4">
+            <span className="medal cut cut-hex [--medal:var(--color-rating-gold)]"><IconStar className="h-6 w-6" /></span>
+            <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">{rating.toFixed(1)} · {reviews.length} verified {reviews.length === 1 ? "review" : "reviews"}</span>From real customers who received their game.</p>
+          </div>
+        ) : (
+          <div className="panel flex items-center gap-3 p-4">
+            <span className="medal cut cut-hex [--medal:var(--color-rating-gold)]"><IconCheck className="h-6 w-6" /></span>
+            <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">Secure Razorpay checkout</span>Pay with UPI, card or net banking — we never see your details.</p>
+          </div>
+        )}
+      </section>
+
+      {/* ── Community suggestions ── */}
       <Suggestions />
 
+      {/* ── Fan favourites ── */}
       {favourites.length > 0 && (
         <Section title="Fan favourites" moreTo="/browse">
           <Rail label="Fan favourite games">
@@ -153,6 +208,7 @@ export function HomePage() {
         </Section>
       )}
 
+      {/* ── New & upcoming ── */}
       {fresh.length > 0 && (
         <Section title="New & upcoming" moreTo="/browse">
           <Rail label="New and upcoming games">
@@ -161,6 +217,23 @@ export function HomePage() {
         </Section>
       )}
 
+      {/* ── Browse by genre ── */}
+      <Section title="Browse by genre" moreTo="/browse">
+        <div className="no-scrollbar -mx-4 flex snap-x snap-proximity gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+          {GENRE_TILES.map(({ label, emoji }) => (
+            <Link
+              key={label}
+              to={`/browse?genre=${encodeURIComponent(label)}`}
+              className="chip cut shrink-0 snap-start gap-1.5 text-sm"
+            >
+              <span aria-hidden="true">{emoji}</span>
+              {label}
+            </Link>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Browse by platform ── */}
       <Section title="Browse by platform">
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {platformCounts.map(({ p, n }, i) => (
@@ -177,17 +250,18 @@ export function HomePage() {
         </ul>
       </Section>
 
-      <Section title="How it works">
+      {/* ── How it works ── */}
+      <Section title="How it works" id="how-it-works">
         <ol className="grid gap-3 sm:grid-cols-3">
           {(ordering
             ? [
-                ["1", "Choose a game", "Buy it or rent it. The price and delivery time are on the game’s page."],
-                ["2", "Pay online", "Add it to your cart and pay securely. We get your game ready."],
-                ["3", "Sign in and play", "Your login details appear on your order page. Sign in, download from the official store, play."],
+                ["1", "Choose a game", "Pick from PC or PlayStation. The price, platform and delivery time are on every game page."],
+                ["2", "Pay securely online", "Add to cart and pay with UPI, card or net banking via Razorpay. Your details are never shared with us."],
+                ["3", "Sign in and play", "Your login details appear on your order page the moment your game is ready. Sign in, download from the official store, play."],
               ]
             : [
-                ["1", "Choose a game", "Buy it or rent it. The price and delivery time are on the game’s page."],
-                ["2", "Confirm with us", "Message us to confirm and pay. We get your game ready."],
+                ["1", "Choose a game", "Pick from PC or PlayStation. The price, platform and delivery time are on every game page."],
+                ["2", "Confirm with us", "Message us on WhatsApp to confirm. We get your game ready and send the access."],
                 ["3", "Sign in and play", "We send your login details. Sign in, download from the official store, play."],
               ]
           ).map(([n, t, d]) => (
@@ -202,26 +276,51 @@ export function HomePage() {
         </ol>
       </Section>
 
-      <section aria-label="Why Game2Rent" className="grid gap-3 sm:grid-cols-3">
-        <div className="panel flex items-center gap-3 p-4">
-          <span className="medal cut cut-hex"><IconShield className="h-6 w-6" /></span>
-          <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">Free replacement</span>Something off after delivery? We replace it.</p>
-        </div>
-        {typicalEta !== null && (
-          <div className="panel flex items-center gap-3 p-4">
-            <span className="medal cut cut-hex [--medal:var(--color-accent-400)]"><IconClock className="h-6 w-6" /></span>
-            <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">Typical delivery {etaLabel(typicalEta)}</span>Based on the games available right now.</p>
+      {/* ── Customer reviews ── */}
+      {topReviews.length > 0 && (
+        <Section title="What customers say" eyebrow="Verified reviews">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {topReviews.map((r) => (
+              <div key={r.id} className="panel flex flex-col gap-3 p-4">
+                <div className="flex items-center gap-1" aria-label={`${r.rating} out of 5 stars`}>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <IconStar key={i} className={`h-4 w-4 ${i < r.rating ? "text-rating-gold" : "text-white/20"}`} />
+                  ))}
+                </div>
+                <p className="flex-1 text-sm leading-relaxed text-text-muted">"{r.comment}"</p>
+                <p className="text-xs font-semibold text-text-primary">{r.reviewerName ?? "Verified customer"}</p>
+              </div>
+            ))}
           </div>
-        )}
-        {rating !== null && (
-          <div className="panel flex items-center gap-3 p-4">
-            <span className="medal cut cut-hex [--medal:var(--color-rating-gold)]"><IconStar className="h-6 w-6" /></span>
-            <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">{rating.toFixed(1)} from {reviews.length} verified {reviews.length === 1 ? "review" : "reviews"}</span>From customers who received their game.</p>
-          </div>
-        )}
-      </section>
+        </Section>
+      )}
 
-      <Section title="Questions">
+      {/* ── Referral programme CTA (shown to signed-in users when ordering is on) ── */}
+      {ordering && signedIn && (
+        <section className="hero hud flex flex-col items-center gap-3 px-6 py-10 text-center">
+          <span className="medal cut cut-hex [--medal:var(--color-brand-400)]"><IconGift className="h-7 w-7" /></span>
+          <h2 className="font-display text-2xl font-bold text-text-primary">Refer a friend, earn rewards</h2>
+          <p className="max-w-md text-sm text-text-muted">
+            Share your referral link. When a friend signs up and buys a game, you earn coins — usable towards your next order. Refer 5 friends and buy 5 games to unlock a free game.
+          </p>
+          <Button to="/account" variant="secondary">View my referral link</Button>
+        </section>
+      )}
+
+      {/* ── Referral CTA for non-signed-in users ── */}
+      {ordering && !signedIn && (
+        <section className="hero hud flex flex-col items-center gap-3 px-6 py-10 text-center">
+          <span className="medal cut cut-hex [--medal:var(--color-brand-400)]"><IconGift className="h-7 w-7" /></span>
+          <h2 className="font-display text-2xl font-bold text-text-primary">Refer friends, earn free games</h2>
+          <p className="max-w-md text-sm text-text-muted">
+            Create an account to get your referral link. Earn coins for every friend who buys — and unlock a free game after 5 referrals.
+          </p>
+          <Button to="/signup" variant="secondary">Create a free account</Button>
+        </section>
+      )}
+
+      {/* ── FAQ ── */}
+      <Section title="Common questions" id="faq">
         <div className="flex flex-col gap-2">
           {faqs.map((f) => (
             <details key={f.q} className="group panel open:border-border-strong">
@@ -235,9 +334,10 @@ export function HomePage() {
         </div>
       </Section>
 
+      {/* ── Can't find a game CTA ── */}
       <section className="hero hud flex flex-col items-center gap-3 px-6 py-10 text-center">
-        <h2 className="font-display text-2xl font-bold text-text-primary">Can’t find a game?</h2>
-        <p className="max-w-md text-sm text-text-muted">Tell us what you want to play and we’ll try to get it.</p>
+        <h2 className="font-display text-2xl font-bold text-text-primary">Can't find a game?</h2>
+        <p className="max-w-md text-sm text-text-muted">Tell us what you want to play and we'll try to get it.</p>
         <div className="flex flex-wrap justify-center gap-2 pt-1">
           <Button {...request}>Request a game</Button>
           <Button href={chatHref} variant="secondary"><IconChat className="h-5 w-5" />Message us</Button>

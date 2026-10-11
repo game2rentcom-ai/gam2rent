@@ -11,7 +11,32 @@ import { STATUS_LABEL, formatDate, formatDateTime, orderName, type Order, type O
 import { Badge } from "../ui/Chip";
 import { Button } from "../ui/Button";
 import { Notice } from "../ui/Form";
-import { etaLabel, formatPrice } from "../ui/format";
+import { formatPrice } from "../ui/format";
+
+function DeliveryCountdown({ paidAt }: { paidAt: string | null }) {
+  const deadline = (paidAt ? new Date(paidAt).getTime() : Date.now()) + 60 * 60 * 1000;
+  const [remaining, setRemaining] = useState(() => Math.max(0, deadline - Date.now()));
+  useEffect(() => {
+    const timer = setInterval(() => setRemaining(Math.max(0, deadline - Date.now())), 1000);
+    return () => clearInterval(timer);
+  }, [deadline]);
+  const mins = Math.floor(remaining / 60_000);
+  const secs = Math.floor((remaining % 60_000) / 1000);
+  return (
+    <div className="panel flex flex-col items-center gap-2 p-6 text-center">
+      <p className="font-display text-lg font-bold text-text-primary">Your game is being prepared</p>
+      <p className="text-sm text-text-muted">Just wait — your login details will appear below once ready</p>
+      {remaining > 0 ? (
+        <p className="font-mono text-4xl font-bold tabular-nums text-trust-600">
+          {String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}
+        </p>
+      ) : (
+        <p className="text-sm font-semibold text-trust-600">Should be ready any moment — check below or contact us if you need help.</p>
+      )}
+      <p className="text-xs text-text-muted">Maximum 60 minutes</p>
+    </div>
+  );
+}
 
 // One order: where it is, what was bought, the delivered login details (fetched only when the customer
 // asks — the server decrypts them for the order's owner alone), and a printable receipt.
@@ -92,6 +117,9 @@ export function OrderPage() {
       ) : (
         <Notice tone={order.status === "cancelled" || order.status === "refunded" ? "info" : "success"}>{NEXT_STEP[order.status]}</Notice>
       )}
+      {(order.status === "paid" || order.status === "in_progress") && (
+        <DeliveryCountdown paidAt={order.paid_at} />
+      )}
       {waiting && <div className="print:hidden"><Button variant="secondary" onClick={() => { setGaveUp(false); reload(); }}>Check again</Button></div>}
 
       <ul className="flex flex-col gap-3">
@@ -110,7 +138,6 @@ export function OrderPage() {
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Badge tone={item.delivery_status === "delivered" ? "trust" : "neutral"}>{item.delivery_status === "delivered" ? "Delivered" : "Not delivered yet"}</Badge>
-              {item.delivery_status === "pending" && live && item.eta_minutes && <span className="text-xs text-text-muted">Usually {etaLabel(item.eta_minutes)}</span>}
               {item.rental_returned_at && <Badge>Returned</Badge>}
               {rentalOver && <Badge>Rental ended</Badge>}
               {item.free_with_offer && <Badge tone="trust">Free with the offer</Badge>}
