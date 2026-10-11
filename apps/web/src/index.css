@@ -50,7 +50,9 @@
   --font-display: "Chakra Petch", "Manrope", system-ui, sans-serif;
 
   --shadow-glow-brand: 0 0 26px -4px color-mix(in srgb, var(--color-brand-500) 70%, transparent);
-  --shadow-glow-cyan: 0 0 18px -4px color-mix(in srgb, var(--color-accent-400) 60%, transparent);
+  --shadow-glow-cyan:  0 0 18px -4px color-mix(in srgb, var(--color-accent-400) 60%, transparent);
+  --shadow-glow-trust: 0 0 22px -4px color-mix(in srgb, var(--color-trust-600) 55%, transparent);
+  --shadow-glow-gold:  0 0 18px -4px color-mix(in srgb, var(--color-rating-gold) 50%, transparent);
 }
 
 @layer base {
@@ -464,6 +466,47 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  /* Live-data indicator: a breathing dot that signals real-time content */
+  .live-dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--color-trust-600);
+    box-shadow: 0 0 6px color-mix(in srgb, var(--color-trust-600) 70%, transparent);
+    animation: pulse-dot 2.4s ease-in-out infinite;
+  }
+
+  /* A surface panel tinted in the trust colour — for "What you get" sections */
+  .value-panel {
+    border: 1px solid var(--color-trust-300);
+    border-radius: 0.75rem;
+    background: var(--color-trust-100);
+  }
+
+  /* A section stat: a large number with a muted label below */
+  .stat-number {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-text-primary);
+  }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.8); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+.fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 /* The step the order is on: its glow breathes. */

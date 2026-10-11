@@ -58,6 +58,10 @@
       {
         "protocol": "https",
         "hostname": "cggdhfuifudpefursrzn.supabase.co"
+      },
+      {
+        "protocol": "https",
+        "hostname": "upload.wikimedia.org"
       }
     ]
   }

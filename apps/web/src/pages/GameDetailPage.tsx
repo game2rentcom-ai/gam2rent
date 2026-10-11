@@ -18,7 +18,7 @@ import { Notice } from "../ui/Form";
 import { etaLabel, formatPrice } from "../ui/format";
 import { GameCard } from "../ui/GameCard";
 import { GameCover } from "../ui/GameCover";
-import { IconBack, IconChevronDown, IconClock, IconShield } from "../ui/icons";
+import { IconBack, IconCheck, IconChevronDown, IconClock, IconShield } from "../ui/icons";
 import { Rail, Section } from "../ui/Section";
 import { Stars } from "../ui/Stars";
 import { TrailerPlayer } from "../ui/TrailerPlayer";
@@ -210,11 +210,28 @@ export function GameDetailPage() {
                         <span className="text-base text-text-muted line-through">{formatPrice(buyListing.compareAtPrice)}</span>
                       )}
                     </div>
-                    <p className="flex items-center gap-2 text-sm text-text-muted">
-                      <IconClock className="h-5 w-5 shrink-0 text-trust-600" />
-                      Delivered in {etaLabel(buyListing.deliveryEtaMinutes)} · {PLATFORM_LABEL[platform]} · yours to keep
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="trust-pill">
+                        <IconClock className="h-3.5 w-3.5" />
+                        Delivered in {etaLabel(buyListing.deliveryEtaMinutes)}
+                      </span>
+                      <span className="trust-pill">{PLATFORM_LABEL[platform]} · yours to keep</span>
+                    </div>
                     <p className="text-sm text-text-muted">{credentialDisclosure(buyListing.credentialType)}</p>
+                    <ul className="value-panel flex flex-col gap-1.5 p-3 text-xs font-semibold text-trust-600">
+                      <li className="flex items-center gap-2">
+                        <IconCheck className="h-4 w-4 shrink-0" />
+                        Access delivered to your order page
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <IconCheck className="h-4 w-4 shrink-0" />
+                        Official {PLATFORM_LABEL[platform]} download
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <IconCheck className="h-4 w-4 shrink-0" />
+                        Free replacement for {PROMISE.replacementDays} days
+                      </li>
+                    </ul>
                   </>
                 ) : pricesPending ? (
                   <PriceSkeleton />

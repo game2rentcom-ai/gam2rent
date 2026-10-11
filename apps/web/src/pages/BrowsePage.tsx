@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigationType, useSearchParams } from "react-router-dom";
 import { useRequestLink } from "../community/request";
+import { PlatformGlyph } from "../components/Badges";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { useStore } from "../data/store";
 import { gameCountsShown, searchPlaceholder } from "../lib/display";
@@ -9,6 +10,7 @@ import { Button } from "../ui/Button";
 import { Chip } from "../ui/Chip";
 import { Notice } from "../ui/Form";
 import { GameCard } from "../ui/GameCard";
+import { PLATFORM_TEXT } from "../ui/format";
 import { IconClose, IconFilter, IconSearch } from "../ui/icons";
 import { Sheet } from "../ui/Sheet";
 
@@ -139,9 +141,16 @@ export function BrowsePage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <header>
-        <h1 className="font-display text-2xl font-bold text-text-primary sm:text-3xl">Browse games</h1>
-        <p className="mt-1 text-sm text-text-muted">Buy or rent digital games for PC and PlayStation.</p>
+      <header className="flex items-end gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-text-primary sm:text-3xl">Browse games</h1>
+          <p className="mt-0.5 text-sm text-text-muted">
+            PC and PlayStation — buy or rent.
+            {status === "ready" && showCounts && games.length > 0 && (
+              <span className="ml-1.5 font-semibold text-text-primary">{games.length} titles.</span>
+            )}
+          </p>
+        </div>
       </header>
 
       <div className="sticky top-14 z-30 -mx-4 flex gap-2 bg-bg-base/95 px-4 py-2 backdrop-blur-xl sm:-mx-6 sm:px-6 md:top-16 lg:-mx-8 lg:px-8">
@@ -171,9 +180,12 @@ export function BrowsePage() {
       </div>
 
       <div role="group" aria-label="Platform" className="no-scrollbar -mx-4 -my-2 flex gap-2 overflow-x-auto px-4 py-2 sm:mx-0 sm:px-0">
-        <Chip selected={!platform} onClick={() => set({ platform: null })}>All</Chip>
+        <Chip selected={!platform} onClick={() => set({ platform: null })}>All platforms</Chip>
         {PLATFORMS.map((p) => (
-          <Chip key={p} selected={platform === p} onClick={() => set({ platform: platform === p ? null : p })}>{PLATFORM_LABEL[p]}</Chip>
+          <Chip key={p} selected={platform === p} onClick={() => set({ platform: platform === p ? null : p })}>
+            <PlatformGlyph platform={p} className={`h-4 w-4 ${platform === p ? "text-white" : PLATFORM_TEXT[p]}`} />
+            {PLATFORM_LABEL[p]}
+          </Chip>
         ))}
       </div>
 

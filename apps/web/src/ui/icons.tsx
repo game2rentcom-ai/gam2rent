@@ -21,3 +21,4 @@ export const IconCheck = ({ className = "h-5 w-5" }: P) => (<svg {...base} class
 export const IconShield = ({ className = "h-6 w-6" }: P) => (<svg {...base} className={className}><path d="M12 3l8 3v6c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V6z" /><path d="M9 12l2 2 4-4" /></svg>);
 export const IconClock = ({ className = "h-5 w-5" }: P) => (<svg {...base} className={className}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>);
 export const IconPlay = ({ className = "h-5 w-5" }: P) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>);
+export const IconGift = ({ className = "h-6 w-6" }: P) => (<svg {...base} className={className}><path d="M20 12v10H4V12" /><path d="M22 7H2v5h20V7z" /><path d="M12 22V7" /><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z" /><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" /></svg>);

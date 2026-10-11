@@ -87,7 +87,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <header className="sticky top-0 z-40 bg-bg-base/85 backdrop-blur-xl print:hidden">
         <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 md:h-16 lg:px-8">
-          <Link to="/" aria-label="Game2Rent — home" className="-ml-1 flex min-h-11 shrink-0 items-center px-1 font-display text-2xl font-bold tracking-tight">
+          <Link to="/" aria-label="Game2Rent — home" className="-ml-1 flex min-h-11 shrink-0 items-center px-1 font-display text-2xl font-bold tracking-tight transition-[filter] hover:drop-shadow-[0_0_12px_color-mix(in_srgb,var(--color-brand-400)_60%,transparent)]">
             <span className="text-gradient">Game</span>
             <span className="text-white">2Rent</span>
           </Link>
@@ -138,21 +138,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <footer className="border-t border-border-strong bg-bg-surface pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0 print:hidden">
+      <footer className="relative border-t border-border-strong bg-bg-surface pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0 print:hidden before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-brand-500 before:to-transparent">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-3 lg:px-8">
           <div>
-            <p className="font-display text-2xl font-bold tracking-tight">
+            <Link to="/" className="inline-block font-display text-2xl font-bold tracking-tight">
               <span className="text-gradient">Game</span>
               <span className="text-white">2Rent</span>
-            </p>
-            <p className="mt-3 max-w-xs text-sm text-text-muted">Buy or rent digital games for PC and PlayStation.</p>
+            </Link>
+            <p className="mt-2 max-w-xs text-sm text-text-muted">Buy or rent digital games for PC and PlayStation. Delivered fast, backed by our free replacement guarantee.</p>
           </div>
-          <nav aria-label="Legal">
-            <h2 className="font-display text-sm font-bold text-text-primary">Policies</h2>
+          <nav aria-label="Site links">
+            <h2 className="font-display text-sm font-bold text-text-primary">Explore</h2>
             <ul className="mt-3 space-y-1 text-sm text-text-muted">
-              {[["terms", "Terms of Service"], ["privacy", "Privacy Policy"], ["refund", "Refund & Replacement"], ["shipping", "Delivery Times"], ["contact", "Contact us"]].map(([slug, label]) => (
-                <li key={slug}><Link to={`/policies/${slug}`} className="flex min-h-11 items-center hover:text-text-primary">{label}</Link></li>
-              ))}
+              <li><Link to="/browse" className="flex min-h-11 items-center hover:text-text-primary">Browse games</Link></li>
+              <li><Link to="/requests" className="flex min-h-11 items-center hover:text-text-primary">Request a game</Link></li>
+              <li><Link to="/#faq" className="flex min-h-11 items-center hover:text-text-primary">FAQ</Link></li>
+              <li><Link to="/policies/terms" className="flex min-h-11 items-center hover:text-text-primary">Terms of Service</Link></li>
+              <li><Link to="/policies/privacy" className="flex min-h-11 items-center hover:text-text-primary">Privacy Policy</Link></li>
+              <li><Link to="/policies/refund" className="flex min-h-11 items-center hover:text-text-primary">Refund & Replacement</Link></li>
+              <li><Link to="/policies/contact" className="flex min-h-11 items-center hover:text-text-primary">Contact us</Link></li>
             </ul>
           </nav>
           <div>

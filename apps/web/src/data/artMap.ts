@@ -3,6 +3,7 @@
 export type SteamArt = { app: string; hero: "library_hero" | "header" };
 
 export const STEAM_ART: Record<string, SteamArt> = {
+  "a-plague-tale": { app: "1757570", hero: "library_hero" },
   "ac-shadows": { app: "3159330", hero: "library_hero" },
   "apex-legends": { app: "1172470", hero: "library_hero" },
   "avatar-frontiers-of-pandora": { app: "2840770", hero: "library_hero" },
@@ -19,6 +20,7 @@ export const STEAM_ART: Record<string, SteamArt> = {
   "death-stranding": { app: "1850570", hero: "library_hero" },
   "dragon-ball-sparking-zero": { app: "1790600", hero: "library_hero" },
   "dying-light": { app: "239140", hero: "library_hero" },
+  "ea-sports-fc": { app: "2195250", hero: "library_hero" },
   "elden-ring": { app: "1245620", hero: "library_hero" },
   "elden-ring-nightreign": { app: "2622380", hero: "library_hero" },
   "forza-horizon-5": { app: "1551360", hero: "library_hero" },
@@ -28,17 +30,23 @@ export const STEAM_ART: Record<string, SteamArt> = {
   "horizon-forbidden-west": { app: "2420110", hero: "library_hero" },
   "it-takes-two": { app: "1426210", hero: "library_hero" },
   "lies-of-p": { app: "1627720", hero: "library_hero" },
+  "little-nightmares": { app: "424840", hero: "library_hero" },
+  "mafia": { app: "1030840", hero: "library_hero" },
   "marvel-rivals": { app: "2767030", hero: "library_hero" },
   "microsoft-flight-simulator": { app: "2537590", hero: "library_hero" },
   "mortal-kombat-1": { app: "1971870", hero: "library_hero" },
   "mortal-kombat-x": { app: "307780", hero: "library_hero" },
+  "nba-2k": { app: "2767820", hero: "library_hero" },
   "no-mans-sky": { app: "275850", hero: "library_hero" },
   "onimusha-way-of-the-sword": { app: "2638890", hero: "library_hero" },
   "palworld": { app: "1623730", hero: "library_hero" },
   "phasmophobia": { app: "739630", hero: "library_hero" },
+  "pubg": { app: "578080", hero: "library_hero" },
+  "ratchet-and-clank": { app: "1895880", hero: "library_hero" },
   "reanimal": { app: "2129530", hero: "library_hero" },
   "red-dead-redemption": { app: "2668510", hero: "library_hero" },
   "red-dead-redemption-2": { app: "1174180", hero: "library_hero" },
+  "resident-evil-1": { app: "304240", hero: "library_hero" },
   "resident-evil-2-remake": { app: "883710", hero: "library_hero" },
   "resident-evil-3-remake": { app: "952060", hero: "library_hero" },
   "resident-evil-4": { app: "2050650", hero: "library_hero" },
@@ -59,19 +67,32 @@ export const STEAM_ART: Record<string, SteamArt> = {
   "splitgate": { app: "677620", hero: "library_hero" },
   "street-fighter-6": { app: "1364780", hero: "library_hero" },
   "subnautica": { app: "264710", hero: "library_hero" },
+  "tekken": { app: "1778820", hero: "library_hero" },
   "the-crew-motorfest": { app: "2698940", hero: "library_hero" },
   "the-last-of-us-1": { app: "1888930", hero: "library_hero" },
   "the-last-of-us-2": { app: "2531310", hero: "library_hero" },
   "the-last-of-us-2-remastered": { app: "2531310", hero: "library_hero" },
   "the-witcher-3": { app: "292030", hero: "library_hero" },
   "tomb-raider-2013": { app: "203160", hero: "library_hero" },
+  "tomb-raider-i-iii-remastered": { app: "2478970", hero: "library_hero" },
   "tomb-raider-iv-vi-remastered": { app: "2525380", hero: "library_hero" },
   "uncharted-legacy-of-thieves": { app: "1659420", hero: "library_hero" },
+  "world-war-z": { app: "699130", hero: "library_hero" },
+  "wwe-2k23": { app: "1928030", hero: "library_hero" },
   "wwe-2k24": { app: "2315690", hero: "library_hero" },
   "wwe-2k25": { app: "2878960", hero: "library_hero" },
 };
 
-// Artwork that ships with the site (public/).
+// Artwork that ships with the site (public/) or from verified external CDNs.
 export const LOCAL_ART: Record<string, { cover: string; hero: string }> = {
   "astro-bot": { cover: "/games/astro-bot-cover.jpg", hero: "/games/astro-bot-hero.jpg" },
+  // Games not on Steam or without Steam portrait art — sourced from Wikimedia (official publisher art, fair use)
+  "alan-wake-2": { cover: "https://upload.wikimedia.org/wikipedia/en/e/ed/Alan_Wake_2_box_art.jpg", hero: "https://upload.wikimedia.org/wikipedia/en/e/ed/Alan_Wake_2_box_art.jpg" },
+  "cod-black-ops": { cover: "https://upload.wikimedia.org/wikipedia/en/c/c9/Call_of_Duty_Black_Ops_6_Key_Art.png", hero: "https://upload.wikimedia.org/wikipedia/en/c/c9/Call_of_Duty_Black_Ops_6_Key_Art.png" },
+  "diablo": { cover: "https://upload.wikimedia.org/wikipedia/en/1/1c/Diablo_IV_cover_art.png", hero: "https://upload.wikimedia.org/wikipedia/en/1/1c/Diablo_IV_cover_art.png" },
+  "far-cry": { cover: "https://upload.wikimedia.org/wikipedia/en/3/35/Far_cry_6_cover.jpg", hero: "https://upload.wikimedia.org/wikipedia/en/3/35/Far_cry_6_cover.jpg" },
+  "gran-turismo": { cover: "https://upload.wikimedia.org/wikipedia/en/1/14/Gran_Turismo_7_cover_art.jpg", hero: "https://upload.wikimedia.org/wikipedia/en/1/14/Gran_Turismo_7_cover_art.jpg" },
+  "horizon-adventures-remastered": { cover: "https://upload.wikimedia.org/wikipedia/en/3/3e/Horizon_Zero_Dawn_cover_art.jpg", hero: "https://upload.wikimedia.org/wikipedia/en/3/3e/Horizon_Zero_Dawn_cover_art.jpg" },
+  "ufc": { cover: "https://upload.wikimedia.org/wikipedia/en/c/cc/EA_Sports_UFC_5_cover_art.jpeg", hero: "https://upload.wikimedia.org/wikipedia/en/c/cc/EA_Sports_UFC_5_cover_art.jpeg" },
+  "watch-dogs": { cover: "https://upload.wikimedia.org/wikipedia/en/b/b0/Watch_Dogs_2.jpg", hero: "https://upload.wikimedia.org/wikipedia/en/b/b0/Watch_Dogs_2.jpg" },
 };

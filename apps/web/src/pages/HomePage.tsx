@@ -119,14 +119,29 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Live stats bar — only shown when there are verified buyer reviews */}
-      {status === "ready" && rating !== null && reviews.length > 0 && (
+      {/* Live stats bar — only shown when there is real data to display */}
+      {status === "ready" && (availableNow.length > 0 || typicalEta !== null || (rating !== null && reviews.length > 0)) && (
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
-          <span className="flex items-center gap-2 text-text-muted">
-            <IconStar className="h-4 w-4 text-rating-gold" />
-            <strong className="font-display font-bold text-text-primary">{rating.toFixed(1)}</strong>
-            {" "}from {reviews.length} verified {reviews.length === 1 ? "buyer" : "buyers"}
-          </span>
+          {availableNow.length > 0 && (
+            <span className="flex items-center gap-2 text-text-muted">
+              <span className="live-dot" aria-hidden="true" />
+              <strong className="font-display font-bold text-text-primary">{availableNow.length}</strong>
+              {" "}games ready to deliver
+            </span>
+          )}
+          {typicalEta !== null && (
+            <span className="flex items-center gap-2 text-text-muted">
+              <IconClock className="h-4 w-4 text-trust-600" />
+              Typical delivery <strong className="font-display font-bold text-trust-600">{etaLabel(typicalEta)}</strong>
+            </span>
+          )}
+          {rating !== null && reviews.length > 0 && (
+            <span className="flex items-center gap-2 text-text-muted">
+              <IconStar className="h-4 w-4 text-rating-gold" />
+              <strong className="font-display font-bold text-text-primary">{rating.toFixed(1)}</strong>
+              {" "}from {reviews.length} verified {reviews.length === 1 ? "buyer" : "buyers"}
+            </span>
+          )}
         </div>
       )}
 

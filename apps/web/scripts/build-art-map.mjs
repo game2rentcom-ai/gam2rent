@@ -19,11 +19,42 @@ const OVERRIDES = {
   "resident-evil-4": "2050650", // the catalog entry names both the original and the remake; Steam sells the remake
   "resident-evil-2-remake": "883710", // Steam's title is just "RESIDENT EVIL 2"
   "resident-evil-3-remake": "952060", // Steam's title is just "RESIDENT EVIL 3"
+  // Multi-title series entries — one representative entry whose art best represents the catalog entry
+  "little-nightmares": "424840",    // Little Nightmares (2017) represents the series
+  "tekken": "1778820",              // Tekken 8 (2024) represents "Tekken 7 & 8"
+  "nba-2k": "2767820",              // NBA 2K25 represents the annual series
+  "mafia": "1030840",               // Mafia: Definitive Edition represents the series
+  "a-plague-tale": "1757570",       // A Plague Tale: Requiem (the sequel, more recent)
+  "ea-sports-fc": "2195250",        // EA SPORTS FC 25 represents the annual series
+  "far-cry": "1682680",             // Far Cry 6 (latest numbered entry) represents the series
+  "ratchet-and-clank": "1895880",   // Ratchet & Clank: Rift Apart (PC/PS5, 2022)
+  "resident-evil-1": "304240",      // Resident Evil HD Remaster (the PC version)
+  "wwe-2k23": "1928030",            // WWE 2K23
+  "watch-dogs": "243470",           // Watch Dogs (original) represents the series
+  "cod-black-ops": "2933620",       // Black Ops 6 (2024) represents the Black Ops sub-series
+  "tomb-raider-i-iii-remastered": "2478970", // Tomb Raider I-III Remastered (2024)
+  "diablo": "2800820",              // Diablo IV (Steam release)
+  "ufc": "1893580",                 // EA SPORTS UFC 5
 };
 // Entries that stand for a whole series: any one game's poster would misrepresent them.
-const SKIP = new Set(["baldurs-gate", "assassins-creed", "batman-arkham", "devil-may-cry"]);
-// Local artwork files that ship in public/ (used before Steam).
-const LOCAL = { "astro-bot": { cover: "/games/astro-bot-cover.jpg", hero: "/games/astro-bot-hero.jpg" } };
+const SKIP = new Set([
+  "baldurs-gate", "assassins-creed", "batman-arkham", "devil-may-cry",
+  "cod-modern-warfare",  // covers MW1-4 + reboots — too broad for one poster
+  "cod-1-2",             // 2003/2005 originals — no modern library portrait art on Steam
+]);
+// Local artwork files that ship in public/ or verified external CDNs (used before Steam).
+const LOCAL = {
+  "astro-bot": { cover: "/games/astro-bot-cover.jpg", hero: "/games/astro-bot-hero.jpg" },
+  // Games not on Steam or without Steam portrait art — sourced from Wikimedia (official publisher art, fair use)
+  "alan-wake-2": { cover: "https://upload.wikimedia.org/wikipedia/en/e/ed/Alan_Wake_2_box_art.jpg", hero: "https://upload.wikimedia.org/wikipedia/en/e/ed/Alan_Wake_2_box_art.jpg" },
+  "cod-black-ops": { cover: "https://upload.wikimedia.org/wikipedia/en/c/c9/Call_of_Duty_Black_Ops_6_Key_Art.png", hero: "https://upload.wikimedia.org/wikipedia/en/c/c9/Call_of_Duty_Black_Ops_6_Key_Art.png" },
+  "diablo": { cover: "https://upload.wikimedia.org/wikipedia/en/1/1c/Diablo_IV_cover_art.png", hero: "https://upload.wikimedia.org/wikipedia/en/1/1c/Diablo_IV_cover_art.png" },
+  "far-cry": { cover: "https://upload.wikimedia.org/wikipedia/en/3/35/Far_cry_6_cover.jpg", hero: "https://upload.wikimedia.org/wikipedia/en/3/35/Far_cry_6_cover.jpg" },
+  "gran-turismo": { cover: "https://upload.wikimedia.org/wikipedia/en/1/14/Gran_Turismo_7_cover_art.jpg", hero: "https://upload.wikimedia.org/wikipedia/en/1/14/Gran_Turismo_7_cover_art.jpg" },
+  "horizon-adventures-remastered": { cover: "https://upload.wikimedia.org/wikipedia/en/3/3e/Horizon_Zero_Dawn_cover_art.jpg", hero: "https://upload.wikimedia.org/wikipedia/en/3/3e/Horizon_Zero_Dawn_cover_art.jpg" },
+  "ufc": { cover: "https://upload.wikimedia.org/wikipedia/en/c/cc/EA_Sports_UFC_5_cover_art.jpeg", hero: "https://upload.wikimedia.org/wikipedia/en/c/cc/EA_Sports_UFC_5_cover_art.jpeg" },
+  "watch-dogs": { cover: "https://upload.wikimedia.org/wikipedia/en/b/b0/Watch_Dogs_2.jpg", hero: "https://upload.wikimedia.org/wikipedia/en/b/b0/Watch_Dogs_2.jpg" },
+};
 
 // Apps found on a previous run are re-checked first (cheaper than searching again).
 let legacy = {};

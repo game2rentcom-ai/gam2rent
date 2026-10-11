@@ -1,8 +1,8 @@
 // The store's legal pages, written for how the store actually works. Business details ({name}, {address},
-// {email}, {phone}, {officer}) are filled in from Admin → Settings when a page is shown, so nothing here needs
-// editing when they change. The numbers people are promised live in ONE place, just below.
+// {email}, {phone}, {officer}, {gstin}) are filled in from Admin → Settings when a page is shown, so nothing
+// here needs editing when they change. The numbers people are promised live in ONE place, just below.
 
-export const POLICIES_UPDATED = "26 September 2026";
+export const POLICIES_UPDATED = "11 October 2026";
 
 /** Business promises — change a value here and every page that mentions it changes with it. */
 export const PROMISE = {
@@ -34,98 +34,108 @@ const P = PROMISE;
 
 const terms: Policy = {
   title: "Terms of Service",
-  summary: "The rules for using this website and buying or renting from it. By creating an account or placing an order you agree to them.",
+  summary: "The rules for using this website and purchasing digital game access from us. By creating an account or placing an order you agree to them.",
   blocks: [
     {
       heading: "1. Who we are",
       paragraphs: [
-        "This website is run by {name} (“we”, “us”). Our address and contact details are on the Contact us page. We are an independent reseller of digital game access. We are not affiliated with, endorsed by or sponsored by Sony, Microsoft, Valve, Nintendo, Epic Games or any other platform or game publisher. All game names, logos and artwork belong to their owners and are shown only to identify the games.",
+        '{name} ("we", "us") is a registered digital goods reseller operating at the address on the Contact us page. We provide customers with access to digital games for PC and PlayStation platforms. Our GSTIN is {gstin}.',
+        "We are an independent service provider and are not affiliated with, endorsed by or sponsored by Sony Interactive Entertainment, Valve Corporation, Epic Games or any other platform holder or game publisher. All game titles, logos and artwork belong to their respective rights holders and are referenced only to identify the products.",
       ],
     },
     {
-      heading: "2. What you are buying or renting",
+      heading: "2. Our service — digital game access",
       paragraphs: [
-        "We provide access to a game through an account that already has the game (a login and password) or through a scan-to-play QR code. You are not buying a redeemable key, and you do not own the account: you get the right to use it for yourself, on the terms below.",
-        "Each game page tells you before you pay whether you are buying or renting, which platform it is for, what you will receive (a login or a QR code), the price and the usual delivery time.",
-        "Buying gives you access with no end date, covered by our replacement guarantee for the period in the Refund & Replacement Policy. Renting gives you access for the number of days shown on the plan, counted from the moment we deliver.",
+        "We are a digital game access service. When you place an order, we provide you with the credentials (account ID and password) or a scan-to-play access code for a pre-configured game account that contains the game you purchased. This gives you the right to sign in, download the game from the official platform store, and play it for yourself.",
+        "Each game page tells you, before you pay: the platform, whether you will receive account credentials or a scan-to-play code, the price (inclusive of all applicable taxes where shown), and the usual delivery time.",
+        "Purchasing gives you access with no fixed end date, backed by our replacement guarantee for the period stated in the Refund & Replacement Policy. Renting gives you access for the number of hours or days shown in the chosen plan, counted from the moment we deliver.",
       ],
     },
     {
-      heading: "3. Platform rules and risk — please read",
+      heading: "3. Nature of digital access — important",
       paragraphs: [
-        "Platform holders (for example PlayStation or Steam) have their own terms, and some of them do not allow accounts to be shared. Because of that, an account can occasionally be restricted, suspended or taken back by the platform or by its original owner, outside our control. This is the main risk of this kind of product, and it is why we offer the replacement guarantee.",
-        "By ordering you confirm that you understand this. You are responsible for how you use the account after delivery.",
+        "Digital game access of this kind is delivered through pre-configured game accounts. The continued availability of the access depends on the underlying account remaining in good standing with the platform. In rare cases an account may become inaccessible due to circumstances outside our control.",
+        "This is the primary service risk, and it is precisely why we provide a comprehensive replacement guarantee on every order. By ordering you acknowledge this and confirm that you have read the Refund & Replacement Policy.",
       ],
     },
     {
       heading: "4. Your account with us",
       bullets: [
-        `You must be at least ${P.minAge} years old to place an order. A younger person may play only on an order placed by a parent or guardian, who is responsible for it.`,
-        "Give us correct details, especially a WhatsApp number that works, because we use it to reach you about your order.",
-        "Keep your password private. You are responsible for everything done through your account.",
-        "One person, one account. Do not create accounts to get around limits, coupons or a suspension.",
+        `You must be at least ${P.minAge} years old to place an order. A person under this age may use a game only on an order placed and supervised by a parent or guardian, who accepts full responsibility.`,
+        "Provide accurate details at registration and checkout, especially a working WhatsApp number, which we use to communicate about your order.",
+        "Keep your login credentials private. You are responsible for all activity that takes place through your account.",
+        "One account per person. Do not create multiple accounts to circumvent limits, promotional codes, or a prior suspension.",
       ],
     },
     {
-      heading: "5. Prices and payment",
+      heading: "5. Prices, taxes and payment",
       paragraphs: [
-        "Prices are in Indian rupees (INR) and are the prices shown at checkout. Online payments are taken by Razorpay, which handles your card, UPI or net-banking details under its own security rules — we never see or store them. An order is confirmed only when the payment succeeds.",
-        `If you start an order and do not pay, it cancels itself after ${P.unpaidOrderMinutes} minutes. Coupon codes are single-use for each customer unless stated otherwise, cannot be exchanged for cash, and we may withdraw a code that is misused.`,
-        "If money leaves your account but the order does not show as paid, do not pay again — contact us with the payment reference and we will sort it out. Failed payments are normally returned by your bank automatically.",
+        "All prices are displayed in Indian Rupees (INR). Where Goods and Services Tax (GST) applies to our supply it is included in the price shown, or disclosed at checkout. Online payments are processed by Razorpay Payment Solutions Pvt. Ltd. under Razorpay's own PCI-DSS-compliant security standards — we never receive, see or store your card, UPI or net-banking details.",
+        "An order is confirmed only once payment is successfully authorised. An order left unpaid cancels itself automatically after " + `${P.unpaidOrderMinutes}` + " minutes and no charge is made. Coupon codes are single-use per customer unless we state otherwise; they have no cash value and we may withdraw a code that is misused.",
+        "If funds leave your account but your order does not appear as confirmed, please do not pay again. Contact us with the Razorpay payment reference and we will investigate and resolve it promptly.",
       ],
     },
     {
-      heading: "6. Delivery",
+      heading: "6. Cancellation before delivery",
       paragraphs: [
-        "Delivery works as set out in the Delivery Times page: your login details appear on your order page once your order is delivered. When a rental period ends, the login details stop being shown on your order page, and you must stop using the account.",
+        "You may cancel a paid, undelivered order at any time and receive a full refund. If your order remains undelivered " + `${P.deliveryOuterHours}` + " hours after payment, you are entitled to cancel it and receive a full refund — see the Refund & Replacement Policy for how to request this.",
+        "Because the product is digital access that is delivered to your order page, you lose the right to cancel for a change of mind once the access credentials have been delivered to you. This is consistent with Section 8(3) of the Consumer Protection (E-Commerce) Rules, 2020 and Section 19 read with Schedule II of the Consumer Protection Act, 2019 for digital goods that are fully performed with the consumer's agreement.",
       ],
     },
     {
-      heading: "7. Using the login details",
+      heading: "7. Delivery",
+      paragraphs: [
+        "Delivery works as described in the Delivery Times page. Your access credentials appear on your order page once your order is fulfilled. For rentals, the credentials stop being visible on your order page when the rental period ends, at which point you must stop using the access.",
+      ],
+    },
+    {
+      heading: "8. Acceptable use of access credentials",
       bullets: [
-        "Use the account only for yourself. Do not share, sell or publish the login details, and do not let others use them.",
-        "Do not change the account’s email, password, security or payment settings, and do not link your own payment methods to it, unless we tell you to.",
-        "Do not use cheats, or break the platform’s or the game’s own rules — that can get the account banned, and a ban you cause is not covered by the guarantee.",
-        "For a rental, stop using the account when the rental ends.",
+        "Use the access only for your own personal, non-commercial gameplay. Do not transfer, resell, sublicense, share or publish the credentials.",
+        "Do not alter any settings of the underlying account, including its email address, password, security questions, linked payment methods or personal details, unless we specifically instruct you to do so.",
+        "Do not engage in cheating, hacking, or any conduct that violates the platform's Terms of Service or the game's own end-user licence agreement. A suspension or ban resulting from prohibited conduct is not covered by our replacement guarantee.",
+        "For a rental, you must stop using the access when the rental period ends.",
       ],
     },
     {
-      heading: "8. Reviews, comments and requests",
+      heading: "9. User-generated content (reviews, comments, requests)",
       paragraphs: [
-        "Reviews can be written only by customers who received the game, and are shown with your first name. Comments and game requests are public and shown with your first name; who voted for a request is never shown.",
-        "Be honest and respectful. Do not post anything unlawful, abusive, misleading or private about someone else, and do not post advertising. We may hide or delete content that breaks these rules, and may close accounts that keep doing it.",
+        "Reviews may be submitted only by customers who have received a game, and are published with your first name. Comments and game requests are public and attributed to your first name; votes are anonymous.",
+        "Content must be honest, respectful and lawful. Do not post anything abusive, defamatory, misleading, obscene or that infringes a third party's rights. We may remove non-compliant content and suspend repeat offenders.",
       ],
     },
     {
-      heading: "9. Things you must not do",
+      heading: "10. Prohibited conduct",
       bullets: [
-        "Use the site for anything unlawful, or to cheat or defraud us or another customer.",
-        "Try to get around our order, payment, coupon or security systems, or to reach data that is not yours.",
-        "Dispute a payment with your bank for an order that was delivered, without first giving us the chance to fix the problem.",
+        "Using the site for any unlawful purpose, or to commit fraud against us or another customer.",
+        "Attempting to circumvent our order, payment, coupon, rate-limiting or security systems, or to access data that does not belong to you.",
+        "Initiating a payment dispute (chargeback) with your bank or card issuer for a delivered order without first giving us the opportunity to resolve the matter.",
       ],
     },
     {
-      heading: "10. Our responsibility",
+      heading: "11. Our liability",
       paragraphs: [
-        "We stand behind every order with the replacement guarantee. Beyond that, and as far as the law allows, we are not liable for indirect or consequential loss, for a platform’s decisions, or for problems caused by how the account was used after delivery. Our total liability for any order is limited to the amount you paid for it. Nothing here limits any right you have under Indian consumer law that cannot be limited.",
+        "We stand behind every order with our replacement guarantee, as set out in the Refund & Replacement Policy. Beyond that guarantee, and to the maximum extent permitted by applicable law, we are not liable for any indirect, consequential, incidental or special loss, for decisions made by a platform holder, or for any issue arising from your use of the access after it has been delivered to you.",
+        "Our total liability for any single order is limited to the amount you paid for that order. Nothing in these terms limits or excludes any right you have under the Consumer Protection Act, 2019 or any other mandatory provision of Indian law.",
       ],
     },
     {
-      heading: "11. Closing accounts",
+      heading: "12. Account suspension and termination",
       paragraphs: [
-        "You may stop using the site at any time and ask us to close your account. We may suspend or close an account, and cancel an order with a refund, if these terms are broken or we suspect fraud.",
+        "You may stop using the site at any time and request closure of your account. We may suspend or close an account and cancel any outstanding orders (with a refund of amounts paid) if these terms are materially breached or if we have reasonable grounds to suspect fraud or misuse.",
       ],
     },
     {
-      heading: "12. Changes to these terms",
+      heading: "13. Changes to these terms",
       paragraphs: [
-        "We may update these terms. The date at the top shows when they last changed. If you keep using the site after a change, you accept the new terms; orders already placed stay on the terms they were placed under.",
+        "We may update these terms from time to time. The date shown at the top of this page reflects the most recent revision. Your continued use of the site after a change constitutes acceptance of the revised terms. Orders already placed are governed by the terms in force at the time of the order.",
       ],
     },
     {
-      heading: "13. Law and complaints",
+      heading: "14. Governing law and grievance redressal",
       paragraphs: [
-        "These terms are governed by the laws of India. Courts at the place of our registered address, given on the Contact us page, have jurisdiction, without affecting any right you have to go to a consumer forum. For complaints, contact our Grievance Officer ({officer}) at {email}. We acknowledge a complaint within " + `${P.acknowledgeHours} hours and aim to resolve it within ${P.resolveDays} days.`,
+        "These terms are governed by the laws of India. The courts at the location of our registered address (shown on the Contact us page) have jurisdiction, without prejudice to your right to approach any consumer forum or the National Consumer Disputes Redressal Commission.",
+        "Grievance Officer: {officer}, reachable at {email}. We acknowledge complaints within " + `${P.acknowledgeHours}` + " hours and aim to resolve them within " + `${P.resolveDays}` + " days, in accordance with the Consumer Protection (E-Commerce) Rules, 2020.",
       ],
     },
   ],
@@ -133,206 +143,227 @@ const terms: Policy = {
 
 const privacy: Policy = {
   title: "Privacy Policy",
-  summary: "What personal information we collect, why, who handles it, how long we keep it, and the choices you have. We follow India’s Digital Personal Data Protection Act, 2023 and the rules made under it as they apply to us.",
+  summary: "What personal information we collect, why we collect it, who processes it, how long we keep it, and the choices you have. We comply with India's Digital Personal Data Protection Act, 2023.",
   blocks: [
     {
-      heading: "1. Who is responsible",
-      paragraphs: ["{name} runs this website and decides why and how your personal information is used. Contact details are on the Contact us page."],
+      heading: "1. Data fiduciary",
+      paragraphs: ["{name} (GSTIN: {gstin}) is the data fiduciary responsible for the personal data processed through this website. Contact details are on the Contact us page."],
     },
     {
       heading: "2. What we collect",
       bullets: [
-        "Account details: your name, email address, password (kept only in scrambled form by our login provider), and your WhatsApp number.",
-        "Your preferences: the platforms and kinds of game you say you like, your wishlist, and the contents of your cart.",
-        "Orders: what you bought or rented, the price, any coupon used, the time, the delivery status, your name and number as they were when you ordered, and the payment reference from Razorpay.",
-        "The login details we deliver to you — stored encrypted, and readable only by you. If we ever need to read them to fix a problem, that is recorded.",
-        "Support conversations, reviews, comments and game requests you send us, and the votes you cast.",
-        "Technical information that comes with any visit: your IP address, browser and device type, and the pages requested, kept in our hosting providers’ logs for security and troubleshooting.",
+        "Registration details: your name, email address, password (stored only in hashed form by our authentication provider), and WhatsApp number.",
+        "Preferences: platforms you play on, game genres you enjoy, your wishlist, and cart contents.",
+        "Transaction data: games purchased or rented, price paid, coupon codes used, order timestamps, delivery status, contact name and number at time of order, and the payment reference issued by Razorpay.",
+        "Delivered access credentials: stored encrypted and visible only to you. Any access by our staff for support purposes is logged.",
+        "Support communications: messages, ticket content, and resolution notes.",
+        "Community content: reviews, comments, game requests, and votes you submit.",
+        "Technical data: IP address, browser and device identifiers, and pages visited — retained in our hosting providers' infrastructure logs for security and diagnostics.",
       ],
-      closing: ["We do not receive or store your card, UPI or bank details — Razorpay collects those directly."],
+      closing: ["We never receive, store or process your card number, UPI VPA, or banking credentials — those are handled entirely by Razorpay."],
     },
     {
-      heading: "3. Why we use it",
+      heading: "3. Purposes of processing",
       bullets: [
-        "To take your order, take payment, deliver the game and give you a receipt.",
-        "To contact you about your order or a support request — by email, on the site, or on WhatsApp.",
-        "To show you suggestions based on what you saved, bought or said you like.",
-        "To keep the store safe: preventing fraud, misuse and abuse, and keeping the records the law requires.",
-        "To show your first name with a review, comment or request you choose to post.",
+        "To fulfil your order: processing payment, preparing and delivering digital access, and issuing your receipt.",
+        "Customer communication: updates on your order, support responses, and service notifications via email, in-app messages, or WhatsApp.",
+        "Personalisation: recommending games based on your stated preferences, purchase history, and wishlist.",
+        "Security and compliance: fraud prevention, abuse detection, and maintaining records required by applicable law (including the GST Act and accounting standards).",
+        "Community: publishing your first name alongside any review, comment, or game request you choose to post.",
       ],
-      closing: ["We ask for your agreement to the above when you create an account and place an order. You can withdraw it at any time (see “Your rights”), though we may then be unable to serve you."],
+      closing: ["We rely on your consent (provided at registration and at checkout) and on our legitimate interest in operating a secure, lawful service. You may withdraw consent at any time (see Your rights), though doing so may prevent us from completing your orders."],
     },
     {
-      heading: "4. Who handles it for us",
+      heading: "4. Sub-processors and data recipients",
       bullets: [
-        "Razorpay — takes your payment and handles refunds.",
-        "Supabase — hosts our database, logins, file storage and the programs that run payments and delivery. Our project is hosted in " + `${P.dataRegion}` + ", so your information is stored and processed outside India.",
-        "Vercel — hosts the website itself and keeps ordinary access logs.",
-        "Resend — sends order emails, where switched on.",
-        "WhatsApp (Meta) — when you message us or we message you.",
+        "Razorpay Payment Solutions Pvt. Ltd. — payment processing and refund execution.",
+        "Supabase Inc. — database hosting, authentication, file storage, and backend functions. Data is stored in " + `${P.dataRegion}` + ", meaning your personal data is transferred to and processed outside India.",
+        "Vercel Inc. — website hosting and CDN; retains standard access logs.",
+        "Resend Inc. — transactional email delivery (order confirmations and notifications).",
+        "Meta Platforms (WhatsApp) — messaging, when you or we initiate contact via WhatsApp.",
       ],
       closing: [
-        "These providers use your information only to provide their service to us. We do not sell your personal information, and we do not share it for advertising.",
-        "We may disclose information if the law, a court or a government authority requires it.",
+        "Each sub-processor uses your data solely to provide their service to us and is bound by data processing terms. We do not sell, rent or trade your personal data, and we do not share it for advertising or marketing by third parties.",
+        "We may disclose data if required by a court order, statutory authority, or applicable law.",
       ],
     },
     {
-      heading: "5. Cookies and similar storage",
+      heading: "5. Cookies and browser storage",
       paragraphs: [
-        "The site stores a small sign-in token in your browser so you stay logged in, and remembers if you dismissed the announcement banner. These are needed for the site to work. We do not currently use advertising or tracking cookies or third-party analytics. If we add any, we will update this page first and ask for your consent where the law requires it.",
+        "We store a sign-in token (a session cookie, strictly necessary for authentication) and a banner-dismissed flag (a sessionStorage entry). No advertising cookies, cross-site tracking pixels, or third-party analytics scripts are currently active on this site. If we introduce any optional tracking technology in future, we will update this policy and seek your consent in advance where the law requires.",
       ],
     },
     {
-      heading: "6. How long we keep it",
+      heading: "6. Retention periods",
       bullets: [
-        `Order and payment records: up to ${P.recordYears} years, because tax and accounting law requires it.`,
-        `Support conversations: up to ${P.supportYears} years after they are closed.`,
-        "Your account details: while your account is open, and for as long afterwards as we need them for the records above.",
-        "Server logs: a short period set by our hosting providers.",
+        `Order and payment records: up to ${P.recordYears} years, to comply with GST, income-tax and accounting obligations.`,
+        `Support conversations: up to ${P.supportYears} years after closure.`,
+        "Account profile data: for as long as your account remains open and for the period needed to retain the transaction records above.",
+        "Hosting infrastructure logs: as set by each provider's retention policy (typically 30–90 days).",
       ],
     },
     {
-      heading: "7. Keeping it safe",
+      heading: "7. Security measures",
       paragraphs: [
-        "The site uses HTTPS. Each customer can see only their own orders and messages, only the owner can open the admin area, delivered login details are encrypted, and payments are checked with Razorpay before an order is marked paid. No system is perfectly secure. If a breach affects your personal information we will tell you and the authorities as the law requires.",
+        "All data in transit is protected by TLS/HTTPS. Access credentials delivered to customers are stored at rest with encryption. Row-level security ensures each customer can access only their own data. The admin area is restricted to authorised personnel only. Payments are verified with Razorpay's API before an order is marked as paid. In the event of a personal data breach that poses a risk to your rights, we will notify you and the Data Protection Board of India in accordance with applicable law.",
       ],
     },
     {
-      heading: "8. Your rights",
-      paragraphs: ["You can ask us to:"],
+      heading: "8. Your rights as a data principal",
+      paragraphs: ["Under the Digital Personal Data Protection Act, 2023, you have the right to:"],
       bullets: [
-        "tell you what personal information of yours we hold and how it is used;",
-        "correct or complete it (you can change your name and number yourself on the Account page);",
-        "delete it — we will delete what we can, and keep only what the law makes us keep, which we then use for nothing else;",
-        "stop using it for something you agreed to (withdraw consent);",
-        "deal with a complaint about how we have handled it, and nominate someone to exercise these rights for you if you cannot.",
+        "Access: know what personal data we hold about you and how it is processed.",
+        "Correction: update inaccurate or incomplete data (name and phone number can be changed on the Account page; other corrections can be requested by contacting us).",
+        "Erasure: request deletion of your personal data — we will delete what we are not legally required to retain.",
+        "Withdrawal of consent: withdraw consent to any processing based on consent.",
+        "Grievance redressal: lodge a complaint with our Grievance Officer.",
+        "Nomination: nominate another person to exercise these rights on your behalf.",
       ],
     },
     {
-      heading: "9. Complaints",
+      heading: "9. Grievance redressal",
       paragraphs: [
-        "Write to our Grievance Officer ({officer}) at {email}. We acknowledge within " + `${P.acknowledgeHours} hours and aim to resolve within ${P.resolveDays} days. If you are not satisfied you may complain to the Data Protection Board of India.`,
+        "Contact our Grievance Officer ({officer}) at {email} for any privacy-related concern. We acknowledge within " + `${P.acknowledgeHours}` + " hours and aim to resolve within " + `${P.resolveDays}` + " days. If you remain dissatisfied, you may escalate to the Data Protection Board of India once it is operational.",
       ],
     },
     {
-      heading: "10. Children",
-      paragraphs: [`The store is for people aged ${P.minAge} and over. We do not knowingly collect information from anyone younger. If you believe we have, tell us and we will delete it.`],
+      heading: "10. Minors",
+      paragraphs: [`This service is intended for persons aged ${P.minAge} and above. We do not knowingly collect personal data from anyone younger. If you believe a minor's data has been collected, please notify us immediately and we will delete it.`],
     },
     {
-      heading: "11. Changes",
-      paragraphs: ["If this policy changes in a way that matters, we will update the date at the top and, where the law requires, tell you directly."],
+      heading: "11. Updates to this policy",
+      paragraphs: ["We will update the date at the top of this page when material changes are made. For changes that significantly affect your rights, we will notify you directly where required by law."],
     },
   ],
 };
 
 const refund: Policy = {
   title: "Refund & Replacement Policy",
-  summary: "When you can cancel, when we replace an account or refund you, how to ask, and how long it takes.",
+  summary: "When you can cancel, how our replacement guarantee works, how to raise a request, and how refunds are processed.",
   blocks: [
     {
-      heading: "1. Before delivery",
+      heading: "1. Cancellation before delivery",
       paragraphs: [
-        "If you have paid but your order has not been delivered, you can cancel it for a full refund.",
-        `If your order is still undelivered ${P.deliveryOuterHours} hours after payment, tell us and we will cancel it and refund you in full. An order you started but did not pay for cancels itself after ${P.unpaidOrderMinutes} minutes, and nothing is charged.`,
+        "You may cancel a paid, undelivered order at any time for a full refund. There is no cancellation fee.",
+        `If your order has not been delivered within ${P.deliveryOuterHours} hours of confirmed payment, you are entitled to cancel it and receive a full refund — contact us with your order number to initiate this. An order left unpaid cancels itself automatically after ${P.unpaidOrderMinutes} minutes; nothing is charged.`,
       ],
     },
     {
-      heading: "2. After delivery — the replacement guarantee",
+      heading: "2. After delivery — replacement guarantee",
       paragraphs: [
-        `Because the product is digital access, we do not refund because you changed your mind once it has been delivered. But every purchase is covered by our replacement guarantee for ${P.replacementDays} days from delivery, and every rental for the whole rental period. It applies if:`,
+        "Because digital access is an intangible product delivered instantly to your order page, we do not offer refunds for a change of mind once credentials have been delivered. However, every purchase is backed by our replacement guarantee:",
       ],
       bullets: [
-        "The account is taken back by its original owner or the platform,",
-        "it is banned or suspended for a reason that is not your fault,",
-        "the login stops working, or it is not as described on the game page.",
+        `Purchases: covered for ${P.replacementDays} days from the date and time of delivery.`,
+        "Rentals: covered for the full duration of the rental period.",
+      ],
+      closing: [
+        "The guarantee applies if: (a) the access stops working through no fault of yours; (b) the underlying account is reclaimed or suspended for reasons outside your control; or (c) the product does not match the description on the game page.",
+        "The guarantee does not cover: issues caused by changing the account settings, sharing credentials with others, violating the platform's Terms of Service, using cheats or hacks, or continuing to use a rental after its period has ended.",
       ],
     },
     {
-      heading: "3. What we do about a problem",
+      heading: "3. How we resolve a claim",
       paragraphs: [
-        "Once we have checked it, we replace it with a working account, or — if we cannot — refund you. If we cannot fix a problem that is covered, you will not be left without either.",
-        "The guarantee does not cover problems you caused: changing the account’s details, sharing it, cheating or otherwise breaking the platform’s rules, or using it after a rental has ended.",
+        "Once we verify the claim, we will either provide replacement access of equivalent value or, if a suitable replacement is not available within a reasonable time, issue a full refund. We will not leave you without a resolution for a valid claim.",
       ],
     },
     {
-      heading: "4. Rentals",
+      heading: "4. Rentals — additional terms",
       paragraphs: [
-        "A rental is for the time you chose, counted from delivery. There is no refund for unused time of a rental that worked as described. If it stops working during the rental, we replace it for the rest of the period or refund the unused part.",
+        "The rental period begins at the time of delivery, not at the time of payment. We do not refund unused time for a rental that functioned as described. If access stops working during the rental period through no fault of yours, we will either provide a replacement for the remaining time or refund the proportional unused portion.",
       ],
     },
     {
-      heading: "5. How to ask",
+      heading: "5. How to raise a request",
       paragraphs: [
-        "Open a request from Account → Help & support (best, because it is linked to your order), or message us on WhatsApp. Give your order number and describe what happened. We acknowledge within " + `${P.acknowledgeHours} hours and aim to sort it out within ${P.resolveDays} days.`,
+        "Raise a support request via Account → Help & support (this automatically links to your order and is the fastest route). Alternatively, message us on WhatsApp with your order number and a description of the issue. We acknowledge within " + `${P.acknowledgeHours}` + " hours and aim to resolve within " + `${P.resolveDays}` + " days.",
       ],
     },
     {
-      heading: "6. How refunds are paid",
+      heading: "6. Refund processing",
       paragraphs: [
-        `Refunds go back to the payment method you used, through Razorpay, and usually reach you in ${P.refundDays}. A refund cannot be made on a payment more than 6 months old. Razorpay’s own fee is not returned to us, so we do not deduct anything from your refund for it.`,
-        "Where only part of an order is refunded — for example the unused part of a rental — you get back that part. If an order was arranged with us directly instead of through the site, the same rules apply and we will refund the way you paid.",
+        `Approved refunds are returned to the original payment method via Razorpay and typically appear within ${P.refundDays}. Razorpay's payment processing fee is not passed on to you — your refund is for the full amount paid. Refunds cannot be processed for transactions more than 6 months old due to Razorpay's processing window.`,
+        "Partial refunds (for example, the unused portion of a rental) are calculated proportionally. These rules apply equally to orders arranged directly with us off-platform.",
       ],
     },
     {
-      heading: "7. Coupons",
-      paragraphs: ["If an order that used a coupon is refunded, the coupon is not given back. If the refund is because of our mistake, tell us and we will issue you a new code."],
+      heading: "7. Promotional codes and coupons",
+      paragraphs: [
+        "A coupon code is not reinstated if the associated order is refunded. If the refund is due to our fault, we will issue a replacement code upon request.",
+      ],
     },
   ],
 };
 
 const shipping: Policy = {
-  title: "Delivery Times",
-  summary: "How and when you receive what you buy. There is no physical shipping — everything is digital.",
+  title: "Delivery Policy",
+  summary: "How we deliver digital game access, how long it takes, and what to do if something goes wrong. There is no physical shipping — everything is digital.",
   blocks: [
     {
-      heading: "1. How delivery works",
+      heading: "1. Delivery method",
       paragraphs: [
-        "When your payment is confirmed we prepare your access. When it is ready, your order page shows it: either a login (ID and password) or a QR code to scan, depending on the game. You will also get an email, and we may message you on WhatsApp if we need anything.",
-        "Open Account → My orders → your order → “Show my login details”. The details are shown only to you.",
+        "This is a fully digital service. After your payment is confirmed, we prepare your access credentials. Once ready, they appear on your order page: either an account ID and password, or a scan-to-play QR/access code — the game page specifies which before you pay.",
+        "You will receive an order confirmation email. We may also contact you via WhatsApp if we need anything to complete delivery. To access your credentials, go to Account → My orders → your order → \"Show my login details\". The credentials are shown to you only.",
       ],
     },
     {
-      heading: "2. How long it takes",
+      heading: "2. Delivery timeframes",
       paragraphs: [
-        "Each game page shows the usual delivery time for that game, for example “about 45 minutes”, and the same estimate is repeated in your cart. It is an honest estimate, not a guarantee to the minute: every account is prepared individually rather than sent from stock, so some orders take longer, especially outside our working hours.",
-        `If your order is not delivered within ${P.deliveryOuterHours} hours of payment, you can cancel it for a full refund — see the Refund & Replacement Policy.`,
+        "Each game page displays the expected delivery time for that specific game (for example, \"about 45 minutes\"). The same estimate is shown in your cart before you pay. These are honest estimates based on typical fulfilment times — every order is prepared individually rather than dispatched from ready stock, so actual times may vary, particularly outside our working hours or during high-demand periods.",
+        `If your order is not delivered within ${P.deliveryOuterHours} hours of confirmed payment, you are entitled to a full refund — see the Refund & Replacement Policy.`,
       ],
     },
     {
-      heading: "3. What you receive",
+      heading: "3. What you will receive",
       bullets: [
-        "Login listings: an account ID and password for an account that has the game.",
-        "QR listings: a code you scan to sign in, with no password needed.",
-        "Each game page says which one applies before you pay.",
+        "Account credential listings: an account ID (email or username) and a password for an account that has the game installed or licenced.",
+        "Scan-to-play listings: a QR code or access link that signs you in directly — no password required.",
+        "The game page clearly states which type applies to each listing, before checkout.",
       ],
     },
     {
       heading: "4. Rentals",
-      paragraphs: ["The rental period starts when we deliver, not when you pay. The order page shows the start and end dates. When the rental ends, the login details stop being shown there."],
+      paragraphs: [
+        "For rentals, the access period begins at the moment of delivery, not at the moment of payment. Your order page shows the exact start and end date and time. When the rental period expires, your credentials stop appearing on the order page and you must immediately cease using the access.",
+      ],
     },
     {
-      heading: "5. Delivery problems",
-      paragraphs: ["If something is late or wrong, open a request from Account → Help & support or message us on WhatsApp with your order number."],
+      heading: "5. Delivery issues",
+      paragraphs: [
+        "If your order is delayed beyond the displayed estimate, or if you experience any issue with the delivered access, please open a support request from Account → Help & support with your order number, or contact us via WhatsApp. We respond within " + `${P.acknowledgeHours}` + " hours.",
+      ],
     },
   ],
 };
 
 const contact: Policy = {
-  title: "Contact us",
-  summary: "Who we are, how to reach us, and who to write to with a complaint.",
+  title: "Contact Us",
+  summary: "How to reach us, our registered details, and who to write to if you have a complaint.",
   blocks: [
     {
-      heading: "Seller details",
-      bullets: ["Business name: {name}", "Registered address: {address}", "GSTIN: {gstin}"],
+      heading: "Merchant details",
+      bullets: [
+        "Business name: {name}",
+        "Registered address: {address}",
+        "GSTIN: {gstin}",
+        "Nature of business: Digital game access service — resale of digital entertainment products",
+        "Merchant category: Digital Goods / Software",
+      ],
     },
     {
-      heading: "Reach us",
-      bullets: ["Email: {email}", "WhatsApp: {phone}", "For an order, the fastest way is Account → Help & support, because it is linked to your order."],
+      heading: "Contact",
+      bullets: [
+        "Email: {email}",
+        "WhatsApp: {phone}",
+        "For an order-related issue, the fastest route is Account → Help & support, as it is automatically linked to your order.",
+      ],
     },
     {
       heading: "Grievance Officer",
       paragraphs: [
-        "For complaints about an order, about the site, or about your personal information, write to our Grievance Officer: {officer}, at {email}. " + `We acknowledge within ${P.acknowledgeHours} hours and aim to resolve within ${P.resolveDays} days.`,
+        "In accordance with the Consumer Protection (E-Commerce) Rules, 2020 and the IT (Intermediary Guidelines) Rules, we have appointed a Grievance Officer: {officer}, reachable at {email}.",
+        `We acknowledge all complaints within ${P.acknowledgeHours} hours and aim to resolve them within ${P.resolveDays} days.`,
       ],
     },
   ],
