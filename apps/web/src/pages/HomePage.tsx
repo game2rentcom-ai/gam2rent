@@ -7,15 +7,14 @@ import { useRequestLink } from "../community/request";
 import { useShop } from "../shop/context";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { PROMISE } from "../data/policies";
-import { gameCountsShown, searchPlaceholder } from "../lib/display";
+import { searchPlaceholder } from "../lib/display";
 import { useStore } from "../data/store";
-import { averageRating } from "../types/listing";
 import { Button } from "../ui/Button";
 import { Notice } from "../ui/Form";
-import { PLATFORM_SHORT, PLATFORM_TEXT, etaLabel, formatPrice, platformLine } from "../ui/format";
+import { PLATFORM_SHORT, PLATFORM_TEXT, formatPrice, platformLine } from "../ui/format";
 import { GameCard } from "../ui/GameCard";
 import { GameCover } from "../ui/GameCover";
-import { IconChat, IconCheck, IconChevronDown, IconClock, IconGift, IconStar } from "../ui/icons";
+import { IconChat, IconChevronDown, IconGift, IconStar } from "../ui/icons";
 import { Rail, Section } from "../ui/Section";
 import { AnnouncementSlider } from "../ui/AnnouncementSlider";
 import { SearchPanel } from "../ui/SearchPanel";
@@ -54,11 +53,6 @@ const FAQS = [
 
 const ORDERING_ANSWER = "Pick a game, choose Buy or Rent and pay securely online. When your account is ready, its login details (or a scan-to-play code, depending on the game) appear on your order page. You sign in on your console or PC, download the game from the official store, and play.";
 
-function median(numbers: number[]): number {
-  const s = [...numbers].sort((a, b) => a - b);
-  const mid = Math.floor(s.length / 2);
-  return s.length % 2 ? s[mid] : Math.round((s[mid - 1] + s[mid]) / 2);
-}
 
 function pick(ids: string[], find: (id: string) => CatalogGame | undefined): CatalogGame[] {
   return ids.map(find).filter((g): g is CatalogGame => Boolean(g));
@@ -85,9 +79,6 @@ export function HomePage() {
   const fresh = pick(NEW_IDS, findGame);
   const platformCounts = PLATFORMS.map((p) => ({ p, n: games.filter((g) => g.platforms.includes(p)).length })).filter((x) => x.n > 0);
 
-  const showCounts = gameCountsShown(setting);
-  const rating = averageRating(reviews);
-  const typicalEta = availableNow.length ? median(availableNow.map((g) => g.listing.deliveryEtaMinutes)) : null;
 
   // Top reviews for social proof (up to 4, sorted by highest rating)
   const topReviews = useMemo(() => [...reviews].sort((a, b) => b.rating - a.rating).slice(0, 4), [reviews]);
@@ -210,7 +201,6 @@ export function HomePage() {
                 <PlatformGlyph platform={p} className={`h-8 w-8 shrink-0 ${PLATFORM_TEXT[p]}`} />
                 <span className="min-w-0">
                   <span className="block truncate font-display text-base font-bold text-text-primary">{PLATFORM_SHORT[p]}</span>
-                  {showCounts && <span className="block text-xs text-text-muted">{n} games</span>}
                 </span>
               </Link>
             </li>
