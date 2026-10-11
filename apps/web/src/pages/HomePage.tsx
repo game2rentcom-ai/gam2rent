@@ -15,7 +15,7 @@ import { Notice } from "../ui/Form";
 import { PLATFORM_SHORT, PLATFORM_TEXT, etaLabel, formatPrice, platformLine } from "../ui/format";
 import { GameCard } from "../ui/GameCard";
 import { GameCover } from "../ui/GameCover";
-import { IconChat, IconCheck, IconChevronDown, IconClock, IconGift, IconShield, IconStar } from "../ui/icons";
+import { IconChat, IconCheck, IconChevronDown, IconClock, IconGift, IconStar } from "../ui/icons";
 import { Rail, Section } from "../ui/Section";
 import { AnnouncementSlider } from "../ui/AnnouncementSlider";
 import { SearchPanel } from "../ui/SearchPanel";
@@ -119,31 +119,6 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Live stats bar — only shown when there is real data to display */}
-      {status === "ready" && (availableNow.length > 0 || typicalEta !== null || (rating !== null && reviews.length > 0)) && (
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
-          {availableNow.length > 0 && (
-            <span className="flex items-center gap-2 text-text-muted">
-              <span className="live-dot" aria-hidden="true" />
-              <strong className="font-display font-bold text-text-primary">{availableNow.length}</strong>
-              {" "}games ready to deliver
-            </span>
-          )}
-          {typicalEta !== null && (
-            <span className="flex items-center gap-2 text-text-muted">
-              <IconClock className="h-4 w-4 text-trust-600" />
-              Typical delivery <strong className="font-display font-bold text-trust-600">{etaLabel(typicalEta)}</strong>
-            </span>
-          )}
-          {rating !== null && reviews.length > 0 && (
-            <span className="flex items-center gap-2 text-text-muted">
-              <IconStar className="h-4 w-4 text-rating-gold" />
-              <strong className="font-display font-bold text-text-primary">{rating.toFixed(1)}</strong>
-              {" "}from {reviews.length} verified {reviews.length === 1 ? "buyer" : "buyers"}
-            </span>
-          )}
-        </div>
-      )}
 
       {status === "error" && <Notice tone="error" onRetry={reload}>We couldn't load prices and availability just now. You can still browse every game.</Notice>}
 
@@ -188,28 +163,6 @@ export function HomePage() {
         </Section>
       )}
 
-      {/* ── Trust strip ── */}
-      <section aria-label="Why Game2Rent" className="grid gap-3 sm:grid-cols-3">
-        <div className="panel flex items-center gap-3 p-4">
-          <span className="medal cut cut-hex"><IconShield className="h-6 w-6" /></span>
-          <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">Free replacement</span>Something off after delivery? We replace it, no questions asked.</p>
-        </div>
-        <div className="panel flex items-center gap-3 p-4">
-          <span className="medal cut cut-hex [--medal:var(--color-accent-400)]"><IconClock className="h-6 w-6" /></span>
-          <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">Ready within 60 minutes</span>Once your order is confirmed, your game details are delivered fast.</p>
-        </div>
-        {rating !== null ? (
-          <div className="panel flex items-center gap-3 p-4">
-            <span className="medal cut cut-hex [--medal:var(--color-rating-gold)]"><IconStar className="h-6 w-6" /></span>
-            <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">{rating.toFixed(1)} · {reviews.length} verified {reviews.length === 1 ? "review" : "reviews"}</span>From real customers who received their game.</p>
-          </div>
-        ) : (
-          <div className="panel flex items-center gap-3 p-4">
-            <span className="medal cut cut-hex [--medal:var(--color-rating-gold)]"><IconCheck className="h-6 w-6" /></span>
-            <p className="text-sm text-text-muted"><span className="block font-display text-base font-bold text-text-primary">Secure Razorpay checkout</span>Pay with UPI, card or net banking — we never see your details.</p>
-          </div>
-        )}
-      </section>
 
       {/* ── Community suggestions ── */}
       <Suggestions />
