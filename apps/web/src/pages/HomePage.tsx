@@ -195,7 +195,7 @@ export function HomePage() {
       {/* ── Browse by platform ── */}
       <Section title="Browse by platform">
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {platformCounts.map(({ p, n }, i) => (
+          {platformCounts.map(({ p }, i) => (
             <li key={p} className={i === platformCounts.length - 1 && platformCounts.length % 2 === 1 ? "col-span-2 sm:col-span-1" : ""}>
               <Link to={`/browse?platform=${p}`} className="panel panel-link flex min-h-20 items-center gap-3 p-4">
                 <PlatformGlyph platform={p} className={`h-8 w-8 shrink-0 ${PLATFORM_TEXT[p]}`} />

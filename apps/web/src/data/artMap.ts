@@ -88,6 +88,8 @@ export const LOCAL_ART: Record<string, { cover: string; hero: string }> = {
   "astro-bot": { cover: "/games/astro-bot-cover.jpg", hero: "/games/astro-bot-hero.jpg" },
   // Games not on Steam or without Steam portrait art — sourced from Wikimedia (official publisher art, fair use)
   "alan-wake-2": { cover: "https://upload.wikimedia.org/wikipedia/en/e/ed/Alan_Wake_2_box_art.jpg", hero: "https://upload.wikimedia.org/wikipedia/en/e/ed/Alan_Wake_2_box_art.jpg" },
+  "beasts-of-reincarnation": { cover: "https://upload.wikimedia.org/wikipedia/en/8/8f/Beast_of_Reincarnation_cover_artwork.png", hero: "https://upload.wikimedia.org/wikipedia/en/8/8f/Beast_of_Reincarnation_cover_artwork.png" },
+  "mortal-shell-2": { cover: "https://upload.wikimedia.org/wikipedia/en/f/f6/Mortal_Shell_II_key_art.png", hero: "https://upload.wikimedia.org/wikipedia/en/f/f6/Mortal_Shell_II_key_art.png" },
   "cod-black-ops": { cover: "https://upload.wikimedia.org/wikipedia/en/c/c9/Call_of_Duty_Black_Ops_6_Key_Art.png", hero: "https://upload.wikimedia.org/wikipedia/en/c/c9/Call_of_Duty_Black_Ops_6_Key_Art.png" },
   "diablo": { cover: "https://upload.wikimedia.org/wikipedia/en/1/1c/Diablo_IV_cover_art.png", hero: "https://upload.wikimedia.org/wikipedia/en/1/1c/Diablo_IV_cover_art.png" },
   "far-cry": { cover: "https://upload.wikimedia.org/wikipedia/en/3/35/Far_cry_6_cover.jpg", hero: "https://upload.wikimedia.org/wikipedia/en/3/35/Far_cry_6_cover.jpg" },
