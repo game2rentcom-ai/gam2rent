@@ -45,7 +45,6 @@
   --color-plat-ps4: #60a5fa;
   --color-plat-ps5: #a5b4fc;
   --color-plat-xbox: #4ade80;
-  --color-plat-cloud: #2dd4bf;
 
   --font-sans: "Manrope", system-ui, "Segoe UI", Roboto, sans-serif;
   --font-display: "Chakra Petch", "Manrope", system-ui, sans-serif;
@@ -327,7 +326,6 @@
   .badge-ps4 { --badge: var(--color-plat-ps4); }
   .badge-ps5 { --badge: var(--color-plat-ps5); }
   .badge-xbox { --badge: var(--color-plat-xbox); }
-  .badge-cloud { --badge: var(--color-plat-cloud); }
 
   /* Facts about delivery and guarantees */
   .trust-pill {

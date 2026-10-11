@@ -80,13 +80,6 @@ export function PlatformGlyph({ platform, className }: { platform: Platform; cla
       </svg>
     );
   }
-  if (platform === "cloud") {
-    return (
-      <svg viewBox="0 0 20 20" fill="currentColor" className={className}>
-        <path d="M5.5 15.5a3.5 3.5 0 01-.5-6.96 4.5 4.5 0 018.55-1.9A3.25 3.25 0 0117 9.9a3 3 0 01-.5 5.6H5.5z" />
-      </svg>
-    );
-  }
   return (
     <svg viewBox="0 0 20 20" fill="currentColor" className={className}>
       <rect x="1" y="7.5" width="18" height="6" rx="3" />

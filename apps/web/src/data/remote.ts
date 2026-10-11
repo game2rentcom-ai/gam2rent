@@ -13,7 +13,7 @@ const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const remoteConfigured = Boolean(url && key);
 
-const PLATFORMS: Platform[] = ["pc", "ps4", "ps5", "cloud"];
+const PLATFORMS: Platform[] = ["pc", "ps4", "ps5"];
 const CREDENTIALS: CredentialType[] = ["id_password", "qr_code"];
 
 export interface RemoteData {

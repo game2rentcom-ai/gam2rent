@@ -17,7 +17,6 @@ export const demoListings: Listing[] = [
   { catalogId: "black-myth-wukong", platform: "pc", price: 1499, credentialType: "qr_code", isAvailable: true, isFeatured: true, deliveryEtaMinutes: 60 },
   { catalogId: "elden-ring", platform: "pc", price: 899, credentialType: "qr_code", isAvailable: true, isFeatured: false, deliveryEtaMinutes: 60 },
   { catalogId: "god-of-war", platform: "ps4", price: 799, credentialType: "id_password", isAvailable: true, isFeatured: false, deliveryEtaMinutes: 40 },
-  { catalogId: "cyberpunk-2077", platform: "cloud", price: 349, credentialType: "qr_code", isAvailable: true, isFeatured: true, deliveryEtaMinutes: 20 },
   { catalogId: "ea-sports-fc", platform: "ps4", price: 649, credentialType: "id_password", isAvailable: false, isFeatured: false, deliveryEtaMinutes: 45 },
   { catalogId: "red-dead-redemption-2", platform: "pc", price: 999, credentialType: "id_password", isAvailable: true, isFeatured: false, deliveryEtaMinutes: 50 },
 ];

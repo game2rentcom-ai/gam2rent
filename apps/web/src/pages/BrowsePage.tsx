@@ -141,7 +141,7 @@ export function BrowsePage() {
     <div className="flex flex-col gap-4">
       <header>
         <h1 className="font-display text-2xl font-bold text-text-primary sm:text-3xl">Browse games</h1>
-        <p className="mt-1 text-sm text-text-muted">Buy or rent digital games for PC, PlayStation and cloud.</p>
+        <p className="mt-1 text-sm text-text-muted">Buy or rent digital games for PC and PlayStation.</p>
       </header>
 
       <div className="sticky top-14 z-30 -mx-4 flex gap-2 bg-bg-base/95 px-4 py-2 backdrop-blur-xl sm:-mx-6 sm:px-6 md:top-16 lg:-mx-8 lg:px-8">

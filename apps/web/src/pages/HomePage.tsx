@@ -83,7 +83,7 @@ export function HomePage() {
         <h1 className="max-w-3xl font-display text-4xl font-bold leading-[1.05] text-text-primary sm:text-5xl lg:text-6xl">
           Find your next game. <span className="text-gradient">Play it today.</span>
         </h1>
-        <p className="max-w-xl text-base text-text-muted sm:text-lg">PC, PlayStation and cloud gaming — with a delivery time you can see up front, and a free replacement if anything goes wrong.</p>
+        <p className="max-w-xl text-base text-text-muted sm:text-lg">PC and PlayStation — with a delivery time you can see up front, and a free replacement if anything goes wrong.</p>
         <div className="w-full max-w-xl text-left">
           <SearchPanel query={query} onQuery={setQuery} onDone={() => setQuery("")} dropdown placeholder={searchPlaceholder(setting, games.length)} />
         </div>

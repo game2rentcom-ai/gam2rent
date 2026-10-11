@@ -1,10 +1,9 @@
 // Catalog data model for the full title list (documentation/decision-log.md, 2026-09-21 "Iteration
 // 4" entry). Distinct from the old narrow mockListings.ts model — this is deliberately richer
 // (genre, developer/publisher, platform breadth) because the real catalog spans PS4/PS5/Xbox/PC/
-// Cloud titles, not just the 3 platforms the original schema assumed. `category` separates real
-// games from the handful of non-game software entries in the source list (CapCut, Canva,
-// ChatGPT) so the UI never mislabels a productivity tool as a "PS4 game."
-export type Platform = "pc" | "ps4" | "ps5" | "cloud";
+// `category` separates real games from the handful of non-game software entries in the source
+// list (CapCut, Canva, ChatGPT) so the UI never mislabels a productivity tool as a "PS4 game."
+export type Platform = "pc" | "ps4" | "ps5";
 export type Category = "game" | "app";
 
 export interface CatalogGame {
@@ -45,5 +44,4 @@ export const PLATFORM_LABEL: Record<Platform, string> = {
   pc: "PC",
   ps4: "PS4",
   ps5: "PS5",
-  cloud: "Cloud Gaming",
 };

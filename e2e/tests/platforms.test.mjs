@@ -48,7 +48,7 @@ suite("GTA V: pick a platform. PS4 and PS5 are bought permanently at their own p
     const chips = page.getByRole("radiogroup", { name: "Platform" });
     await chips.waitFor();
     const labels = await chips.getByRole("radio").allInnerTexts();
-    assert.deepEqual(labels.map((l) => l.replace(/\s+/g, " ").trim()), ["PC Rental", "PS4 Permanent", "PS5 Permanent", "Cloud Gaming Ask us"]);
+    assert.deepEqual(labels.map((l) => l.replace(/\s+/g, " ").trim()), ["PC Rental", "PS4 Permanent", "PS5 Permanent"]);
 
     // Opens on the cheapest platform on sale.
     assert.equal(await platformChip(page, "PS4").getAttribute("aria-checked"), "true");
