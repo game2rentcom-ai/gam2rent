@@ -51,6 +51,7 @@ export function GameCover({ game, slot = "card", priority = false, sizes, classN
           style={slot === "hero" ? { objectPosition: "center 25%" } : undefined}
         />
       )}
+      <div className="scanlines" aria-hidden="true" />
       {children}
     </div>
   );

@@ -407,6 +407,28 @@
     box-shadow: inset 0 0 0 1px var(--color-accent-400), inset 0 0 18px -2px color-mix(in srgb, var(--color-accent-400) 55%, transparent);
   }
 
+  /* Rarity tiers — like item rarity in RPGs, driven by listing price */
+  .rarity-common    { --rarity: #94a3b8; }
+  .rarity-uncommon  { --rarity: var(--color-trust-600); }
+  .rarity-rare      { --rarity: var(--color-brand-400); }
+  .rarity-epic      { --rarity: #a855f7; }
+  .rarity-legendary { --rarity: var(--color-gold-400); }
+
+  /* Default frame edge color tinted by rarity */
+  .rarity-rare    { --frame-edge: color-mix(in srgb, var(--rarity) 45%, transparent); }
+  .rarity-epic    { --frame-edge: color-mix(in srgb, var(--rarity) 55%, transparent); }
+  .rarity-legendary { --frame-edge: color-mix(in srgb, var(--rarity) 65%, transparent); }
+
+  /* Hover frame glow overridden per rarity */
+  .rarity-rare.group:hover .frame::after,
+  .rarity-epic.group:hover .frame::after {
+    box-shadow: inset 0 0 0 1px var(--rarity), inset 0 0 18px -2px color-mix(in srgb, var(--rarity) 55%, transparent);
+  }
+  /* Legendary pulses continuously */
+  .rarity-legendary .frame::after {
+    animation: rarity-pulse 2.8s ease-in-out infinite;
+  }
+
   /* Form controls */
   .field {
     min-height: 2.75rem;
@@ -570,13 +592,29 @@
       drop-shadow(0 0 22px color-mix(in srgb, var(--color-brand-500) 28%, transparent));
   }
 
-  /* Game card title glow on parent hover */
+  /* Game card title glow + glitch on parent hover */
   .game-card-title {
     transition: color 0.2s, text-shadow 0.2s;
   }
   .group:hover .game-card-title {
     color: var(--color-brand-300);
     text-shadow: 0 0 20px color-mix(in srgb, var(--color-brand-400) 40%, transparent);
+    animation: glitch-text 0.38s ease-out 0.05s;
+  }
+
+  /* Scanlines overlay inside a .frame — subtle CRT horizontal lines */
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(0, 0, 0, 0.08) 3px,
+      rgba(0, 0, 0, 0.08) 4px
+    );
   }
 
   /* Image blur-to-sharp reveal */
@@ -725,6 +763,50 @@
   to   { background-position: 34px 34px; }
 }
 
+/* Glitch chromatic aberration — plays once on hover of parent .group */
+@keyframes glitch-text {
+  0%   { text-shadow: none; transform: none; }
+  12%  { text-shadow: -2px 0 #ff0040, 2px 0 #22d3ee; transform: translateX(2px); }
+  25%  { text-shadow:  2px 0 #ff0040, -2px 0 #22d3ee; transform: translateX(-2px); }
+  45%  { text-shadow: -1px 0 #facc15; transform: translateX(1px); }
+  70%  { text-shadow: none; transform: none; }
+  100% { text-shadow: none; transform: none; }
+}
+
+/* Rarity frame pulse — continuous golden breathing for Legendary tier */
+@keyframes rarity-pulse {
+  0%,  100% { box-shadow: inset 0 0 0 1px var(--rarity), inset 0 0 18px -4px color-mix(in srgb, var(--rarity) 50%, transparent); }
+  50%       { box-shadow: inset 0 0 0 1px var(--rarity), inset 0 0 32px -2px color-mix(in srgb, var(--rarity) 85%, transparent); }
+}
+
+/* Boot scan: neon line that sweeps the viewport on first page load */
+.boot-scan {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-brand-400) 20%,
+    var(--color-gold-400) 50%,
+    var(--color-brand-400) 80%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 16px var(--color-brand-400),
+    0 0 38px color-mix(in srgb, var(--color-brand-400) 45%, transparent);
+  z-index: 9999;
+  pointer-events: none;
+  animation: boot-scan 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes boot-scan {
+  0%   { transform: translateY(0);      opacity: 0; }
+  4%   { opacity: 1; }
+  96%  { opacity: 0.7; }
+  100% { transform: translateY(100dvh); opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -734,11 +816,12 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .reveal, .img-loading, .hero-enter, .page-enter, .stagger, .cursor-orb {
+  .reveal, .img-loading, .hero-enter, .page-enter, .stagger, .cursor-orb, .boot-scan {
     opacity: 1;
     transform: none;
     transition: none !important;
     animation: none !important;
     filter: none !important;
   }
+  .boot-scan { display: none; }
 }

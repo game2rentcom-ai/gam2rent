@@ -74,6 +74,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
     window.addEventListener("pointermove", handler);
     return () => { window.removeEventListener("pointermove", handler); cancelAnimationFrame(raf); };
   }, []);
+  // Boot scan: neon line sweeps the viewport once per session on first load
+  const [bootDone, setBootDone] = useState(() => {
+    try { return sessionStorage.getItem("boot-done") === "1"; } catch { return false; }
+  });
+  useEffect(() => {
+    if (!bootDone) {
+      try { sessionStorage.setItem("boot-done", "1"); } catch { /* private mode */ }
+      const t = setTimeout(() => setBootDone(true), 1600);
+      return () => clearTimeout(t);
+    }
+  }, [bootDone]);
+
   const chatHref = useStore().contactLink("Hi! I have a question about renting or buying games.");
   const { status: authStatus, isAdmin } = useAuth();
   const { ordering, cart } = useShop();
@@ -103,6 +115,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col font-sans text-text-primary selection:bg-brand-500 selection:text-white">
       <div ref={orbRef} className="cursor-orb" aria-hidden="true" />
+      {!bootDone && <div className="boot-scan" aria-hidden="true" />}
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-[80] focus:rounded-lg focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white">
         Skip to content
       </a>
