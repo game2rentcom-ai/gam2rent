@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams, useNavigationType } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthProvider";
 import { RequireAdmin, RequireAuth } from "./auth/guards";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -35,10 +35,28 @@ const AdminApp = page(() => import("./admin/AdminApp"), "AdminApp");
 
 function PageFallback() {
   return (
-    <div className="flex flex-col gap-4" aria-busy="true" aria-label="Loading">
-      <div className="h-8 w-2/3 animate-pulse rounded-lg bg-bg-surface" />
-      <div className="h-64 animate-pulse rounded-2xl bg-bg-surface" />
-      <div className="h-24 animate-pulse rounded-2xl bg-bg-surface" />
+    <div className="flex flex-col gap-8" aria-busy="true" aria-label="Loading">
+      <div className="h-9 w-52 shimmer rounded-lg" />
+      <div className="no-scrollbar flex gap-3 overflow-x-hidden">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex w-36 shrink-0 flex-col gap-2 sm:w-44">
+            <div className="shimmer rounded-lg" style={{ aspectRatio: "2/3" }} />
+            <div className="h-4 shimmer rounded" />
+            <div className="h-3 w-3/4 shimmer rounded" />
+          </div>
+        ))}
+      </div>
+      <div className="h-56 shimmer rounded-2xl" />
+    </div>
+  );
+}
+
+function PageTransition({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  const type = useNavigationType();
+  return (
+    <div key={type === "POP" ? undefined : pathname} className="page-enter">
+      {children}
     </div>
   );
 }
@@ -85,8 +103,9 @@ export default function App() {
               <RouteMeta />
               <Layout>
                 <GuardedRoutes>
-                  <Suspense fallback={<PageFallback />}>
-                    <Routes>
+                  <PageTransition>
+                    <Suspense fallback={<PageFallback />}>
+                      <Routes>
                       <Route path="/" element={<HomePage />} />
                       <Route path="/browse" element={<BrowsePage />} />
                       <Route path="/games/:id" element={<GameDetailPage />} />
@@ -107,8 +126,9 @@ export default function App() {
                       <Route path="/requests" element={<RequestsPage />} />
                       <Route path="/admin/*" element={<RequireAdmin><AdminApp /></RequireAdmin>} />
                       <Route path="*" element={<NotFoundPage />} />
-                    </Routes>
-                  </Suspense>
+                      </Routes>
+                    </Suspense>
+                  </PageTransition>
                 </GuardedRoutes>
               </Layout>
             </BrowserRouter>

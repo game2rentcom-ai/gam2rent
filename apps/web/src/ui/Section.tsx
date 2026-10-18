@@ -22,7 +22,7 @@ export function Section({ title, eyebrow, moreTo, moreLabel = "See all", childre
         <div className="min-w-0">
           {eyebrow && <p className="text-xs font-bold uppercase tracking-wider text-accent-300">{eyebrow}</p>}
           <h2 className="flex items-center gap-2.5 font-display text-xl font-bold leading-tight text-text-primary sm:text-2xl">
-            <span aria-hidden="true" className="h-5 w-1.5 shrink-0 rounded-[1px] bg-linear-to-b from-brand-300 to-brand-600 shadow-glow-brand" />
+            <span aria-hidden="true" className="h-5 w-1.5 shrink-0 rounded-[1px] bg-linear-to-b from-brand-400 to-gold-500 shadow-glow-brand" />
             {title}
           </h2>
         </div>

@@ -90,17 +90,17 @@ export function HomePage() {
 
       {/* ── Hero ── */}
       <section className="hero hud flex flex-col items-center gap-5 px-4 py-9 text-center sm:px-10 sm:py-14">
-        <p className="badge badge-brand cut text-xs font-bold uppercase tracking-wider">Buy or rent digital games</p>
-        <h1 className="max-w-3xl font-display text-4xl font-bold leading-[1.05] text-text-primary sm:text-5xl lg:text-6xl">
+        <p className="badge badge-brand cut text-xs font-bold uppercase tracking-wider hero-enter" style={{ animationDelay: "0ms" }}>Buy or rent digital games</p>
+        <h1 className="max-w-3xl font-display text-4xl font-bold leading-[1.05] text-text-primary hero-enter sm:text-5xl lg:text-6xl" style={{ animationDelay: "90ms" }}>
           Find your next game. <span className="text-gradient">Play it today.</span>
         </h1>
-        <p className="max-w-xl text-base text-text-muted sm:text-lg">
+        <p className="max-w-xl text-base text-text-muted hero-enter sm:text-lg" style={{ animationDelay: "180ms" }}>
           PC and PlayStation — with a delivery time you can see up front, and a free replacement if anything goes wrong.
         </p>
-        <div className="w-full max-w-xl text-left">
+        <div className="w-full max-w-xl text-left hero-enter" style={{ animationDelay: "270ms" }}>
           <SearchPanel query={query} onQuery={setQuery} onDone={() => setQuery("")} dropdown placeholder={searchPlaceholder(setting, games.length)} />
         </div>
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap justify-center gap-2 hero-enter" style={{ animationDelay: "360ms" }}>
           {PLATFORMS.map((p) => (
             <Link key={p} to={`/browse?platform=${p}`} className="chip cut">
               <PlatformGlyph platform={p} className={`h-4 w-4 ${PLATFORM_TEXT[p]}`} />
@@ -121,7 +121,7 @@ export function HomePage() {
               const listed = listedGames.find((l) => l.id === g.id);
               return (
                 <Link key={g.id} to={`/games/${g.id}`} className="group relative w-[82vw] max-w-md shrink-0 snap-start rounded-lg sm:w-96">
-                  <GameCover game={g} slot="hero" priority={i === 0} sizes="(min-width: 640px) 384px, 82vw" className="frame w-full">
+                  <GameCover game={g} slot="hero" priority={i === 0} sizes="(min-width: 640px) 384px, 82vw" className="frame game-cover-hover w-full">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" aria-hidden="true" />
                     <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 pl-5">
                       <div className="min-w-0">

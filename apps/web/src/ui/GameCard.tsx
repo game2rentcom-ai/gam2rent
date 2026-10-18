@@ -29,13 +29,13 @@ export function GameCard({ game, actions, priority = false, className = "" }: Pr
   return (
     <article className={`group relative flex min-w-0 flex-col gap-2 ${className}`}>
       <Link to={`/games/${game.id}`} className="flex flex-col gap-2.5 rounded-lg focus-visible:outline-offset-4">
-        <GameCover game={game} slot="card" priority={priority} className="frame transition-[transform,filter] duration-300 group-hover:-translate-y-1 group-hover:drop-shadow-[0_8px_20px_rgba(0,0,0,0.6)]">
+        <GameCover game={game} slot="card" priority={priority} className="frame game-cover-hover">
           {unavailable && (
             <span className="absolute inset-x-0 bottom-0 bg-black/75 py-1.5 text-center text-xs font-semibold text-text-muted">Currently unavailable</span>
           )}
         </GameCover>
         <div className="min-w-0 px-0.5">
-          <h3 className="line-clamp-2 min-h-10 font-display text-sm font-bold leading-5 text-text-primary transition-colors duration-200 group-hover:text-brand-100">{game.title}</h3>
+          <h3 className="game-card-title line-clamp-2 min-h-10 font-display text-sm font-bold leading-5 text-text-primary">{game.title}</h3>
           <p className="mt-0.5 truncate text-xs font-semibold text-text-muted"><PlatformLine platforms={game.platforms} /></p>
           <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
             {listed && !unavailable ? (

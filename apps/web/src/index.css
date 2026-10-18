@@ -125,11 +125,15 @@
     background: linear-gradient(180deg, var(--color-bg-surface-raised), var(--color-bg-surface) 70%);
   }
   .panel-link {
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.22s, box-shadow 0.22s, transform 0.22s;
   }
   .panel-link:hover {
-    border-color: color-mix(in srgb, var(--color-brand-400) 65%, var(--color-border-subtle));
-    box-shadow: var(--shadow-glow-brand);
+    border-color: color-mix(in srgb, var(--color-brand-400) 70%, var(--color-border-subtle));
+    box-shadow: var(--shadow-glow-brand), 0 8px 32px -8px rgba(0,0,0,0.5);
+    transform: translateY(-1px);
+  }
+  .panel-link:active {
+    transform: translateY(0);
   }
 
   /* HUD corner brackets on a panel — for the few panels that should feel like a targeting frame. */
@@ -231,10 +235,15 @@
   .btn-secondary,
   .btn-ghost,
   .btn-success {
-    transition: filter 0.2s, color 0.2s;
+    transition: filter 0.2s, color 0.2s, transform 0.15s;
   }
   .btn-primary:hover {
-    filter: drop-shadow(0 0 12px color-mix(in srgb, var(--color-brand-500) 70%, transparent));
+    filter: drop-shadow(0 0 14px color-mix(in srgb, var(--color-brand-500) 75%, transparent));
+  }
+  .btn-primary:active,
+  .btn-secondary:active,
+  .btn-success:active {
+    transform: scale(0.97);
   }
   .btn-secondary:hover {
     --cut-edge: var(--color-brand-400);
@@ -246,7 +255,7 @@
     color: var(--color-text-primary);
   }
   .btn-success:hover {
-    filter: drop-shadow(0 0 12px color-mix(in srgb, var(--color-trust-600) 55%, transparent));
+    filter: drop-shadow(0 0 14px color-mix(in srgb, var(--color-trust-600) 60%, transparent));
   }
 
   /* A filter or option pill; on when aria-pressed (or .chip-on). Also used for links that look like one. */
@@ -498,6 +507,67 @@
     line-height: 1;
     color: var(--color-text-primary);
   }
+
+  /* Game cover hover: smooth lift with a branded depth glow */
+  .game-cover-hover {
+    transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform, filter;
+  }
+  .group:hover .game-cover-hover {
+    transform: translateY(-6px) scale(1.015);
+    filter:
+      drop-shadow(0 18px 38px rgba(0, 0, 0, 0.78))
+      drop-shadow(0 0 22px color-mix(in srgb, var(--color-brand-500) 28%, transparent));
+  }
+
+  /* Game card title glow on parent hover */
+  .game-card-title {
+    transition: color 0.2s, text-shadow 0.2s;
+  }
+  .group:hover .game-card-title {
+    color: var(--color-brand-300);
+    text-shadow: 0 0 20px color-mix(in srgb, var(--color-brand-400) 40%, transparent);
+  }
+
+  /* Image blur-to-sharp reveal */
+  .img-sharp {
+    will-change: filter, transform, opacity;
+  }
+  .img-loading {
+    filter: blur(16px) saturate(0.3);
+    transform: scale(1.05);
+    opacity: 0;
+    transition: filter 0.6s ease, transform 0.6s ease, opacity 0.25s ease;
+  }
+  .img-loaded {
+    filter: none;
+    transform: none;
+    opacity: 1;
+    transition: filter 0.65s ease, transform 0.65s ease, opacity 0.35s ease;
+  }
+
+  /* Hero element staggered entrance (reuses fade-up timing) */
+  .hero-enter {
+    animation: fade-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+/* Page transition: every route change fades the incoming page up */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: none; }
+}
+.page-enter {
+  animation: page-enter 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Hero badge pulse-glow */
+@keyframes badge-glow {
+  0%, 100% { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--color-brand-400) 30%, transparent)); }
+  50%       { filter: drop-shadow(0 0 16px color-mix(in srgb, var(--color-brand-400) 70%, transparent)); }
+}
+.badge-brand {
+  animation: badge-glow 3.2s ease-in-out infinite;
 }
 
 /* Scroll-reveal: add .reveal to a container; JS adds .is-revealed when it enters the viewport.
@@ -571,9 +641,11 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .reveal {
+  .reveal, .img-loading, .hero-enter, .page-enter {
     opacity: 1;
     transform: none;
-    transition: none;
+    transition: none !important;
+    animation: none !important;
+    filter: none !important;
   }
 }

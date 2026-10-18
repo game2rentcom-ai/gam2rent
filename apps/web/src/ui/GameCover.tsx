@@ -47,7 +47,7 @@ export function GameCover({ game, slot = "card", priority = false, sizes, classN
           decoding="async"
           onLoad={() => setLoaded(true)}
           onError={() => setStage(stage === "optimised" ? "original" : "failed")}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+          className={`absolute inset-0 h-full w-full object-cover img-sharp ${loaded ? "img-loaded" : "img-loading"}`}
           style={slot === "hero" ? { objectPosition: "center 25%" } : undefined}
         />
       )}

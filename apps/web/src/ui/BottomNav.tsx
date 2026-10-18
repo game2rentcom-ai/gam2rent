@@ -12,7 +12,7 @@ interface Props {
 
 // The item you are on gets a neon bar on the bar's top edge.
 const item = "relative flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-semibold transition-colors";
-const lit = "text-accent-300 before:absolute before:inset-x-5 before:top-0 before:h-0.5 before:rounded-b before:bg-accent-400 before:shadow-glow-cyan";
+const lit = "text-gold-400 before:absolute before:inset-x-5 before:top-0 before:h-0.5 before:rounded-b before:bg-gold-400 before:shadow-glow-gold";
 
 export function BottomNav({ onSearch, chatHref, extra = [] }: Props) {
   const linkClass = ({ isActive }: { isActive: boolean }) => `${item} ${isActive ? lit : "text-text-muted active:text-text-primary"}`;
@@ -28,7 +28,7 @@ export function BottomNav({ onSearch, chatHref, extra = [] }: Props) {
         <NavLink key={e.to} to={e.to} className={linkClass}>
           <span className="relative">
             {e.icon}
-            {e.badge ? <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-400 px-1 text-xs font-bold leading-none text-black">{e.badge}</span> : null}
+            {e.badge ? <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-xs font-bold leading-none text-white">{e.badge}</span> : null}
           </span>
           {e.label}
         </NavLink>

@@ -48,10 +48,14 @@ function Banner() {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { pathname, hash } = useLocation();
-  // The search sheet is "open for" the page it was opened on, so navigating anywhere closes it
-  // without an effect having to reset state.
   const [searchOpenAt, setSearchOpenAt] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   const chatHref = useStore().contactLink("Hi! I have a question about renting or buying games.");
   const { status: authStatus, isAdmin } = useAuth();
   const { ordering, cart } = useShop();
@@ -85,7 +89,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </a>
       <Banner />
 
-      <header className="sticky top-0 z-40 bg-bg-base/85 backdrop-blur-xl print:hidden">
+      <header className={`sticky top-0 z-40 backdrop-blur-xl transition-[background-color,box-shadow] duration-300 print:hidden ${scrolled ? "bg-bg-base/97 shadow-[0_1px_0_0_var(--color-border-strong),0_4px_28px_-4px_rgba(0,0,0,0.55)]" : "bg-bg-base/80"}`}>
         <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 md:h-16 lg:px-8">
           <Link to="/" aria-label="Game2Rent — home" className="-ml-1 flex min-h-11 shrink-0 items-center px-1 transition-opacity hover:opacity-80">
             <img src="/logo.png" alt="Game2Rent" className="h-10 w-auto" />
