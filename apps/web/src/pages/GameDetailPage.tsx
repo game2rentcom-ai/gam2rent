@@ -17,7 +17,7 @@ import { Notice } from "../ui/Form";
 import { etaLabel, formatPrice } from "../ui/format";
 import { GameCard } from "../ui/GameCard";
 import { GameCover } from "../ui/GameCover";
-import { IconBack, IconCheck, IconChevronDown, IconClock, IconShield } from "../ui/icons";
+import { IconBack, IconCheck, IconChevronDown, IconClock } from "../ui/icons";
 import { Rail, Section } from "../ui/Section";
 import { Stars } from "../ui/Stars";
 import { TrailerPlayer } from "../ui/TrailerPlayer";
@@ -127,7 +127,7 @@ export function GameDetailPage() {
   ] as [string, string][]).filter(([, v]) => v && v.toLowerCase() !== "unverified");
 
   return (
-    <div className="flex flex-col gap-6 md:gap-8">
+    <div className="flex flex-col gap-6 pb-24 md:gap-8 md:pb-0">
       <div className="-mb-2">
         <Link to="/browse" className="-ml-2 inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-text-muted hover:text-text-primary">
           <IconBack className="h-5 w-5" />
@@ -135,11 +135,31 @@ export function GameDetailPage() {
         </Link>
       </div>
 
+      {/* Mobile: title strip appears ABOVE the purchase panel so the user knows what they're buying */}
+      <div className="lg:hidden">
+        <div className="flex flex-wrap gap-1.5">
+          {game.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}
+          {game.genre && <Badge tone="rare">{game.genre}</Badge>}
+        </div>
+        <div className="mt-3 flex items-start justify-between gap-3">
+          <h1 className="font-display text-2xl font-bold leading-tight text-text-primary">{game.title}</h1>
+          <WishlistButton gameId={game.id} title={game.title} />
+        </div>
+        {rating !== null && (
+          <p className="mt-2 flex items-center gap-2 text-sm text-text-muted">
+            <Stars value={rating} className="h-[1.125rem] w-[1.125rem]" />
+            <span className="font-semibold text-text-primary">{rating.toFixed(1)}</span>
+            <span>({reviews.length} verified {reviews.length === 1 ? "review" : "reviews"})</span>
+          </p>
+        )}
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-10">
-        <div className="flex min-w-0 flex-col gap-6">
+        {/* On mobile: cover image appears BELOW the purchase panel (order-2). On desktop: left column as normal. */}
+        <div className="order-2 flex min-w-0 flex-col gap-6 lg:order-none">
           <GameCover game={game} slot="hero" priority className="frame w-full" />
 
-          <div>
+          <div className="hidden lg:block">
             <div className="flex flex-wrap gap-1.5">
               {game.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}
               {game.genre && <Badge tone="rare">{game.genre}</Badge>}
@@ -158,8 +178,8 @@ export function GameDetailPage() {
           </div>
         </div>
 
-        {/* Purchase panel: right after the title on a phone, sticky beside the content on desktop */}
-        <aside className="lg:sticky lg:top-24 lg:self-start" aria-label="Buy or rent">
+        {/* Purchase panel: first on mobile (order-1), sticky on desktop */}
+        <aside className="order-1 lg:order-none lg:sticky lg:top-24 lg:self-start" aria-label="Buy or rent">
           <div className="panel hud flex flex-col gap-4 p-4 sm:p-5">
             {modes.length > 1 && (
               <div>
@@ -271,7 +291,7 @@ export function GameDetailPage() {
               </div>
             )}
 
-            <div className="hidden md:block">
+            <div>
               {line ? (
                 <OrderButtons line={line} label={`${primary.label} · ${primary.price}`} />
               ) : (
@@ -282,13 +302,6 @@ export function GameDetailPage() {
             </div>
             {!line && !primary.href && !primary.disabled && <p className="text-xs text-text-muted">Contact details aren’t set up yet.</p>}
 
-            <div className="flex items-center gap-3 rounded-xl border border-trust-300 bg-trust-100 p-3 text-sm text-text-muted">
-              <span className="medal cut cut-hex h-10 w-10"><IconShield className="h-5 w-5" /></span>
-              <p>
-                <span className="font-semibold text-text-primary">Replacement guarantee.</span>{" "}
-                Something off after delivery? Contact us and we'll sort it out.
-              </p>
-            </div>
           </div>
         </aside>
       </div>
