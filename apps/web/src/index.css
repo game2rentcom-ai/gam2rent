@@ -490,7 +490,8 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    transition: background 0.12s ease;
+    opacity: 0;
+    transition: opacity 0.35s ease;
   }
 
   .text-gradient {
@@ -681,6 +682,37 @@
   animation: slide-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+/* Ambient cursor orb: position:fixed radial glow that drifts behind the mouse.
+   mix-blend-mode:screen adds light without covering text or UI. */
+.cursor-orb {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--color-brand-500) 7%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: screen;
+  will-change: transform;
+  transition: transform 0.65s cubic-bezier(0.2, 1, 0.2, 1);
+}
+
+/* Staggered card reveal: children cascade in when parent section enters viewport.
+   Apply class="stagger" + style={{"--i": index}} to each child. */
+@keyframes stagger-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.reveal.is-revealed .stagger {
+  animation: stagger-rise 0.45s calc(var(--i, 0) * 55ms) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
 /* Flowing animated gradient for .text-gradient */
 @keyframes gradient-flow {
   0%   { background-position: 0% center; }
@@ -702,7 +734,7 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .reveal, .img-loading, .hero-enter, .page-enter {
+  .reveal, .img-loading, .hero-enter, .page-enter, .stagger, .cursor-orb {
     opacity: 1;
     transform: none;
     transition: none !important;

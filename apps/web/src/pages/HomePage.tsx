@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/context";
 import { PlatformGlyph } from "../components/Badges";
@@ -78,6 +78,23 @@ export function HomePage() {
   const fresh = pick(NEW_IDS, findGame);
   const platformCounts = PLATFORMS.map((p) => ({ p, n: games.filter((g) => g.platforms.includes(p)).length })).filter((x) => x.n > 0);
 
+  // Hero cursor spotlight — direct DOM mutation, no React state.
+  const heroSpotRef = useRef<HTMLDivElement>(null);
+  const onHeroMove = (e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== "mouse") return;
+    const spot = heroSpotRef.current;
+    if (!spot) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width * 100).toFixed(1);
+    const y = ((e.clientY - r.top) / r.height * 100).toFixed(1);
+    spot.style.opacity = "1";
+    spot.style.background = `radial-gradient(circle 380px at ${x}% ${y}%, color-mix(in srgb, var(--color-brand-400) 11%, transparent) 0%, color-mix(in srgb, var(--color-gold-400) 4%, transparent) 55%, transparent 75%)`;
+  };
+  const onHeroLeave = () => {
+    const spot = heroSpotRef.current;
+    if (spot) { spot.style.opacity = "0"; }
+  };
+
 
   // Top reviews for social proof (up to 4, sorted by highest rating)
   const topReviews = useMemo(() => [...reviews].sort((a, b) => b.rating - a.rating).slice(0, 4), [reviews]);
@@ -88,8 +105,9 @@ export function HomePage() {
       <AnnouncementSlider className="-mb-8 sm:-mb-12" />
 
       {/* ── Hero ── */}
-      <section className="hero hud flex flex-col items-center gap-5 px-4 py-9 text-center sm:px-10 sm:py-14">
+      <section className="hero hud flex flex-col items-center gap-5 px-4 py-9 text-center sm:px-10 sm:py-14" onPointerMove={onHeroMove} onPointerLeave={onHeroLeave}>
         <div className="hero-grid" aria-hidden="true" />
+        <div ref={heroSpotRef} className="hero-spotlight" aria-hidden="true" />
         <p className="badge badge-brand cut text-xs font-bold uppercase tracking-wider hero-enter" style={{ animationDelay: "0ms" }}>Buy or rent digital games</p>
         <h1 className="max-w-3xl font-display text-4xl font-bold leading-[1.05] text-text-primary hero-enter sm:text-5xl lg:text-6xl" style={{ animationDelay: "90ms" }}>
           Find your next game. <span className="text-gradient">Play it today.</span>
@@ -149,7 +167,7 @@ export function HomePage() {
       {availableNow.length > 0 && (
         <Section title="Available now" eyebrow="Ready to deliver" moreTo="/browse?forsale=1">
           <Rail label="Games available now">
-            {availableNow.slice(0, 10).map((g) => <div key={g.id} className="w-36 shrink-0 snap-start sm:w-44"><GameCard game={g} /></div>)}
+            {availableNow.slice(0, 10).map((g, i) => <div key={g.id} className="stagger w-36 shrink-0 snap-start sm:w-44" style={{ "--i": i } as React.CSSProperties}><GameCard game={g} /></div>)}
           </Rail>
         </Section>
       )}
@@ -162,7 +180,7 @@ export function HomePage() {
       {favourites.length > 0 && (
         <Section title="Fan favourites" moreTo="/browse">
           <Rail label="Fan favourite games">
-            {favourites.map((g) => <div key={g.id} className="w-36 shrink-0 snap-start sm:w-44"><GameCard game={g} /></div>)}
+            {favourites.map((g, i) => <div key={g.id} className="stagger w-36 shrink-0 snap-start sm:w-44" style={{ "--i": i } as React.CSSProperties}><GameCard game={g} /></div>)}
           </Rail>
         </Section>
       )}
@@ -171,7 +189,7 @@ export function HomePage() {
       {fresh.length > 0 && (
         <Section title="New & upcoming" moreTo="/browse">
           <Rail label="New and upcoming games">
-            {fresh.map((g) => <div key={g.id} className="w-36 shrink-0 snap-start sm:w-44"><GameCard game={g} /></div>)}
+            {fresh.map((g, i) => <div key={g.id} className="stagger w-36 shrink-0 snap-start sm:w-44" style={{ "--i": i } as React.CSSProperties}><GameCard game={g} /></div>)}
           </Rail>
         </Section>
       )}

@@ -56,6 +56,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Ambient cursor orb: a position:fixed radial glow that drifts behind the cursor.
+  // Runs entirely outside React state for zero-re-render perf.
+  const orbRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let raf = 0;
+    const handler = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        if (orbRef.current) {
+          orbRef.current.style.transform = `translate(${e.clientX - 300}px, ${e.clientY - 300}px)`;
+        }
+      });
+    };
+    window.addEventListener("pointermove", handler);
+    return () => { window.removeEventListener("pointermove", handler); cancelAnimationFrame(raf); };
+  }, []);
   const chatHref = useStore().contactLink("Hi! I have a question about renting or buying games.");
   const { status: authStatus, isAdmin } = useAuth();
   const { ordering, cart } = useShop();
@@ -84,6 +102,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col font-sans text-text-primary selection:bg-brand-500 selection:text-white">
+      <div ref={orbRef} className="cursor-orb" aria-hidden="true" />
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-[80] focus:rounded-lg focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white">
         Skip to content
       </a>

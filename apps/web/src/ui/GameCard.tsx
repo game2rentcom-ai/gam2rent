@@ -6,6 +6,7 @@ import { averageRating } from "../types/listing";
 import { GameCover } from "./GameCover";
 import { IconStar } from "./icons";
 import { formatPrice } from "./format";
+import { useTilt } from "./useTilt";
 
 // The one game card, used in every grid and rail so games look the same everywhere. Layout is a
 // picture, then text below it — nothing is drawn over the picture that could collide on a small card.
@@ -25,9 +26,10 @@ export function GameCard({ game, actions, priority = false, className = "" }: Pr
   const rating = averageRating(reviewsFor(game.id));
   const cheapestRent = offers.length ? Math.min(...offers.map((o) => o.price)) : undefined;
   const unavailable = listed !== undefined && !listed.listing.isAvailable;
+  const { ref, onPointerMove, onPointerLeave } = useTilt<HTMLElement>();
 
   return (
-    <article className={`group relative flex min-w-0 flex-col gap-2 ${className}`}>
+    <article ref={ref} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave} className={`group relative flex min-w-0 flex-col gap-2 ${className}`}>
       <Link to={`/games/${game.id}`} className="flex flex-col gap-2.5 rounded-lg focus-visible:outline-offset-4">
         <GameCover game={game} slot="card" priority={priority} className="frame game-cover-hover">
           {unavailable && (
