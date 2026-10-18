@@ -87,9 +87,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <header className="sticky top-0 z-40 bg-bg-base/85 backdrop-blur-xl print:hidden">
         <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 md:h-16 lg:px-8">
-          <Link to="/" aria-label="Game2Rent — home" className="-ml-1 flex min-h-11 shrink-0 items-center px-1 font-display text-2xl font-bold tracking-tight transition-[filter] hover:drop-shadow-[0_0_12px_color-mix(in_srgb,var(--color-brand-400)_60%,transparent)]">
-            <span className="text-gradient">Game</span>
-            <span className="text-white">2Rent</span>
+          <Link to="/" aria-label="Game2Rent — home" className="-ml-1 flex min-h-11 shrink-0 items-center px-1 transition-opacity hover:opacity-80">
+            <img src="/logo.png" alt="Game2Rent" className="h-10 w-auto" />
           </Link>
 
           <nav aria-label="Primary" className="ml-4 hidden items-center md:flex">
