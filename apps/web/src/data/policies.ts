@@ -254,7 +254,7 @@ const refund: Policy = {
         "Because digital access is an intangible product delivered instantly to your order page, we do not offer refunds for a change of mind once credentials have been delivered. However, every purchase is backed by our replacement guarantee:",
       ],
       bullets: [
-        `Purchases: covered for ${P.replacementDays} days from the date and time of delivery.`,
+        "Purchases: covered from the date and time of delivery.",
         "Rentals: covered for the full duration of the rental period.",
       ],
       closing: [

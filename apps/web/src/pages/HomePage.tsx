@@ -6,7 +6,6 @@ import { Suggestions } from "../community/Suggestions";
 import { useRequestLink } from "../community/request";
 import { useShop } from "../shop/context";
 import { PLATFORM_LABEL, type CatalogGame, type Platform } from "../data/catalogTypes";
-import { PROMISE } from "../data/policies";
 import { searchPlaceholder } from "../lib/display";
 import { useStore } from "../data/store";
 import { Button } from "../ui/Button";
@@ -43,9 +42,9 @@ const GENRE_TILES = [
 const FAQS = [
   { q: "How does it work?", a: "Pick a game and choose Buy or Rent, then confirm with us. We send you the login details for an account that has the game (or a scan-to-play code, depending on the game). You sign in on your console or PC, download the game from the official store, and play." },
   { q: "Is this an account or a code?", a: "You get access to an account that has the game — or a QR code that signs you in — not a redeemable key. Each game page says exactly which, before you pay." },
-  { q: "What if something goes wrong?", a: `Accounts shared this way can occasionally be restricted. If anything goes wrong, we replace it, free — for ${PROMISE.replacementDays} days after delivery on a purchase, and for the whole period on a rental. Keep the login details private.` },
+  { q: "What if something goes wrong?", a: "Accounts shared this way can occasionally be restricted. If anything goes wrong after delivery, contact us and we'll sort it out. Keep the login details private." },
   { q: "How long does delivery take?", a: "Each game page shows the delivery time for that game. We deliver on demand — the page tells you the usual time before you commit." },
-  { q: "Renting or buying — what's the difference?", a: `Renting gives you access for a set time, then it ends. Buying gives you access with no end date, covered by our replacement guarantee for ${PROMISE.replacementDays} days. The price for each is on the game's page.` },
+  { q: "Renting or buying — what's the difference?", a: "Renting gives you access for a set time, then it ends. Buying gives you access with no end date. The price for each is on the game's page." },
   { q: "Can I extend a rental?", a: "Message us before your rental ends and we'll tell you the options." },
   { q: "Do I need a PlayStation account?", a: "For PlayStation games you sign in with the account we provide — you don't need your own PSN account for the game itself. For PC games (Steam, Epic, etc.) we provide the account credentials directly." },
   { q: "Is it safe to share my payment details?", a: "Your payment is handled entirely by Razorpay, a PCI-DSS certified payment processor. We never see or store your card, UPI, or bank details." },
@@ -95,7 +94,7 @@ export function HomePage() {
           Find your next game. <span className="text-gradient">Play it today.</span>
         </h1>
         <p className="max-w-xl text-base text-text-muted hero-enter sm:text-lg" style={{ animationDelay: "180ms" }}>
-          PC and PlayStation — with a delivery time you can see up front, and a free replacement if anything goes wrong.
+          PC and PlayStation — with a delivery time you can see up front, and support if anything goes wrong.
         </p>
         <div className="w-full max-w-xl text-left hero-enter" style={{ animationDelay: "270ms" }}>
           <SearchPanel query={query} onQuery={setQuery} onDone={() => setQuery("")} dropdown placeholder={searchPlaceholder(setting, games.length)} />

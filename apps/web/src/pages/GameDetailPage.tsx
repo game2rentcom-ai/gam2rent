@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import { GAME_METADATA } from "../data/gameMeta";
 import { PLATFORM_LABEL, rentalPlatformsOf, type CatalogGame, type Platform } from "../data/catalogTypes";
 import { getGameTrailer } from "../data/gameTrailers";
-import { PROMISE } from "../data/policies";
 import { useStore } from "../data/store";
 import { gameDescription, usePageMeta } from "../lib/pageMeta";
 import { GameComments } from "../community/GameComments";
@@ -227,10 +226,6 @@ export function GameDetailPage() {
                         <IconCheck className="h-4 w-4 shrink-0" />
                         Official {PLATFORM_LABEL[platform]} download
                       </li>
-                      <li className="flex items-center gap-2">
-                        <IconCheck className="h-4 w-4 shrink-0" />
-                        Free replacement for {PROMISE.replacementDays} days
-                      </li>
                     </ul>
                   </>
                 ) : pricesPending ? (
@@ -291,7 +286,7 @@ export function GameDetailPage() {
               <span className="medal cut cut-hex h-10 w-10"><IconShield className="h-5 w-5" /></span>
               <p>
                 <span className="font-semibold text-text-primary">Replacement guarantee.</span>{" "}
-                {option === "rent" ? "Something off during your rental? We replace it, free." : `Something off in the ${PROMISE.replacementDays} days after delivery? We replace it, free.`}
+                Something off after delivery? Contact us and we'll sort it out.
               </p>
             </div>
           </div>

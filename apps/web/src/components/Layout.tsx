@@ -148,7 +148,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <span className="text-gradient">Game</span>
               <span className="text-white">2Rent</span>
             </Link>
-            <p className="mt-2 max-w-xs text-sm text-text-muted">Buy or rent digital games for PC and PlayStation. Delivered fast, backed by our free replacement guarantee.</p>
+            <p className="mt-2 max-w-xs text-sm text-text-muted">Buy or rent digital games for PC and PlayStation. Delivered fast, with support if anything goes wrong.</p>
           </div>
           <nav aria-label="Site links">
             <h2 className="font-display text-sm font-bold text-text-primary">Explore</h2>
