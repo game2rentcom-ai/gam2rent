@@ -243,6 +243,9 @@ export function GameDetailPage() {
               </div>
             ) : (
               <div className="flex flex-col gap-3">
+                {offers.length > 0 && platform === "pc" && (
+                  <p className="text-sm font-semibold text-text-primary">Steam Online</p>
+                )}
                 {offers.length > 0 ? (
                   <>
                     <div role="radiogroup" aria-label="Rental length" className="grid grid-cols-2 gap-2">
