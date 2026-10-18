@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { CatalogGame } from "../data/catalogTypes";
-import { GenreIcon } from "../components/GenreIcon";
 import { artFor, artGradient, slotSpec, srcSetFor, type Slot } from "../lib/images";
 
 // A game's picture, built for phones: a fixed aspect ratio (no layout jump while loading), the
@@ -31,8 +30,9 @@ export function GameCover({ game, slot = "card", priority = false, sizes, classN
   return (
     <div className={`relative overflow-hidden ${className}`} style={{ aspectRatio: spec.ratio, background: artGradient(game.id) }}>
       {!loaded && (
-        <div className="absolute inset-0 flex items-center justify-center text-white/25" aria-hidden="true">
-          <GenreIcon genre={game.genre} className={slot === "hero" ? "h-16 w-16" : "h-12 w-12"} />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-3 text-center" aria-hidden="true">
+          <img src="/logo.png" alt="" className={`object-contain opacity-60 ${slot === "hero" ? "h-10 w-auto" : "h-7 w-auto"}`} />
+          <span className={`font-display font-bold leading-tight text-white/70 ${slot === "hero" ? "text-base" : "text-[0.6rem]"} line-clamp-3`}>{game.title}</span>
         </div>
       )}
       {showImage && image && (
