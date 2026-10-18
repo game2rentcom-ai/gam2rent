@@ -56,6 +56,7 @@ export function AdminOrderPage() {
         {items.map((item) => <li key={item.id}><ItemCard item={item} deliverable={paid} onChanged={reload} /></li>)}
       </ul>
 
+      <AdminNotes order={order} onChanged={reload} />
       <OrderActions order={order} onChanged={reload} />
     </div>
   );
@@ -136,6 +137,50 @@ function DeliverForm({ item, replacing, onDone }: { item: OrderItem; replacing: 
       <p className="text-xs text-text-muted">Stored encrypted. Only the customer and you can read it, and every time you read it is written to the history.</p>
       <div><Button type="submit" disabled={busy}>{busy ? "Sending…" : replacing ? "Replace details" : "Deliver"}</Button></div>
     </form>
+  );
+}
+
+function AdminNotes({ order, onChanged }: { order: Order; onChanged: () => void }) {
+  const { client } = useAuth();
+  const { busy, message, run } = useAction();
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(order.admin_notes ?? "");
+
+  const save = async () => {
+    const saved = await run(async () => {
+      const c = await client();
+      const { error } = await c.from("orders").update({ admin_notes: text.trim() || null }).eq("id", order.id);
+      if (error) throw new Error(error.message);
+    }, "Notes saved.");
+    if (saved) { setEditing(false); onChanged(); }
+  };
+
+  return (
+    <Card className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-display text-lg font-bold text-text-primary">Admin notes</h2>
+        {!editing && <Button variant="secondary" onClick={() => { setText(order.admin_notes ?? ""); setEditing(true); }}>Edit</Button>}
+      </div>
+      {message && <Notice tone={message.tone}>{message.text}</Notice>}
+      {editing ? (
+        <>
+          <TextAreaField
+            label=""
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Internal notes — only visible to admins."
+            rows={4}
+            autoFocus
+          />
+          <div className="flex gap-2">
+            <Button disabled={busy} onClick={() => void save()}>{busy ? "Saving…" : "Save"}</Button>
+            <Button variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>
+          </div>
+        </>
+      ) : (
+        <p className="whitespace-pre-wrap text-sm text-text-muted">{order.admin_notes?.trim() || "No notes yet."}</p>
+      )}
+    </Card>
   );
 }
 

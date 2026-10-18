@@ -24,6 +24,7 @@ export interface Order {
   created_at: string;
   paid_at: string | null;
   delivered_at: string | null;
+  admin_notes: string | null;
 }
 
 export interface OrderItem {
