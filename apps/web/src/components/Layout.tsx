@@ -76,7 +76,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [pathname, hash]);
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
-    `relative flex min-h-11 items-center px-3 font-display text-sm font-bold tracking-wide transition-colors ${isActive ? "text-text-primary after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:bg-accent-400 after:shadow-glow-cyan" : "text-text-muted hover:text-text-primary"}`;
+    `relative flex min-h-11 items-center px-3 font-display text-sm font-bold tracking-wide transition-colors ${isActive ? "text-text-primary after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:bg-gold-400 after:shadow-glow-gold" : "text-text-muted hover:text-text-primary"}`;
 
   return (
     <div className="flex min-h-dvh flex-col font-sans text-text-primary selection:bg-brand-500 selection:text-white">

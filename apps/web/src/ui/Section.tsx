@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { IconChevron } from "./icons";
+import { useReveal } from "./useReveal";
 
 // A page section: consistent vertical rhythm, a heading, and an optional "see all" link.
 interface Props {
@@ -14,8 +15,9 @@ interface Props {
 }
 
 export function Section({ title, eyebrow, moreTo, moreLabel = "See all", children, className = "", id }: Props) {
+  const ref = useReveal<HTMLElement>();
   return (
-    <section id={id} className={`flex flex-col gap-4 ${className}`}>
+    <section ref={ref} id={id} className={`reveal flex flex-col gap-4 ${className}`}>
       <div className="flex items-end gap-3">
         <div className="min-w-0">
           {eyebrow && <p className="text-xs font-bold uppercase tracking-wider text-accent-300">{eyebrow}</p>}

@@ -9,26 +9,30 @@
 
 @theme {
   /* Surfaces — a near-black blue, lifted in steps */
-  --color-bg-base: #070a11;
-  --color-bg-surface: #0e131e;
-  --color-bg-surface-raised: #151b2b;
-  --color-border-subtle: #232b41;
-  --color-border-strong: #36425f;
-  /* Edge of inputs and checkboxes: 3:1 against the surfaces they sit on */
-  --color-field-edge: #5f6c91;
+  --color-bg-base: #060910;
+  --color-bg-surface: #0c1120;
+  --color-bg-surface-raised: #131a2e;
+  --color-border-subtle: #1e2a44;
+  --color-border-strong: #2e3f60;
+  --color-field-edge: #4a5a80;
 
   --color-text-primary: #eef1fa;
-  --color-text-muted: #9ba6bf;
+  --color-text-muted: #8898bb;
 
-  /* Brand — electric violet. 400 is for text on dark; 500 and 600 are fills that carry white text. */
-  --color-brand-100: #e6dbff;
-  --color-brand-300: #bfa2ff;
-  --color-brand-400: #a884ff;
-  --color-brand-500: #7b3ff5;
-  --color-brand-600: #6a2df0;
-  --color-brand-700: #5518c7;
+  /* Brand — electric blue. Matches logo neon blue. 400 = text on dark; 500/600 = fills with white text. */
+  --color-brand-100: #dff8ff;
+  --color-brand-300: #67e0ff;
+  --color-brand-400: #22ceff;
+  --color-brand-500: #0ab2d8;
+  --color-brand-600: #0890b8;
+  --color-brand-700: #066e96;
 
-  /* Accent — neon cyan for focus, active states and HUD lines */
+  /* Gold — logo's neon yellow triangle / "2". Active states, highlights, price accents. */
+  --color-gold-300: #fde98a;
+  --color-gold-400: #facc15;
+  --color-gold-500: #d49c0a;
+
+  /* Accent — neon cyan for focus rings and HUD lines */
   --color-accent-300: #67e8f9;
   --color-accent-400: #22d3ee;
 
@@ -52,7 +56,7 @@
   --shadow-glow-brand: 0 0 26px -4px color-mix(in srgb, var(--color-brand-500) 70%, transparent);
   --shadow-glow-cyan:  0 0 18px -4px color-mix(in srgb, var(--color-accent-400) 60%, transparent);
   --shadow-glow-trust: 0 0 22px -4px color-mix(in srgb, var(--color-trust-600) 55%, transparent);
-  --shadow-glow-gold:  0 0 18px -4px color-mix(in srgb, var(--color-rating-gold) 50%, transparent);
+  --shadow-glow-gold:  0 0 20px -4px color-mix(in srgb, var(--color-gold-400) 60%, transparent);
 }
 
 @layer base {
@@ -64,8 +68,8 @@
     margin: 0;
     background-color: var(--color-bg-base);
     background-image:
-      radial-gradient(60rem 26rem at 12% -6rem, color-mix(in srgb, var(--color-brand-500) 22%, transparent), transparent 70%),
-      radial-gradient(44rem 20rem at 100% -4rem, color-mix(in srgb, var(--color-accent-400) 10%, transparent), transparent 70%);
+      radial-gradient(70rem 30rem at 10% -8rem, color-mix(in srgb, var(--color-brand-600) 22%, transparent), transparent 70%),
+      radial-gradient(50rem 24rem at 95% -5rem, color-mix(in srgb, var(--color-gold-400) 8%, transparent), transparent 70%);
     background-repeat: no-repeat;
     color: var(--color-text-primary);
     font-family: var(--font-sans);
@@ -140,21 +144,20 @@
     width: calc(var(--hud-r) + 0.875rem);
     height: calc(var(--hud-r) + 0.875rem);
     pointer-events: none;
-    border: 0 solid var(--color-brand-400);
-    opacity: 0.85;
+    opacity: 0.9;
   }
   .hud::before {
     top: -1px;
     left: -1px;
-    border-top-width: 2px;
-    border-left-width: 2px;
+    border-top: 2px solid var(--color-brand-400);
+    border-left: 2px solid var(--color-brand-400);
     border-top-left-radius: var(--hud-r);
   }
   .hud::after {
     right: -1px;
     bottom: -1px;
-    border-right-width: 2px;
-    border-bottom-width: 2px;
+    border-right: 2px solid var(--color-gold-400);
+    border-bottom: 2px solid var(--color-gold-400);
     border-bottom-right-radius: var(--hud-r);
   }
 
@@ -360,14 +363,14 @@
 
   /* A price on a tag */
   .price-tag {
-    --cut-edge: color-mix(in srgb, var(--color-brand-400) 70%, transparent);
-    --cut-fill: color-mix(in srgb, var(--color-brand-500) 20%, var(--color-bg-base));
+    --cut-edge: color-mix(in srgb, var(--color-gold-400) 70%, transparent);
+    --cut-fill: color-mix(in srgb, var(--color-gold-500) 18%, var(--color-bg-base));
     display: inline-flex;
     align-items: center;
     padding: 0.125rem 0.625rem 0.125rem 1rem;
     font-family: var(--font-display);
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: var(--color-gold-300);
   }
 
   /* The picture frame: two cut corners, a hairline edge that lights up cyan on hover. */
@@ -451,17 +454,18 @@
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--hud-r);
     background:
-      linear-gradient(90deg, transparent, var(--color-brand-400), var(--color-accent-400), transparent) top center / 60% 1px no-repeat,
-      radial-gradient(90% 110% at 50% -25%, color-mix(in srgb, var(--color-brand-500) 42%, transparent), transparent 62%),
-      radial-gradient(55% 70% at 100% 100%, color-mix(in srgb, var(--color-accent-400) 16%, transparent), transparent 60%),
-      linear-gradient(180deg, #0e1226 5%, transparent 85%),
-      linear-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px) 0 0 / 34px 34px,
-      linear-gradient(90deg, rgb(255 255 255 / 0.06) 1px, transparent 1px) 0 0 / 34px 34px,
-      linear-gradient(180deg, #0e1226, var(--color-bg-base));
+      linear-gradient(90deg, transparent, var(--color-brand-400), var(--color-gold-400), transparent) top center / 60% 1px no-repeat,
+      radial-gradient(90% 110% at 50% -25%, color-mix(in srgb, var(--color-brand-600) 45%, transparent), transparent 62%),
+      radial-gradient(55% 70% at 100% 100%, color-mix(in srgb, var(--color-gold-400) 12%, transparent), transparent 60%),
+      radial-gradient(40% 50% at 0% 100%, color-mix(in srgb, var(--color-brand-500) 10%, transparent), transparent 60%),
+      linear-gradient(180deg, #090e1e 5%, transparent 85%),
+      linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px) 0 0 / 34px 34px,
+      linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px) 0 0 / 34px 34px,
+      linear-gradient(180deg, #090e1e, var(--color-bg-base));
   }
 
   .text-gradient {
-    background: linear-gradient(100deg, var(--color-brand-300), var(--color-accent-300));
+    background: linear-gradient(105deg, var(--color-brand-300) 30%, var(--color-gold-400) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -496,6 +500,18 @@
   }
 }
 
+/* Scroll-reveal: add .reveal to a container; JS adds .is-revealed when it enters the viewport.
+   Skipped entirely when motion is reduced (see below). */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.reveal.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.45; transform: scale(0.8); }
@@ -507,6 +523,21 @@
 }
 .fade-up {
   animation: fade-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Skeleton shimmer for loading states */
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg,
+    var(--color-bg-surface) 25%,
+    color-mix(in srgb, var(--color-brand-600) 20%, var(--color-bg-surface-raised)) 50%,
+    var(--color-bg-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
 }
 
 /* The step the order is on: its glow breathes. */
@@ -539,5 +570,10 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
