@@ -89,6 +89,7 @@ export function HomePage() {
 
       {/* ── Hero ── */}
       <section className="hero hud flex flex-col items-center gap-5 px-4 py-9 text-center sm:px-10 sm:py-14">
+        <div className="hero-grid" aria-hidden="true" />
         <p className="badge badge-brand cut text-xs font-bold uppercase tracking-wider hero-enter" style={{ animationDelay: "0ms" }}>Buy or rent digital games</p>
         <h1 className="max-w-3xl font-display text-4xl font-bold leading-[1.05] text-text-primary hero-enter sm:text-5xl lg:text-6xl" style={{ animationDelay: "90ms" }}>
           Find your next game. <span className="text-gradient">Play it today.</span>
@@ -255,6 +256,7 @@ export function HomePage() {
       {/* ── Referral programme CTA (shown to signed-in users when ordering is on) ── */}
       {ordering && signedIn && (
         <section className="hero hud flex flex-col items-center gap-3 px-6 py-10 text-center">
+          <div className="hero-grid" aria-hidden="true" />
           <span className="medal cut cut-hex [--medal:var(--color-brand-400)]"><IconGift className="h-7 w-7" /></span>
           <h2 className="font-display text-2xl font-bold text-text-primary">Refer a friend, earn rewards</h2>
           <p className="max-w-md text-sm text-text-muted">
@@ -267,6 +269,7 @@ export function HomePage() {
       {/* ── Referral CTA for non-signed-in users ── */}
       {ordering && !signedIn && (
         <section className="hero hud flex flex-col items-center gap-3 px-6 py-10 text-center">
+          <div className="hero-grid" aria-hidden="true" />
           <span className="medal cut cut-hex [--medal:var(--color-brand-400)]"><IconGift className="h-7 w-7" /></span>
           <h2 className="font-display text-2xl font-bold text-text-primary">Refer friends, earn free games</h2>
           <p className="max-w-md text-sm text-text-muted">
@@ -293,6 +296,7 @@ export function HomePage() {
 
       {/* ── Can't find a game CTA ── */}
       <section className="hero hud flex flex-col items-center gap-3 px-6 py-10 text-center">
+        <div className="hero-grid" aria-hidden="true" />
         <h2 className="font-display text-2xl font-bold text-text-primary">Can't find a game?</h2>
         <p className="max-w-md text-sm text-text-muted">Tell us what you want to play and we'll try to get it.</p>
         <div className="flex flex-wrap justify-center gap-2 pt-1">
