@@ -18,28 +18,55 @@ function Banner() {
   const { source, setting } = useStore();
   const [now] = useState(() => Date.now());
   const offer = activeOffer(setting, now);
-  const message = offer ? `${offer.title} — until ${offer.until}` : setting("announcement");
+  const announcement = setting("announcement");
+  const dismissKey = offer ? `offer-${offer.until}` : (announcement ?? "");
   const [dismissed, setDismissed] = useState(() => {
-    try { return sessionStorage.getItem("banner-dismissed") === (message ?? ""); } catch { return false; }
+    try { return sessionStorage.getItem("banner-dismissed") === dismissKey; } catch { return false; }
   });
   const demo = source === "demo" && !import.meta.env.DEV;
+  const dismiss = () => {
+    try { sessionStorage.setItem("banner-dismissed", dismissKey); } catch { /* private mode */ }
+    setDismissed(true);
+  };
 
   if (demo) {
     return <div className="bg-amber-400 px-4 py-2 text-center text-xs font-semibold text-black">Demo preview — sample prices and reviews shown.</div>;
   }
-  if (!message || dismissed) return null;
+  if (dismissed) return null;
+
+  // Prominent offer banner for BOGO / launch offers
+  if (offer) {
+    return (
+      <div className="relative overflow-hidden bg-linear-to-r from-[#0d2a1f] via-[#0a3d2e] to-[#0d2a1f] print:hidden">
+        {/* animated shimmer line */}
+        <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-trust-400 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-trust-600/50 to-transparent" />
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <span className="shrink-0 text-2xl" aria-hidden="true">🎁</span>
+          <div className="min-w-0 flex-1">
+            <p className="font-display text-sm font-bold text-trust-300 sm:text-base">{offer.title}</p>
+            <p className="text-xs text-trust-500 sm:text-sm">Limited time — ends {offer.until}</p>
+          </div>
+          <Link
+            to="/browse"
+            className="shrink-0 rounded-lg bg-trust-500 px-3 py-1.5 font-display text-xs font-bold text-black hover:bg-trust-400 sm:px-4 sm:text-sm"
+          >
+            Shop now
+          </Link>
+          <button type="button" aria-label="Dismiss" onClick={dismiss} className="shrink-0 flex h-11 w-8 items-center justify-center text-trust-600 hover:text-trust-300">
+            <IconClose className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Plain announcement: thin strip
+  if (!announcement) return null;
   return (
     <div className="relative bg-linear-to-r from-brand-700 via-brand-600 to-brand-700 px-12 py-2 text-center text-sm font-semibold text-white print:hidden">
-      {message}
-      <button
-        type="button"
-        aria-label="Dismiss announcement"
-        onClick={() => {
-          try { sessionStorage.setItem("banner-dismissed", message); } catch { /* private mode: just hide it for now */ }
-          setDismissed(true);
-        }}
-        className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-white/80 hover:text-white"
-      >
+      {announcement}
+      <button type="button" aria-label="Dismiss announcement" onClick={dismiss} className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-white/80 hover:text-white">
         <IconClose className="h-5 w-5" />
       </button>
     </div>
