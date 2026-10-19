@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/context";
 import { PlatformGlyph } from "../components/Badges";
@@ -57,6 +57,52 @@ function pick(ids: string[], find: (id: string) => CatalogGame | undefined): Cat
   return ids.map(find).filter((g): g is CatalogGame => Boolean(g));
 }
 
+function useCountUp(target: number, active: boolean, ms = 900) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!active || target === 0) return;
+    const t0 = performance.now();
+    let raf: number;
+    const tick = (now: number) => {
+      const p = Math.min((now - t0) / ms, 1);
+      setVal(Math.round((1 - Math.pow(1 - p, 3)) * target));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [active, target, ms]);
+  return val;
+}
+
+function StatsBar({ gameCount }: { gameCount: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setActive(true); }, { threshold: 0.4 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  const count = useCountUp(gameCount, active);
+  return (
+    <div ref={ref} className="stats-bar">
+      <div className="stats-bar-item">
+        <span className="stats-bar-value text-gradient">{count}+</span>
+        <span className="stats-bar-label">Games</span>
+      </div>
+      <div className="stats-bar-item">
+        <span className="stats-bar-value">PC &amp; PS5</span>
+        <span className="stats-bar-label">Platforms</span>
+      </div>
+      <div className="stats-bar-item">
+        <span className="stats-bar-value">Same day</span>
+        <span className="stats-bar-label">Delivery</span>
+      </div>
+    </div>
+  );
+}
+
 export function HomePage() {
   const { games, findGame, listedGames, reviews, status, reload, contactLink, setting } = useStore();
   const [query, setQuery] = useState("");
@@ -113,7 +159,7 @@ export function HomePage() {
           Find your next game. <span className="text-gradient">Play it today.</span>
         </h1>
         <p className="max-w-xl text-base text-text-muted hero-enter sm:text-lg" style={{ animationDelay: "180ms" }}>
-          PC and PlayStation — with a delivery time you can see up front, and support if anything goes wrong.
+          PC &amp; PlayStation games — buy to keep or rent for a week. Every price and delivery time shown upfront.
         </p>
         <div className="w-full max-w-xl text-left hero-enter" style={{ animationDelay: "270ms" }}>
           <SearchPanel query={query} onQuery={setQuery} onDone={() => setQuery("")} dropdown placeholder={searchPlaceholder(setting, games.length)} />
@@ -128,6 +174,8 @@ export function HomePage() {
         </div>
       </section>
 
+
+      <StatsBar gameCount={games.length} />
 
       {status === "error" && <Notice tone="error" onRetry={reload}>We couldn't load prices and availability just now. You can still browse every game.</Notice>}
 
@@ -178,7 +226,7 @@ export function HomePage() {
 
       {/* ── Fan favourites ── */}
       {favourites.length > 0 && (
-        <Section title="Fan favourites" moreTo="/browse">
+        <Section title="Fan favourites" eyebrow="Popular picks" moreTo="/browse">
           <Rail label="Fan favourite games">
             {favourites.map((g, i) => <div key={g.id} className="stagger w-36 shrink-0 snap-start sm:w-44" style={{ "--i": i } as React.CSSProperties}><GameCard game={g} /></div>)}
           </Rail>
@@ -187,7 +235,7 @@ export function HomePage() {
 
       {/* ── New & upcoming ── */}
       {fresh.length > 0 && (
-        <Section title="New & upcoming" moreTo="/browse">
+        <Section title="New & upcoming" eyebrow="Fresh in" moreTo="/browse">
           <Rail label="New and upcoming games">
             {fresh.map((g, i) => <div key={g.id} className="stagger w-36 shrink-0 snap-start sm:w-44" style={{ "--i": i } as React.CSSProperties}><GameCard game={g} /></div>)}
           </Rail>
@@ -195,7 +243,7 @@ export function HomePage() {
       )}
 
       {/* ── Browse by genre ── */}
-      <Section title="Browse by genre" moreTo="/browse">
+      <Section title="Browse by genre" eyebrow="Discover" moreTo="/browse">
         <div className="no-scrollbar -mx-4 flex snap-x snap-proximity gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
           {GENRE_TILES.map(({ label, emoji }) => (
             <Link
@@ -227,7 +275,7 @@ export function HomePage() {
       </Section>
 
       {/* ── How it works ── */}
-      <Section title="How it works" id="how-it-works">
+      <Section title="How it works" eyebrow="Getting started" id="how-it-works">
         <ol className="grid gap-3 sm:grid-cols-3">
           {(ordering
             ? [
@@ -271,34 +319,8 @@ export function HomePage() {
         </Section>
       )}
 
-      {/* ── Referral programme CTA (shown to signed-in users when ordering is on) ── */}
-      {ordering && signedIn && (
-        <section className="hero hud flex flex-col items-center gap-3 px-6 py-10 text-center">
-          <div className="hero-grid" aria-hidden="true" />
-          <span className="medal cut cut-hex [--medal:var(--color-brand-400)]"><IconGift className="h-7 w-7" /></span>
-          <h2 className="font-display text-2xl font-bold text-text-primary">Refer a friend, earn rewards</h2>
-          <p className="max-w-md text-sm text-text-muted">
-            Share your referral link. When a friend signs up and buys a game, you earn coins — usable towards your next order. Refer 5 friends and buy 5 games to unlock a free game.
-          </p>
-          <Button to="/account" variant="secondary">View my referral link</Button>
-        </section>
-      )}
-
-      {/* ── Referral CTA for non-signed-in users ── */}
-      {ordering && !signedIn && (
-        <section className="hero hud flex flex-col items-center gap-3 px-6 py-10 text-center">
-          <div className="hero-grid" aria-hidden="true" />
-          <span className="medal cut cut-hex [--medal:var(--color-brand-400)]"><IconGift className="h-7 w-7" /></span>
-          <h2 className="font-display text-2xl font-bold text-text-primary">Refer friends, earn free games</h2>
-          <p className="max-w-md text-sm text-text-muted">
-            Create an account to get your referral link. Earn coins for every friend who buys — and unlock a free game after 5 referrals.
-          </p>
-          <Button to="/signup" variant="secondary">Create a free account</Button>
-        </section>
-      )}
-
       {/* ── FAQ ── */}
-      <Section title="Common questions" id="faq">
+      <Section title="Common questions" eyebrow="Help" id="faq">
         <div className="flex flex-col gap-2">
           {faqs.map((f) => (
             <details key={f.q} className="group panel open:border-border-strong">
@@ -312,14 +334,28 @@ export function HomePage() {
         </div>
       </Section>
 
-      {/* ── Can't find a game CTA ── */}
-      <section className="hero hud flex flex-col items-center gap-3 px-6 py-10 text-center">
+      {/* ── Bottom CTA: can't find + referral combined ── */}
+      <section className="hero hud px-6 py-10 sm:px-10 sm:py-14">
         <div className="hero-grid" aria-hidden="true" />
-        <h2 className="font-display text-2xl font-bold text-text-primary">Can't find a game?</h2>
-        <p className="max-w-md text-sm text-text-muted">Tell us what you want to play and we'll try to get it.</p>
-        <div className="flex flex-wrap justify-center gap-2 pt-1">
-          <Button {...request}>Request a game</Button>
-          <Button href={chatHref} variant="secondary"><IconChat className="h-5 w-5" />Message us</Button>
+        <div className={`grid w-full max-w-2xl gap-8 ${ordering ? "sm:grid-cols-2 sm:gap-0" : ""}`}>
+          <div className="flex flex-col items-center gap-3 text-center sm:pr-8">
+            <h2 className="font-display text-2xl font-bold text-text-primary">Can't find a game?</h2>
+            <p className="max-w-xs text-sm text-text-muted">Tell us what you want to play and we'll try to get it.</p>
+            <div className="flex flex-wrap justify-center gap-2 pt-1">
+              <Button {...request}>Request a game</Button>
+              <Button href={chatHref} variant="secondary"><IconChat className="h-5 w-5" />Message us</Button>
+            </div>
+          </div>
+          {ordering && (
+            <div className="flex flex-col items-center gap-3 border-t border-border-subtle pt-8 text-center sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0">
+              <span className="medal cut cut-hex [--medal:var(--color-brand-400)]"><IconGift className="h-7 w-7" /></span>
+              <h2 className="font-display text-xl font-bold text-text-primary">Refer friends, earn rewards</h2>
+              <p className="max-w-xs text-sm text-text-muted">Earn coins for every referral. Unlock a free game after 5.</p>
+              <Button to={signedIn ? "/account" : "/signup"} variant="secondary">
+                {signedIn ? "View my referral link" : "Create a free account"}
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
