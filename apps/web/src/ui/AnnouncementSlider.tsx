@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "../data/store";
+import { activeOffer } from "../lib/offer";
 import { isLive, type Announcement } from "../types/announcement";
 import { Button } from "./Button";
 
@@ -67,9 +68,33 @@ function Slide({ slide, active, now, first }: { slide: Announcement; active: boo
 }
 
 export function AnnouncementSlider({ className = "" }: { className?: string }) {
-  const { announcements } = useStore();
+  const { announcements, setting } = useStore();
   const now = useNow(1000);
-  const slides = announcements.filter((a) => isLive(a, now));
+  const liveSlides = announcements.filter((a) => isLive(a, now));
+
+  // When an active offer is running, auto-inject it as the first slide so it's always visible
+  // even if admin hasn't uploaded an announcement image yet.
+  const offer = activeOffer(setting, now);
+  let offerEndMs: number | undefined;
+  if (offer) {
+    const starts = setting("launch_offer_starts") ?? "";
+    const days = Number(setting("launch_offer_days") ?? "0");
+    const start = Date.parse(`${starts}T00:00:00+05:30`);
+    if (!Number.isNaN(start)) offerEndMs = start + days * 86_400_000;
+  }
+  const offerSlide: Announcement | null = offer
+    ? {
+        id: "__offer__",
+        title: offer.title,
+        subtitle: `Limited time — ends ${offer.until}`,
+        button: { label: "Shop now", href: "/browse" },
+        countdownTo: offerEndMs,
+      }
+    : null;
+
+  // Offer slide first; then admin slides (deduped in case admin manually added same offer)
+  const adminWithoutOffer = liveSlides.filter((s) => s.id !== "__offer__");
+  const slides = offerSlide ? [offerSlide, ...adminWithoutOffer] : adminWithoutOffer;
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const touchX = useRef<number | null>(null);
