@@ -37,7 +37,7 @@ export function AnnouncementsPage() {
   const [now] = useState(() => Date.now());
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader title="Announcements" subtitle="Slides at the top of the home page, above “Find your next game”. Use them for new games and offers." />
+      <PageHeader title=”Announcements” subtitle=”Full-width banner slides at the top of the home page. Upload your own offer image (Dussehra, sale, new game) and it fills the entire section. Add a headline, subtitle and a button that takes users to the store.” />
       {loading ? <Loading /> : error || !data ? <ErrorNote message={error ?? "Couldn’t load the slides."} onRetry={reload} /> : (
         <>
           <SlideForm key={data.length} nextOrder={data.length + 1} onSaved={reload} />
@@ -109,7 +109,7 @@ function SlideForm({ slide, now = 0, nextOrder = 1, onSaved }: { slide?: Slide; 
           <TextField label="Button text" hint="Optional" value={draft.buttonLabel} onChange={(e) => set("buttonLabel", e.target.value)} placeholder="Pre-book" />
           <TextField label="Button goes to" hint="A store page like /games/gta-5, or an https:// link" value={draft.buttonHref} onChange={(e) => set("buttonHref", e.target.value)} />
         </div>
-        <ImageField label="Picture (wide)" kind="banner" folder="announcements" value={draft.image} onChange={(v) => set("image", v)} hint="Optional. Without one, the slide uses a coloured background." />
+        <ImageField label="Banner image" kind="banner" folder="announcements" value={draft.image} onChange={(v) => set("image", v)} hint="Upload your festival/offer design (Canva, Photoshop etc.). Ideal: 1200×500 px landscape. It fills the entire slide as a background — your headline & button appear over it. Without an image, the slide uses a branded gradient." />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <TextField label="Show from" type="datetime-local" hint="Empty = now" value={draft.starts} onChange={(e) => set("starts", e.target.value)} />
           <TextField label="Show until" type="datetime-local" hint="Empty = until you switch it off" value={draft.ends} onChange={(e) => set("ends", e.target.value)} />

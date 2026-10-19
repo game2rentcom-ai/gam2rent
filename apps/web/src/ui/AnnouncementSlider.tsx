@@ -39,23 +39,26 @@ function Countdown({ to, now }: { to: number; now: number }) {
 }
 
 function Slide({ slide, active, now, first }: { slide: Announcement; active: boolean; now: number; first: boolean }) {
+  const hasImage = Boolean(slide.imageUrl);
   return (
-    <div className="relative flex min-h-56 min-w-full items-end overflow-hidden sm:min-h-72">
-      {slide.imageUrl ? (
-        <img src={slide.imageUrl} alt="" loading={first ? "eager" : "lazy"} className={`absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out ${active ? "scale-105" : "scale-100"}`} />
+    <div className="relative flex min-h-64 min-w-full overflow-hidden sm:min-h-96 lg:min-h-[26rem]" style={hasImage ? { alignItems: "flex-end" } : { alignItems: "center", justifyContent: "center" }}>
+      {hasImage ? (
+        <>
+          <img src={slide.imageUrl!} alt={slide.title} loading={first ? "eager" : "lazy"} className={`absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out ${active ? "scale-105" : "scale-100"}`} />
+          <div aria-hidden="true" className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent sm:bg-linear-to-r sm:from-black/85 sm:via-black/35 sm:to-transparent" />
+        </>
       ) : (
-        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(60%_90%_at_10%_100%,color-mix(in_srgb,var(--color-brand-400)_45%,transparent),transparent_70%),radial-gradient(50%_80%_at_95%_0%,color-mix(in_srgb,var(--color-accent-400)_40%,transparent),transparent_70%)] bg-bg-surface-raised" />
+        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_20%_110%,color-mix(in_srgb,var(--color-brand-400)_55%,transparent),transparent_65%),radial-gradient(ellipse_60%_60%_at_85%_-10%,color-mix(in_srgb,var(--color-accent-400)_45%,transparent),transparent_65%)] bg-bg-surface-raised" />
       )}
-      <div aria-hidden="true" className="absolute inset-0 bg-linear-to-t from-bg-base via-bg-base/60 to-transparent sm:bg-linear-to-r sm:from-bg-base/95 sm:via-bg-base/55" />
       {active && (
-        <div key={slide.id} className="slide-rise relative flex max-w-xl flex-col items-start gap-3 p-5 sm:px-16 sm:py-8">
-          <h2 className="font-display text-2xl font-bold leading-tight text-text-primary sm:text-4xl">{slide.title}</h2>
-          {slide.subtitle && <p className="text-sm text-text-muted sm:text-base">{slide.subtitle}</p>}
+        <div key={slide.id} className={`slide-rise relative z-10 flex max-w-2xl flex-col gap-3 p-6 sm:px-14 sm:py-10 ${hasImage ? "items-start w-full" : "items-center text-center"}`}>
+          <h2 className="font-display text-2xl font-bold leading-tight text-white drop-shadow-lg sm:text-4xl lg:text-5xl">{slide.title}</h2>
+          {slide.subtitle && <p className={`text-sm sm:text-base ${hasImage ? "text-white/85" : "text-text-muted"}`}>{slide.subtitle}</p>}
           {slide.countdownTo !== undefined && <Countdown to={slide.countdownTo} now={now} />}
           {slide.button && (
             slide.button.href.startsWith("/")
-              ? <Button to={slide.button.href}>{slide.button.label}</Button>
-              : <Button href={slide.button.href}>{slide.button.label}</Button>
+              ? <Button to={slide.button.href} size="lg">{slide.button.label}</Button>
+              : <Button href={slide.button.href} size="lg">{slide.button.label}</Button>
           )}
         </div>
       )}
