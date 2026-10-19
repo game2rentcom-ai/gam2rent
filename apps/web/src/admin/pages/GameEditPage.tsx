@@ -126,8 +126,8 @@ function Editor({ initial, existing }: { initial: GameForm; existing: boolean })
 
       <Card className="flex flex-col gap-5">
         <h2 className="font-display text-lg font-bold text-text-primary">Pictures</h2>
-        <ImageField label="Cover (tall)" kind="cover" folder={id} value={form.coverUrl} onChange={(v) => set("coverUrl", v)} hint="Shown on cards. Portrait works best." />
-        <ImageField label="Banner (wide)" kind="banner" folder={id} value={form.heroUrl} onChange={(v) => set("heroUrl", v)} hint="Shown at the top of the game’s page." />
+        <ImageField label="Cover (tall)" kind="cover" folder={id} value={form.coverUrl} onChange={(v) => set("coverUrl", v)} hint="Portrait image — ideal size 600×900 px (2:3 ratio). JPG/PNG/WebP, max 5 MB. For Steam games paste: https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/APP_ID/library_600x900.jpg" />
+        <ImageField label="Banner (wide)" kind="banner" folder={id} value={form.heroUrl} onChange={(v) => set("heroUrl", v)} hint="Wide banner — ideal size 1920×620 px (3:1 ratio). JPG/PNG/WebP, max 5 MB. For Steam games paste: https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/APP_ID/library_hero.jpg" />
         {errors.images && <p role="alert" className="text-xs font-medium text-red-300">{errors.images}</p>}
         <p className="text-xs text-text-muted">Without your own pictures the store shows matching artwork where we have it, otherwise a generated placeholder.</p>
       </Card>
