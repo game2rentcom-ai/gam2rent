@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/context";
 import { PlatformGlyph } from "../components/Badges";
@@ -57,51 +57,6 @@ function pick(ids: string[], find: (id: string) => CatalogGame | undefined): Cat
   return ids.map(find).filter((g): g is CatalogGame => Boolean(g));
 }
 
-function useCountUp(target: number, active: boolean, ms = 900) {
-  const [val, setVal] = useState(0);
-  useEffect(() => {
-    if (!active || target === 0) return;
-    const t0 = performance.now();
-    let raf: number;
-    const tick = (now: number) => {
-      const p = Math.min((now - t0) / ms, 1);
-      setVal(Math.round((1 - Math.pow(1 - p, 3)) * target));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [active, target, ms]);
-  return val;
-}
-
-function StatsBar({ gameCount }: { gameCount: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setActive(true); }, { threshold: 0.4 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-  const count = useCountUp(gameCount, active);
-  return (
-    <div ref={ref} className="stats-bar">
-      <div className="stats-bar-item">
-        <span className="stats-bar-value text-gradient">{count}+</span>
-        <span className="stats-bar-label">Games</span>
-      </div>
-      <div className="stats-bar-item">
-        <span className="stats-bar-value">PC &amp; PS5</span>
-        <span className="stats-bar-label">Platforms</span>
-      </div>
-      <div className="stats-bar-item">
-        <span className="stats-bar-value">Same day</span>
-        <span className="stats-bar-label">Delivery</span>
-      </div>
-    </div>
-  );
-}
 
 export function HomePage() {
   const { games, findGame, listedGames, reviews, status, reload, contactLink, setting } = useStore();
@@ -174,8 +129,6 @@ export function HomePage() {
         </div>
       </section>
 
-
-      <StatsBar gameCount={games.length} />
 
       {status === "error" && <Notice tone="error" onRetry={reload}>We couldn't load prices and availability just now. You can still browse every game.</Notice>}
 

@@ -602,49 +602,6 @@
     animation: glitch-text 0.38s ease-out 0.05s;
   }
 
-  /* Trust stats bar: 3 key metrics shown below the hero */
-  .stats-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    border: 1px solid var(--color-border-strong);
-    border-radius: 0.875rem;
-    background: var(--color-bg-surface);
-    padding: 0.75rem 0;
-  }
-  .stats-bar-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.15rem;
-    padding: 0.5rem 2.5rem;
-    position: relative;
-  }
-  .stats-bar-item + .stats-bar-item::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 20%;
-    height: 60%;
-    width: 1px;
-    background: var(--color-border-strong);
-  }
-  .stats-bar-value {
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--color-text-primary);
-  }
-  .stats-bar-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--color-text-muted);
-  }
-
   /* Scanlines overlay inside a .frame — subtle CRT horizontal lines */
   .scanlines {
     position: absolute;
