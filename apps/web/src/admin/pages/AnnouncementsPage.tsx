@@ -37,12 +37,12 @@ export function AnnouncementsPage() {
   const [now] = useState(() => Date.now());
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader title=”Announcements” subtitle=”Full-width banner slides at the top of the home page. Upload your own offer image (Dussehra, sale, new game) and it fills the entire section. Add a headline, subtitle and a button that takes users to the store.” />
+      <PageHeader title="Announcements" subtitle="Full-width banner slides at the top of the home page. Upload your own offer image (Dussehra, sale, new game) and it fills the entire section. Add a headline, subtitle and a button that takes users to the store." />
       {loading ? <Loading /> : error || !data ? <ErrorNote message={error ?? "Couldn’t load the slides."} onRetry={reload} /> : (
         <>
           <SlideForm key={data.length} nextOrder={data.length + 1} onSaved={reload} />
           <h2 className="font-display text-lg font-bold text-text-primary">{data.length} {data.length === 1 ? "slide" : "slides"}</h2>
-          {data.length === 0 && <p className="rounded-2xl border border-dashed border-border-subtle px-4 py-8 text-center text-sm text-text-muted">No slides yet. Add one above, for example “GTA 6 is coming” with a countdown to its launch.</p>}
+          {data.length === 0 && <p className="rounded-2xl border border-dashed border-border-subtle px-4 py-8 text-center text-sm text-text-muted">No slides yet. Add one above, for example "GTA 6 is coming" with a countdown to its launch.</p>}
           <ul className="flex flex-col gap-3">
             {data.map((s) => <li key={s.id}><SlideForm slide={s} now={now} onSaved={reload} /></li>)}
           </ul>
