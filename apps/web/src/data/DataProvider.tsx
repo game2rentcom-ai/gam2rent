@@ -76,7 +76,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const byId = new Map(games.map((g) => [g.id, g]));
     const listingsByGame = new Map<string, Listing[]>();
     for (const listing of state.listings) {
-      if (!byId.has(listing.catalogId)) continue;
+      // A price on a platform the owner has switched off must not reach cards or the game page.
+      if (!byId.get(listing.catalogId)?.platforms.includes(listing.platform)) continue;
       listingsByGame.set(listing.catalogId, [...(listingsByGame.get(listing.catalogId) ?? []), listing]);
     }
     const listedGames: ListedGame[] = [...listingsByGame].map(([gameId, listings]) => ({

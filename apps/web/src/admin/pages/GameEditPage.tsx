@@ -157,9 +157,17 @@ function Editor({ initial, existing }: { initial: GameForm; existing: boolean })
     if (!SLUG.test(gameId)) found.id = "Use lowercase letters, numbers and hyphens only (e.g. hades-2).";
     const enabled = PLATFORMS.filter((p) => form.platformConfigs[p]?.enabled);
     if (enabled.length === 0) found.platforms = "Enable at least one platform.";
+    // Same rules as Pricing → Buy prices and the database, so a save never fails halfway on a raw database error.
     for (const p of enabled) {
       const cfg = form.platformConfigs[p];
-      if (cfg?.buy && toInt(cfg.price) === null) found[`price_${p}`] = `Enter a price for ${PLATFORM_LABEL[p]}.`;
+      if (!cfg?.buy) continue;
+      const price = toInt(cfg.price);
+      const compare = cfg.compare.trim() === "" ? null : toInt(cfg.compare);
+      const eta = toInt(cfg.eta);
+      if (price === null) found[`price_${p}`] = `Enter the ${PLATFORM_LABEL[p]} price in whole rupees.`;
+      if (cfg.compare.trim() !== "" && compare === null) found[`compare_${p}`] = "Whole rupees, or leave it empty.";
+      else if (compare !== null && price !== null && compare < price) found[`compare_${p}`] = "Can't be lower than the price.";
+      if (eta === null || eta < 1) found[`eta_${p}`] = "Enter the delivery time in minutes.";
     }
     if ([form.coverUrl, form.heroUrl].some((u) => u && !u.startsWith("https://"))) found.images = "Picture addresses must start with https://";
     setErrors(found);
@@ -253,7 +261,7 @@ function Editor({ initial, existing }: { initial: GameForm; existing: boolean })
             key={p}
             platform={p}
             config={form.platformConfigs[p] ?? defaultConfig()}
-            priceError={errors[`price_${p}`]}
+            errors={{ price: errors[`price_${p}`], compare: errors[`compare_${p}`], eta: errors[`eta_${p}`] }}
             onChange={(cfg) => setPlatform(p, cfg)}
           />
         ))}
@@ -274,10 +282,10 @@ function Editor({ initial, existing }: { initial: GameForm; existing: boolean })
   );
 }
 
-function PlatformCard({ platform, config, priceError, onChange }: {
+function PlatformCard({ platform, config, errors, onChange }: {
   platform: Platform;
   config: PlatformConfig;
-  priceError?: string;
+  errors: { price?: string; compare?: string; eta?: string };
   onChange: (cfg: Partial<PlatformConfig>) => void;
 }) {
   const set = <K extends keyof PlatformConfig>(k: K, v: PlatformConfig[K]) => onChange({ [k]: v });
@@ -286,7 +294,7 @@ function PlatformCard({ platform, config, priceError, onChange }: {
     <Card className="flex flex-col gap-4">
       <Toggle
         label={PLATFORM_LABEL[platform]}
-        hint={config.enabled ? "Visible on the store" : "Hidden — not shown to customers"}
+        hint={config.enabled ? "Visible on the store" : "Hidden from customers"}
         checked={config.enabled}
         onChange={(v) => onChange({ enabled: v })}
       />
@@ -302,7 +310,7 @@ function PlatformCard({ platform, config, priceError, onChange }: {
             />
             <Toggle
               label="Rental"
-              hint={platform === "pc" ? "Shows Steam Online rental plans" : "Shows PS rental plans"}
+              hint="Offers your rental plans on this platform"
               checked={config.rent}
               onChange={(v) => set("rent", v)}
             />
@@ -312,9 +320,9 @@ function PlatformCard({ platform, config, priceError, onChange }: {
             <div className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-bg-raised/40 p-3">
               <p className="text-[0.65rem] font-bold uppercase tracking-widest text-text-muted">Sale settings</p>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <TextField label="Price (₹)" inputMode="numeric" value={config.price} onChange={(e) => set("price", e.target.value)} error={priceError} />
-                <TextField label="Was (₹)" inputMode="numeric" hint="Optional" value={config.compare} onChange={(e) => set("compare", e.target.value)} />
-                <TextField label="Delivery (min)" inputMode="numeric" value={config.eta} onChange={(e) => set("eta", e.target.value)} />
+                <TextField label="Price (₹)" inputMode="numeric" value={config.price} onChange={(e) => set("price", e.target.value)} error={errors.price} />
+                <TextField label="Was (₹)" inputMode="numeric" hint="Optional" value={config.compare} onChange={(e) => set("compare", e.target.value)} error={errors.compare} />
+                <TextField label="Delivery (min)" inputMode="numeric" value={config.eta} onChange={(e) => set("eta", e.target.value)} error={errors.eta} />
                 <SelectField label="Customer gets" value={config.credential} onChange={(e) => set("credential", e.target.value)}>
                   <option value="id_password">Login (ID + password)</option>
                   <option value="qr_code">QR code</option>
@@ -329,13 +337,14 @@ function PlatformCard({ platform, config, priceError, onChange }: {
 
           {config.rent && (
             <p className="text-xs text-text-muted">
-              Rental uses your store-wide plans (1 Day, 3 Days, 7 Days, 30 Days). To override the price for this game go to <strong className="text-text-primary">Pricing → Rental price by game</strong>.
+              Rental uses your store-wide plans, the same on every platform. Edit the plans, or give this game its own rental price, under{" "}
+              <Link to="/admin/pricing" className="font-semibold text-text-primary underline underline-offset-2">Pricing</Link>.
             </p>
           )}
 
           {!config.buy && !config.rent && (
             <p className="text-xs font-medium text-yellow-400">
-              Turn on Permanent sale, Rental, or both — otherwise this platform has nothing to show customers.
+              Customers see {PLATFORM_LABEL[platform]} with &ldquo;Ask us&rdquo; and can message you about it. Turn on Permanent sale or Rental to show a price.
             </p>
           )}
         </div>

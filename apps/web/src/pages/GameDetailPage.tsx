@@ -25,6 +25,14 @@ import { NotFoundPage } from "./NotFoundPage";
 
 type Option = "buy" | "rent";
 
+/** The small line under each platform tile. Says only what that platform can actually do today. */
+function platformStatus(buyAvailable: boolean | undefined, listed: boolean, canRent: boolean): string {
+  if (buyAvailable && canRent) return "Buy or rent";
+  if (buyAvailable) return "Permanent";
+  if (canRent) return "Rental";
+  return listed ? "Unavailable" : "Ask us";
+}
+
 function PriceSkeleton() {
   return (
     <div className="flex flex-col gap-3" aria-busy="true" aria-label="Loading price">
@@ -89,11 +97,12 @@ export function GameDetailPage() {
 
   const rentPlatforms = rentalPlatformsOf(game);
   const modes = game.platforms.map((p) => ({ platform: p, buy: listed?.listings.find((l) => l.platform === p), rent: rentPlatforms.includes(p) }));
-  const fallback = modes.find((m) => m.buy?.isAvailable) ?? modes.find((m) => m.buy) ?? modes.find((m) => m.rent && offers.length > 0) ?? modes[0]!;
+  const fallback = modes.find((m) => m.buy?.isAvailable) ?? modes.find((m) => m.rent && offers.length > 0) ?? modes.find((m) => m.buy) ?? modes[0]!;
   const here = modes.find((m) => m.platform === chosenPlatform) ?? fallback;
   const platform: Platform = here.platform;
   const buyListing = here.buy;
-  const option: Option = here.rent && (chosenOption === "rent" || (!buyListing && offers.length > 0)) ? "rent" : "buy";
+  // Open on Rent when buying isn't possible right now but renting is, instead of a dead "Currently unavailable".
+  const option: Option = here.rent && (chosenOption === "rent" || (chosenOption === null && !buyListing?.isAvailable && offers.length > 0)) ? "rent" : "buy";
   const plan = offers.find((o) => o.planId === planId) ?? offers.find((o) => o.isPopular) ?? offers[0];
   const reviews = reviewsFor(game.id);
   const rating = averageRating(reviews);
@@ -210,10 +219,13 @@ export function GameDetailPage() {
         <aside className="lg:sticky lg:top-24 lg:self-start" aria-label="Buy or rent">
           <div className="panel hud flex flex-col gap-4 p-4 sm:p-5">
 
-            {/* Platform selector */}
-            {modes.length > 1 && (
-              <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">Platform</p>
+            {/* Platform selector: always shown, so a single-platform game still says which platform you get.
+                Held back while loading: until then `game` is the built-in list, not the owner's platform settings. */}
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">Platform</p>
+              {pricesPending ? (
+                <div className="h-14 w-full animate-pulse rounded-lg bg-border-strong/40" aria-busy="true" aria-label="Loading platforms" />
+              ) : (
                 <div role="radiogroup" aria-label="Platform" className="grid grid-cols-3 gap-2">
                   {modes.map((m) => (
                     <button
@@ -225,12 +237,12 @@ export function GameDetailPage() {
                       className={`chip cut flex min-h-14 flex-col items-center justify-center px-2 py-1.5 transition-all ${m.platform === platform ? "chip-on" : "opacity-70 hover:opacity-100"}`}
                     >
                       <span className="font-display text-sm font-bold leading-tight">{PLATFORM_LABEL[m.platform]}</span>
-                      <span className="mt-0.5 text-[11px] opacity-80">{m.buy && m.rent ? "Buy or rent" : m.buy ? "Permanent" : m.rent ? "Rental" : "Ask us"}</span>
+                      <span className="mt-0.5 text-[11px] opacity-80">{platformStatus(m.buy?.isAvailable, m.buy !== undefined, m.rent && offers.length > 0)}</span>
                     </button>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Buy / Rent toggle */}
             {buyListing && here.rent && (
