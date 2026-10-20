@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, NavLink, useLocation, useNavigationType } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigationType, useMatch } from "react-router-dom";
 import { useAuth } from "../auth/context";
 import { useStore } from "../data/store";
 import { activeOffer } from "../lib/offer";
@@ -19,6 +19,9 @@ function Banner() {
   const [now] = useState(() => Date.now());
   const offer = activeOffer(setting, now);
   const announcement = setting("announcement");
+  // Home has the AnnouncementSlider, which already auto-injects the active offer as its first
+  // slide. Showing the top offer banner there as well is just duplicate messaging.
+  const onHome = useMatch({ path: "/", end: true }) !== null;
   const dismissKey = offer ? `offer-${offer.until}` : (announcement ?? "");
   const [dismissed, setDismissed] = useState(() => {
     try { return sessionStorage.getItem("banner-dismissed") === dismissKey; } catch { return false; }
@@ -34,8 +37,8 @@ function Banner() {
   }
   if (dismissed) return null;
 
-  // Prominent offer banner for BOGO / launch offers
-  if (offer) {
+  // Prominent offer banner for BOGO / launch offers (suppressed on home — see onHome above)
+  if (offer && !onHome) {
     return (
       <div className="relative overflow-hidden bg-linear-to-r from-[#0d2a1f] via-[#0a3d2e] to-[#0d2a1f] print:hidden">
         {/* animated shimmer line */}
