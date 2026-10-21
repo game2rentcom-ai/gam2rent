@@ -220,29 +220,31 @@ export function GameDetailPage() {
           <div className="panel hud flex flex-col gap-4 p-4 sm:p-5">
 
             {/* Platform selector: always shown, so a single-platform game still says which platform you get.
-                Held back while loading: until then `game` is the built-in list, not the owner's platform settings. */}
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">Platform</p>
-              {pricesPending ? (
-                <div className="h-14 w-full animate-pulse rounded-lg bg-border-strong/40" aria-busy="true" aria-label="Loading platforms" />
-              ) : (
-                <div role="radiogroup" aria-label="Platform" className="grid grid-cols-3 gap-2">
-                  {modes.map((m) => (
-                    <button
-                      key={m.platform}
-                      type="button"
-                      role="radio"
-                      aria-checked={m.platform === platform}
-                      onClick={() => { setPlatform(m.platform); setOption(null); }}
-                      className={`chip cut flex min-h-14 flex-col items-center justify-center px-2 py-1.5 transition-all ${m.platform === platform ? "chip-on" : "opacity-70 hover:opacity-100"}`}
-                    >
-                      <span className="font-display text-sm font-bold leading-tight">{PLATFORM_LABEL[m.platform]}</span>
-                      <span className="mt-0.5 text-[11px] opacity-80">{platformStatus(m.buy?.isAvailable, m.buy !== undefined, m.rent && offers.length > 0)}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                Held back while loading, and hidden if loading failed: until then `game` is the built-in list, not the owner's settings. */}
+            {!pricesFailed && (
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">Platform</p>
+                {pricesPending ? (
+                  <div className="h-14 w-full animate-pulse rounded-lg bg-border-strong/40" aria-busy="true" aria-label="Loading platforms" />
+                ) : (
+                  <div role="radiogroup" aria-label="Platform" className="grid grid-cols-3 gap-2">
+                    {modes.map((m) => (
+                      <button
+                        key={m.platform}
+                        type="button"
+                        role="radio"
+                        aria-checked={m.platform === platform}
+                        onClick={() => { setPlatform(m.platform); setOption(null); }}
+                        className={`chip cut flex min-h-14 flex-col items-center justify-center px-2 py-1.5 transition-all ${m.platform === platform ? "chip-on" : "opacity-70 hover:opacity-100"}`}
+                      >
+                        <span className="font-display text-sm font-bold leading-tight">{PLATFORM_LABEL[m.platform]}</span>
+                        <span className="mt-0.5 text-[11px] opacity-80">{platformStatus(m.buy?.isAvailable, m.buy !== undefined, m.rent && offers.length > 0)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Buy / Rent toggle */}
             {buyListing && here.rent && (
