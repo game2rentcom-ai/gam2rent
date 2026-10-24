@@ -33,6 +33,11 @@ const TicketPage = page(() => import("./account/TicketPage"), "TicketPage");
 const RequestsPage = page(() => import("./community/RequestsPage"), "RequestsPage");
 const AdminApp = page(() => import("./admin/AdminApp"), "AdminApp");
 const LearnPage = page(() => import("./pages/LearnPage"), "LearnPage");
+const LearnAboutPage = page(() => import("./pages/LearnInfoPages"), "LearnAboutPage");
+const LearnPrivacyPage = page(() => import("./pages/LearnInfoPages"), "LearnPrivacyPage");
+const LearnTermsPage = page(() => import("./pages/LearnInfoPages"), "LearnTermsPage");
+const LearnRefundPage = page(() => import("./pages/LearnInfoPages"), "LearnRefundPage");
+const LearnContactPage = page(() => import("./pages/LearnInfoPages"), "LearnContactPage");
 
 function PageFallback() {
   return (
@@ -118,8 +123,13 @@ export default function App() {
             <BrowserRouter>
               <RouteMeta />
               <Routes>
-                {/* Standalone pages — no gaming header/footer */}
+                {/* Standalone /learn section — no gaming header/footer */}
                 <Route path="/learn" element={<Suspense fallback={null}><LearnPage /></Suspense>} />
+                <Route path="/learn/about" element={<Suspense fallback={null}><LearnAboutPage /></Suspense>} />
+                <Route path="/learn/privacy" element={<Suspense fallback={null}><LearnPrivacyPage /></Suspense>} />
+                <Route path="/learn/terms" element={<Suspense fallback={null}><LearnTermsPage /></Suspense>} />
+                <Route path="/learn/refund" element={<Suspense fallback={null}><LearnRefundPage /></Suspense>} />
+                <Route path="/learn/contact" element={<Suspense fallback={null}><LearnContactPage /></Suspense>} />
 
                 {/* Main store — wrapped in the gaming Layout shell */}
                 <Route element={<AppShell />}>

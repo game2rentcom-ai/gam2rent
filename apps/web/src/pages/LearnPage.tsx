@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { LearnFooter } from "./LearnInfoPages";
 
 const COURSES = [
   {
@@ -105,7 +106,8 @@ export function LearnPage() {
           <nav className="hidden items-center gap-5 text-sm font-semibold text-text-muted sm:flex">
             <a href="#courses" className="hover:text-text-primary">Courses</a>
             <a href="#why" className="hover:text-text-primary">Why us</a>
-            <a href="#reviews" className="hover:text-text-primary">Reviews</a>
+            <Link to="/learn/about" className="hover:text-text-primary">About</Link>
+            <Link to="/learn/contact" className="hover:text-text-primary">Contact</Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link to="/" className="text-sm font-semibold text-text-muted hover:text-text-primary">← Store</Link>
@@ -228,13 +230,7 @@ export function LearnPage() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-border-subtle px-5 py-6 sm:px-8">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 text-xs text-text-muted">
-          <span>© {new Date().getFullYear()} ProLearn. All rights reserved.</span>
-          <Link to="/" className="hover:text-text-primary">← Back to Game2Rent store</Link>
-        </div>
-      </footer>
+      <LearnFooter />
 
     </div>
   );
