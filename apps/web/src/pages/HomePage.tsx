@@ -116,7 +116,9 @@ export function HomePage() {
         <p className="max-w-xl text-base text-text-muted hero-enter sm:text-lg" style={{ animationDelay: "180ms" }}>
           PC &amp; PlayStation games — buy to keep or rent for a week. Every price and delivery time shown upfront.
         </p>
-        <div className="w-full max-w-xl text-left hero-enter" style={{ animationDelay: "270ms" }}>
+        {/* hero-enter's animation gives this box its own layer, so the suggestions' z-50 only counts
+            inside it: z-10 lifts the box over the platform chips and Spotlight cards below. */}
+        <div className="relative z-10 w-full max-w-xl text-left hero-enter" style={{ animationDelay: "270ms" }}>
           <SearchPanel query={query} onQuery={setQuery} onDone={() => setQuery("")} dropdown placeholder={searchPlaceholder(setting, games.length)} />
         </div>
         <div className="flex flex-wrap justify-center gap-2 hero-enter" style={{ animationDelay: "360ms" }}>

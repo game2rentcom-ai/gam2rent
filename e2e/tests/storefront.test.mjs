@@ -173,6 +173,24 @@ test("browse search box keeps up with fast typing, and the URL follows once you 
   });
 });
 
+test("home search: the suggestions sit on top of everything below the box (platform chips, Spotlight), on a phone and a desktop", async () => {
+  for (const size of [PHONE, DESKTOP]) {
+    await withSite({ dist: live, ...size }, async ({ page, goto }) => {
+      await goto("/");
+      await page.getByRole("main").getByRole("searchbox", { name: "Search games" }).fill("gta");
+      const seeAll = page.getByRole("main").getByRole("link", { name: /^See all results for/ });
+      await seeAll.waitFor();
+      // Each suggestion must be the thing under the finger at its own centre.
+      const covered = await seeAll.evaluate((link) => [...link.closest("ul").querySelectorAll("a")].filter((a) => {
+        a.scrollIntoView({ block: "center" });
+        const r = a.getBoundingClientRect();
+        return !a.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2));
+      }).map((a) => a.textContent));
+      assert.deepEqual(covered, [], `covered at ${size.viewport.width}px wide`);
+    });
+  }
+});
+
 test("a listed game: real price, was-price, delivery time, rental plans, and chat links carry the choice", async () => {
   await withSite({ dist: live, ...PHONE }, async ({ page, goto, errors }) => {
     await goto("/games/gta-5");
