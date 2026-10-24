@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams, useNavigationType } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useParams, useNavigationType } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthProvider";
 import { RequireAdmin, RequireAuth } from "./auth/guards";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -32,6 +32,7 @@ const SupportPage = page(() => import("./account/SupportPage"), "SupportPage");
 const TicketPage = page(() => import("./account/TicketPage"), "TicketPage");
 const RequestsPage = page(() => import("./community/RequestsPage"), "RequestsPage");
 const AdminApp = page(() => import("./admin/AdminApp"), "AdminApp");
+const LearnPage = page(() => import("./pages/LearnPage"), "LearnPage");
 
 function PageFallback() {
   return (
@@ -93,6 +94,21 @@ function GuardedRoutes({ children }: { children: React.ReactNode }) {
   return <ErrorBoundary resetKey={useLocation().pathname}>{children}</ErrorBoundary>;
 }
 
+// The main app shell: header, footer, page transitions. Standalone routes (e.g. /learn) bypass this.
+function AppShell() {
+  return (
+    <Layout>
+      <GuardedRoutes>
+        <PageTransition>
+          <Suspense fallback={<PageFallback />}>
+            <Outlet />
+          </Suspense>
+        </PageTransition>
+      </GuardedRoutes>
+    </Layout>
+  );
+}
+
 export default function App() {
   return (
     <ErrorBoundary whole>
@@ -101,36 +117,34 @@ export default function App() {
           <ShopProvider>
             <BrowserRouter>
               <RouteMeta />
-              <Layout>
-                <GuardedRoutes>
-                  <PageTransition>
-                    <Suspense fallback={<PageFallback />}>
-                      <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/browse" element={<BrowsePage />} />
-                      <Route path="/games/:id" element={<GameDetailPage />} />
-                      <Route path="/game/:id" element={<LegacyGameRedirect />} />
-                      <Route path="/policies/:slug" element={<PolicyPage />} />
-                      <Route path="/login" element={<LoginPage />} />
-                      <Route path="/signup" element={<SignupPage />} />
-                      <Route path="/forgot" element={<ForgotPasswordPage />} />
-                      <Route path="/reset" element={<ResetPasswordPage />} />
-                      <Route path="/welcome" element={<WelcomePage />} />
-                      <Route path="/account" element={<RequireAuth><AccountPage /></RequireAuth>} />
-                      <Route path="/account/orders" element={<RequireAuth><OrdersPage /></RequireAuth>} />
-                      <Route path="/account/orders/:id" element={<RequireAuth><OrderPage /></RequireAuth>} />
-                      <Route path="/account/wishlist" element={<RequireAuth><WishlistPage /></RequireAuth>} />
-                      <Route path="/account/support" element={<RequireAuth><SupportPage /></RequireAuth>} />
-                      <Route path="/account/support/:id" element={<RequireAuth><TicketPage /></RequireAuth>} />
-                      <Route path="/cart" element={<RequireAuth><CartPage /></RequireAuth>} />
-                      <Route path="/requests" element={<RequestsPage />} />
-                      <Route path="/admin/*" element={<RequireAdmin><AdminApp /></RequireAdmin>} />
-                      <Route path="*" element={<NotFoundPage />} />
-                      </Routes>
-                    </Suspense>
-                  </PageTransition>
-                </GuardedRoutes>
-              </Layout>
+              <Routes>
+                {/* Standalone pages — no gaming header/footer */}
+                <Route path="/learn" element={<Suspense fallback={null}><LearnPage /></Suspense>} />
+
+                {/* Main store — wrapped in the gaming Layout shell */}
+                <Route element={<AppShell />}>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/browse" element={<BrowsePage />} />
+                  <Route path="/games/:id" element={<GameDetailPage />} />
+                  <Route path="/game/:id" element={<LegacyGameRedirect />} />
+                  <Route path="/policies/:slug" element={<PolicyPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/forgot" element={<ForgotPasswordPage />} />
+                  <Route path="/reset" element={<ResetPasswordPage />} />
+                  <Route path="/welcome" element={<WelcomePage />} />
+                  <Route path="/account" element={<RequireAuth><AccountPage /></RequireAuth>} />
+                  <Route path="/account/orders" element={<RequireAuth><OrdersPage /></RequireAuth>} />
+                  <Route path="/account/orders/:id" element={<RequireAuth><OrderPage /></RequireAuth>} />
+                  <Route path="/account/wishlist" element={<RequireAuth><WishlistPage /></RequireAuth>} />
+                  <Route path="/account/support" element={<RequireAuth><SupportPage /></RequireAuth>} />
+                  <Route path="/account/support/:id" element={<RequireAuth><TicketPage /></RequireAuth>} />
+                  <Route path="/cart" element={<RequireAuth><CartPage /></RequireAuth>} />
+                  <Route path="/requests" element={<RequestsPage />} />
+                  <Route path="/admin/*" element={<RequireAdmin><AdminApp /></RequireAdmin>} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Route>
+              </Routes>
             </BrowserRouter>
           </ShopProvider>
         </AuthProvider>
