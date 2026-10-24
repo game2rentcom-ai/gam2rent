@@ -7,7 +7,7 @@ import { Button } from "./Button";
 // The home page's moving banner: new games ("GTA 6 is coming") and offers, set up in Admin → Announcements.
 // Slides advance on their own and pause while the visitor points at, touches or tabs into them; arrows,
 // dots and swiping work too. Hidden slides are inert so the keyboard only reaches the visible one.
-const SLIDE_MS = 6000;
+const SLIDE_MS = 3500;
 
 function useNow(everyMs: number) {
   const [now, setNow] = useState(() => Date.now());
